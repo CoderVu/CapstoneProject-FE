@@ -10,7 +10,6 @@ const fetchAllProducts = async (page = 0, size = 10) => {
 
         // Trích xuất dữ liệu cần thiết từ response
         const { data } = response.data;
-        console.log("fetchAllProducts -> data", data);
 
         return data; // Trả về phần data cho dễ sử dụng
     } catch (error) {
@@ -19,6 +18,22 @@ const fetchAllProducts = async (page = 0, size = 10) => {
     }
 };
 
+const fetchProductDetail = async (productId) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/${productId}`,
+        });
+        const { data } = response.data;
+        console.log("Product detail:", data);
+        return data;
+    } catch (error) {
+        console.error("Error fetching product detail:", error);
+        throw error;
+    }
+}
+
 export {
-    fetchAllProducts
+    fetchAllProducts,
+    fetchProductDetail,
 };

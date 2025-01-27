@@ -6,23 +6,23 @@ const Category = () => {
   const [showCategories, setShowCategories] = useState(true);
   const categories = [
     {
-      _id: 990,
+      id: 990,
       title: "New Arrivals",
     },
     {
-      _id: 991,
+      id: 991,
       title: "Sneakers",
     },
     {
-      _id: 992,
+      id: 992,
       title: "Boots",
     },
     {
-      _id: 993,
+      id: 993,
       title: "Sandals",
     },
     {
-      _id: 994,
+      id: 994,
       title: "Accessories",
     },
   ];
@@ -47,7 +47,7 @@ const Category = () => {
           <ul className="flex flex-col gap-4 text-sm lg:text-base text-[#767676]">
             {categories.map((category) => (
               <li
-                key={category._id}
+                key={category.id}
                 className="border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2"
               >
                 {category.title}

@@ -1,12 +1,12 @@
 import types from "../types";
-import { fetchAllProducts } from "../service/productService";
+import { fetchAllProducts, fetchProductDetail } from "../service/productService";
 
 // Action to fetch the list of products
 export const getProducts = (page = 0, size = 10) => async (dispatch) => {
   dispatch({ type: types.FETCH_PRODUCT_REQUEST });
   try {
     const data = await fetchAllProducts(page, size);
-    const { data: products, totalPages, totalElements } = data;
+    const { response: products, totalPages, totalElements } = data;
     dispatch({
       type: types.FETCH_PRODUCT_SUCCESS,
       payload: {
@@ -17,5 +17,19 @@ export const getProducts = (page = 0, size = 10) => async (dispatch) => {
     });
   } catch (error) {
     dispatch({ type: types.FETCH_PRODUCT_ERROR, payload: error.message });
+  }
+};
+
+// Action to fetch the details of a product
+export const getProductDetail = (productId) => async (dispatch) => {
+  dispatch({ type: types.FETCH_PRODUCT_DETAIL_REQUEST });
+  try {
+    const data = await fetchProductDetail(productId);
+    dispatch({
+      type: types.FETCH_PRODUCT_DETAIL_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({ type: types.FETCH_PRODUCT_DETAIL_ERROR, payload: error.message });
   }
 };

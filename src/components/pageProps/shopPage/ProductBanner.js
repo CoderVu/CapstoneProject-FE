@@ -4,17 +4,17 @@ import { ImList } from "react-icons/im";
 import { GoTriangleDown } from "react-icons/go";
 import Product from "../../home/Products/Product";
 
-const ProductBanner = ({ products = [], itemsPerPageFromBanner, onViewChange }) => {
+const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBanner, onViewChange }) => {
   const [gridViewActive, setGridViewActive] = useState(true);
 
   useEffect(() => {
-    console.log("Grid view active:", gridViewActive);
-  }, [gridViewActive]);
+    console.log("Products in banner:", products);
+  }, [products]);
 
   const handleGridViewClick = () => {
     console.log("Grid view clicked");
     setGridViewActive(true);
-    onViewChange(true); // Notify parent about Grid view
+    onViewChange(true); // Notify parent about Grid view    
   };
 
   const handleListViewClick = () => {
@@ -78,6 +78,7 @@ const ProductBanner = ({ products = [], itemsPerPageFromBanner, onViewChange }) 
               <option value="24">24</option>
               <option value="36">36</option>
               <option value="48">48</option>
+              <option value="60">60</option>
             </select>
             <span className="absolute text-sm right-3 top-2.5">
               <GoTriangleDown />
@@ -92,14 +93,15 @@ const ProductBanner = ({ products = [], itemsPerPageFromBanner, onViewChange }) 
           gridViewActive ? "grid-cols-3 gap-6" : "grid-cols-1 gap-4"
         }`}
       >
-        {products.map((product, index) => (
+        {products.map((product) => (
           <Product
-            key={index}
-            img={product.img}
-            productName={product.name}
+            key={product.id}
+            id={product.id}
+            img={product.mainImage?.path}
+            productName={product.productName}
             price={product.price}
-            color={product.color}
-            badge={product.badge}
+            color={product.colors[0]}
+            badge={product.newProduct ? "New" : ""}
           />
         ))}
       </div>

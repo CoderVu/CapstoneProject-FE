@@ -14,7 +14,7 @@ const ItemCard = ({ item }) => {
       {/* Left Section: Image and Details */}
       <div className="flex col-span-5 mdl:col-span-2 items-center gap-4 ml-4">
         <ImCross
-          onClick={() => dispatch(deleteItem(item._id))}
+          onClick={() => dispatch(deleteItem(item.id))}
           className="text-primeColor hover:text-red-500 duration-300 cursor-pointer"
         />
         <img className="w-24 h-24 rounded-md border" src={item.image} alt="productImage" />
@@ -49,14 +49,14 @@ const ItemCard = ({ item }) => {
         {/* Quantity */}
         <div className="w-1/3 flex items-center gap-6 text-lg">
           <span
-            onClick={() => dispatch(drecreaseQuantity({ _id: item._id }))}
+            onClick={() => dispatch(drecreaseQuantity({ id: item.id }))}
             className="w-8 h-8 bg-gray-100 text-xl flex items-center justify-center hover:bg-gray-300 cursor-pointer duration-300 border rounded-md"
           >
             -
           </span>
           <p className="font-medium">{item.quantity}</p>
           <span
-            onClick={() => dispatch(increaseQuantity({ _id: item._id }))}
+            onClick={() => dispatch(increaseQuantity({ id: item.id }))}
             className="w-8 h-8 bg-gray-100 text-xl flex items-center justify-center hover:bg-gray-300 cursor-pointer duration-300 border rounded-md"
           >
             +

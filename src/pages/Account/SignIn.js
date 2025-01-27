@@ -1,48 +1,58 @@
-import React, { useState } from "react";
-import { BsCheckCircleFill } from "react-icons/bs";
-import { Link } from "react-router-dom";
-import { logoLight } from "../../assets/images";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/actions/authActions";
 
 const SignIn = () => {
   // ============= Initial State Start here =============
-  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   // ============= Initial State End here ===============
   // ============= Error Msg Start here =================
-  const [errEmail, setErrEmail] = useState("");
+  const [errPhoneNumber, setErrPhoneNumber] = useState("");
   const [errPassword, setErrPassword] = useState("");
-
-  // ============= Error Msg End here ===================
   const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const loading = useSelector((state) => state.auth.loading);
+  const error = useSelector((state) => state.auth.error);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  // Redirect to home page if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
   // ============= Event Handler Start here =============
-  const handleEmail = (e) => {
-    setEmail(e.target.value);
-    setErrEmail("");
+  const handlePhoneNumber = (e) => {
+    setPhoneNumber(e.target.value);
+    setErrPhoneNumber("");
   };
   const handlePassword = (e) => {
     setPassword(e.target.value);
     setErrPassword("");
   };
   // ============= Event Handler End here ===============
-  const handleSignUp = (e) => {
+  const handleSignIn = (e) => {
     e.preventDefault();
 
-    if (!email) {
-      setErrEmail("Enter your email");
+    if (!phoneNumber) {
+      setErrPhoneNumber("Enter your phone number");
     }
 
     if (!password) {
-      setErrPassword("Create a password");
+      setErrPassword("Enter your password");
     }
-    // ============== Getting the value ==============
-    if (email && password) {
-      setSuccessMsg(
-        `Hello dear, Thank you for your attempt. We are processing to validate your access. Till then stay connected and additional assistance will be sent to you by your mail at ${email}`
-      );
-      setEmail("");
-      setPassword("");
+
+    if (phoneNumber && password) {
+      dispatch(loginUser(phoneNumber, password));
     }
   };
+
   return (
     <div className="w-full h-screen flex items-center justify-center">
       <div className="w-full lgl:w-1/2 h-full flex items-center justify-center">
@@ -61,28 +71,28 @@ const SignIn = () => {
             </Link>
           </div>
         ) : (
-          <form className="w-full lgl:w-[450px] h-full flex items-center justify-center">
+          <form className="w-full lgl:w-[450px] h-full flex items-center justify-center" onSubmit={handleSignIn}>
             <div className="px-6 py-4 w-full h-[90%] flex flex-col justify-center items-center overflow-y-scroll scrollbar-thin scrollbar-thumb-primeColor">
               <h1 className="font-titleFont underline underline-offset-4 decoration-[1px] font-semibold text-3xl mdl:text-4xl mb-4 text-center">
                 Sign in
               </h1>
               <div className="flex flex-col gap-3 w-full">
-                {/* Email */}
+                {/* Phone Number */}
                 <div className="flex flex-col gap-.5">
                   <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Work Email
+                    Phone Number
                   </p>
                   <input
-                    onChange={handleEmail}
-                    value={email}
+                    onChange={handlePhoneNumber}
+                    value={phoneNumber}
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="email"
-                    placeholder="john@workemail.com"
+                    type="tel"
+                    placeholder="0763764915"
                   />
-                  {errEmail && (
+                  {errPhoneNumber && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errEmail}
+                      {errPhoneNumber}
                     </p>
                   )}
                 </div>
@@ -97,7 +107,7 @@ const SignIn = () => {
                     value={password}
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="password"
-                    placeholder="Create password"
+                    placeholder="********"
                   />
                   {errPassword && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
@@ -108,7 +118,7 @@ const SignIn = () => {
                 </div>
 
                 <button
-                  onClick={handleSignUp}
+                  type="submit"
                   className="bg-primeColor hover:bg-black text-gray-200 hover:text-white cursor-pointer w-full text-base font-medium h-10 rounded-md  duration-300"
                 >
                   Sign In
@@ -122,6 +132,12 @@ const SignIn = () => {
                   </Link>
                 </p>
               </div>
+              {error && (
+                <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
+                  <span className="font-bold italic mr-1">!</span>
+                  {error}
+                </p>
+              )}
             </div>
           </form>
         )}

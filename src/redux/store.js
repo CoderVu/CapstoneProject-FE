@@ -13,10 +13,14 @@ import {
 import storage from "redux-persist/lib/storage";
 import orebiReducer from "./orebiSlice";
 import productReducer from "./reducers/productReducer";
+import productDetailReducer from "./reducers/productDetailReducer";
+import authReducer from "./reducers/authReducer"; // Import the authReducer
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
   product: productReducer,
+  productDetail: productDetailReducer,
+  auth: authReducer,
 });
 
 const persistConfig = {

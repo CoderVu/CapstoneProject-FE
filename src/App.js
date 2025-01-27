@@ -18,7 +18,7 @@ import Contact from "./pages/Contact/Contact";
 import Home from "./pages/Home/Home";
 import Offer from "./pages/Offer/Offer";
 import Payment from "./pages/payment/Payment";
-import ProductDetails from "./pages/ProductDetails/ProductDetails";
+import ProductDetails from "../src/components/pageProps/productDetails/ProductDetails";
 import Shop from "./pages/Shop/Shop";
 import Test from "./components/home/Products/test";
 
@@ -27,7 +27,6 @@ const Layout = () => {
     <div>
       <Header />
       <HeaderBottom />
-
       <ScrollRestoration />
       <Outlet />
       <Footer />
@@ -47,7 +46,7 @@ const router = createBrowserRouter(
     
         {/* ==================== Header Navlink End here ===================== */}
         <Route path="/offer" element={<Offer />}></Route>
-        <Route path="/product/:_id" element={<ProductDetails />}></Route>
+        <Route path="/product/:id" element={<ProductDetails />}></Route>
         <Route path="/cart" element={<Cart />}></Route>
         <Route path="/paymentgateway" element={<Payment />}></Route>
       </Route>

@@ -9,31 +9,23 @@ import { addToCart } from "../../../redux/orebiSlice";
 
 const Product = (props) => {
   const dispatch = useDispatch();
-  const _id = props.productName;
-  const idString = (_id) => {
-    return String(_id).toLowerCase().split(" ").join("");
-  };
-  const rootId = idString(_id);
-
   const navigate = useNavigate();
-  const productItem = props;
-
-  console.log("Product props:", props); // Add this line to check props
-
   const handleProductDetails = () => {
-    navigate(`/product/${rootId}`, {
+    if (!props.id) {
+      console.error("ID is missing for the product.");
+      return;
+    }
+    navigate(`/product/${props.id}`, {
       state: {
-        item: productItem,
+        item: props,
       },
     });
   };
-
+  
   return (
     <div className="w-full relative group">
-      <div className="max-w-80 max-h-80 relative overflow-y-hidden ">
-        <div>
-          <Image className="w-full h-full" imgSrc={props.img} />
-        </div>
+      <div className="max-w-80 max-h-80 relative overflow-y-hidden">
+        <Image className="w-full h-full" imgSrc={props.img} />
         <div className="absolute top-6 left-8">
           {props.badge && <Badge text="New" />}
         </div>
@@ -43,7 +35,7 @@ const Product = (props) => {
               onClick={() =>
                 dispatch(
                   addToCart({
-                    _id: props._id,
+                    id: props.id,
                     name: props.productName,
                     quantity: 1,
                     image: props.img,

@@ -6,27 +6,27 @@ const Color = () => {
   const [showColors, setShowColors] = useState(true);
   const colors = [
     {
-      _id: 9001,
+      id: 9001,
       title: "Green",
       base: "#22c55e",
     },
     {
-      _id: 9002,
+      id: 9002,
       title: "Gray",
       base: "#a3a3a3",
     },
     {
-      _id: 9003,
+      id: 9003,
       title: "Red",
       base: "#dc2626",
     },
     {
-      _id: 9004,
+      id: 9004,
       title: "Yellow",
       base: "#f59e0b",
     },
     {
-      _id: 9005,
+      id: 9005,
       title: "Blue",
       base: "#3b82f6",
     },
@@ -49,7 +49,7 @@ const Color = () => {
           <ul className="flex flex-col gap-4 text-sm lg:text-base text-[#767676]">
             {colors.map((item) => (
               <li
-                key={item._id}
+                key={item.id}
                 className="border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2"
               >
                 <span
