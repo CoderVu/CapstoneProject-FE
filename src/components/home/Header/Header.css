@@ -1,0 +1,16 @@
+.navbar {
+    overflow: hidden;
+  }
+  
+  .navbar a {
+    float: left;
+    border-right: none; 
+  }
+  
+  .navbar a:hover {
+    background-color: #ddd;
+  }
+  
+  .navbar a.active {
+    color: white;
+  }
