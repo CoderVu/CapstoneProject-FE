@@ -2,7 +2,7 @@ import types from "../types";
 import { fetchAllProducts, fetchProductDetail } from "../service/productService";
 
 // Action to fetch the list of products
-export const getProducts = (page = 0, size = 10) => async (dispatch) => {
+export const getProducts = (page, size) => async (dispatch) => {
   dispatch({ type: types.FETCH_PRODUCT_REQUEST });
   try {
     const data = await fetchAllProducts(page, size);

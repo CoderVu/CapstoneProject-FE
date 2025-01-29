@@ -1,12 +1,11 @@
 import axios from "../setup/axios"; 
 
-const fetchAllProducts = async (page = 0, size = 10) => {
+const fetchAllProducts = async (page, size) => {
     try {
         const response = await axios({
             method: 'GET',
-            url: '/api/v1/public/products',
-            params: { page, size }, // Thêm query parameters cho phân trang
-        });
+            url: `/api/v1/public/products?page=${page}&size=${size}`,
+        }); 
 
         // Trích xuất dữ liệu cần thiết từ response
         const { data } = response.data;
@@ -25,7 +24,6 @@ const fetchProductDetail = async (productId) => {
             url: `/api/v1/public/products/${productId}`,
         });
         const { data } = response.data;
-        console.log("Product detail:", data);
         return data;
     } catch (error) {
         console.error("Error fetching product detail:", error);

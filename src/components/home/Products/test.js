@@ -1,88 +1,217 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getProducts } from "../../../redux/actions/productActions";
+import React, { useState } from 'react';
+import axios from 'axios';
+import './Test.css';
 
 const Test = () => {
-  const dispatch = useDispatch();
-  const products = useSelector((state) => state.product.products || []);
-  const loading = useSelector((state) => state.product.loading);
-  const error = useSelector((state) => state.product.error);
-  
-  // States for pagination
-  const [page, setPage] = useState(0); // current page
-  const [size, setSize] = useState(1); // number of items per page
+  const [productName, setProductName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [brandId, setBrandId] = useState('');
+  const [newProduct, setNewProduct] = useState(false);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [variants, setVariants] = useState([{ sizeId: '', colorId: '' }]);
 
-  useEffect(() => {
-    dispatch(getProducts(page, size)); // Fetch products based on page and size
-  }, [dispatch, page, size]);
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage); // Update the page state
+  // Handle file input change
+  const handleFileChange = (e) => {
+    setImageFiles(Array.from(e.target.files));
   };
 
-  const handleSizeChange = (event) => {
-    setSize(Number(event.target.value)); // Update the size state
+  // Handle variant change
+  const handleVariantChange = (index, e) => {
+    const updatedVariants = [...variants];
+    updatedVariants[index][e.target.name] = e.target.value;
+    setVariants(updatedVariants);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // Add a new variant
+  const handleAddVariant = () => {
+    setVariants([...variants, { sizeId: '', colorId: '' }]);
+  };
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // Remove a variant
+  const handleRemoveVariant = (index) => {
+    const updatedVariants = variants.filter((_, i) => i !== index);
+    setVariants(updatedVariants);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Simple validation check before submission
+    if (!productName || !description || !price || !categoryId || !brandId) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('productName', productName);
+    formData.append('description', description);
+    formData.append('price', price);
+    formData.append('categoryName', categoryId);
+    formData.append('brandName', brandId);
+    formData.append('newProduct', newProduct);
+
+    // Append image files
+    imageFiles.forEach((file) => {
+      formData.append('imageFiles', file);
+    });
+
+    formData.append('variants', JSON.stringify(variants));
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/v1/admin/products/add', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 201) {
+        alert('Product added successfully!');
+      } else {
+        alert('Failed to add product.');
+      }
+    } catch (error) {
+      console.error('Error occurred:', error);
+      alert('An error occurred while adding the product.');
+    }
+  };
 
   return (
-    <div>
-      <h1>Products</h1>
-
-      {/* Controls for page and size */}
-      <div>
-        <label>Items per page: </label>
-        <select value={size} onChange={handleSizeChange}>
-          <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-            <option value={4}>4</option>
-            <option value={5}>5</option>
-            <option value={6}>6</option>
-            <option value={7}>7</option>
-            <option value={8}>8</option>
-            <option value={9}>9</option>
-            <option value={10}>10</option>
-            
-        </select>
+    <form onSubmit={handleSubmit} className="product-form">
+      <div className="form-group">
+        <label>Product Name:</label>
+        <input
+          type="text"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+          className="form-input"
+          required
+        />
       </div>
 
-      <div>
-        <button onClick={() => handlePageChange(page - 1)} disabled={page <= 0}>
-          Previous
-        </button>
-        <span>Page {page + 1}</span>
-        <button onClick={() => handlePageChange(page + 1)}>
-          Next
+      <div className="form-group">
+        <label>Description:</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="form-input"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Price:</label>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="form-input"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Category ID:</label>
+        <input
+          type="text"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          className="form-input"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Brand ID:</label>
+        <input
+          type="text"
+          value={brandId}
+          onChange={(e) => setBrandId(e.target.value)}
+          className="form-input"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>New Product:</label>
+        <input
+          type="checkbox"
+          checked={newProduct}
+          onChange={(e) => setNewProduct(e.target.checked)}
+          className="form-checkbox"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Select Images:</label>
+        <input
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          className="form-input"
+        />
+      </div>
+
+      {/* Show selected images */}
+      {imageFiles.length > 0 && (
+        <div className="selected-images">
+          <h4>Selected Images:</h4>
+          <div className="image-preview-container">
+            {imageFiles.map((file, index) => (
+              <div key={index} className="image-preview-item">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Preview ${index + 1}`}
+                  className="preview-img"
+                />
+                <span>{file.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Variants Section */}
+      <div className="form-group">
+        <label>Variants:</label>
+        {variants.map((variant, index) => (
+          <div key={index} className="variant-group">
+            <div>
+              <label>Size:</label>
+              <input
+                type="text"
+                name="sizeId"
+                value={variant.sizeId}
+                onChange={(e) => handleVariantChange(index, e)}
+                className="form-input"
+                required
+              />
+            </div>
+            <div>
+              <label>Color:</label>
+              <input
+                type="text"
+                name="colorId"
+                value={variant.colorId}
+                onChange={(e) => handleVariantChange(index, e)}
+                className="form-input"
+                required
+              />
+            </div>
+            <button type="button" onClick={() => handleRemoveVariant(index)} className="remove-variant-btn">
+              Remove Variant
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={handleAddVariant} className="add-variant-btn">
+          Add Variant
         </button>
       </div>
 
-      <ul>
-        {Array.isArray(products) && products.length > 0 ? (
-          products.map((product) => (
-            <li key={product.id}>
-              <h2>{product.productName}</h2>
-              <p>{product.description}</p>
-              <p>Price: ${product.price}</p>
-              {product.mainImage && product.mainImage.path ? (
-                <img src={product.mainImage.path} alt={product.productName} width="100" />
-              ) : (
-                <p>No main image available</p>
-              )}
-            </li>
-          ))
-        ) : (
-          <p>No products available</p>
-        )}
-      </ul>
-    </div>
+      <button type="submit" className="submit-btn">Add Product</button>
+    </form>
   );
 };
 

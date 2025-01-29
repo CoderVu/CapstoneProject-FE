@@ -47,3 +47,8 @@ export const loginUser = (phoneNumber, password) => {
     }
   };
 };
+
+export const oauth2LoginSuccess = (user, token) => (dispatch) => {
+  localStorage.setItem('token', token);
+  dispatch({ type: types.LOGIN_SUCCESS, payload: user });
+};

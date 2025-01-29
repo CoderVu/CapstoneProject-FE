@@ -7,7 +7,7 @@ const Category = () => {
   const categories = [
     {
       id: 990,
-      title: "New Arrivals",
+      title: "New Arrivalss",
     },
     {
       id: 991,

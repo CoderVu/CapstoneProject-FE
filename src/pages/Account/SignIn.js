@@ -4,11 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
 
 const SignIn = () => {
-  // ============= Initial State Start here =============
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  // ============= Initial State End here ===============
-  // ============= Error Msg Start here =================
   const [errPhoneNumber, setErrPhoneNumber] = useState("");
   const [errPassword, setErrPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -20,23 +17,22 @@ const SignIn = () => {
   const error = useSelector((state) => state.auth.error);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  // Redirect to home page if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
-  // ============= Event Handler Start here =============
   const handlePhoneNumber = (e) => {
     setPhoneNumber(e.target.value);
     setErrPhoneNumber("");
   };
+
   const handlePassword = (e) => {
     setPassword(e.target.value);
     setErrPassword("");
   };
-  // ============= Event Handler End here ===============
+
   const handleSignIn = (e) => {
     e.preventDefault();
 
@@ -51,6 +47,10 @@ const SignIn = () => {
     if (phoneNumber && password) {
       dispatch(loginUser(phoneNumber, password));
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
   return (
@@ -122,6 +122,13 @@ const SignIn = () => {
                   className="bg-primeColor hover:bg-black text-gray-200 hover:text-white cursor-pointer w-full text-base font-medium h-10 rounded-md  duration-300"
                 >
                   Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="bg-blue-500 hover:bg-blue-700 text-white cursor-pointer w-full text-base font-medium h-10 rounded-md mt-4 duration-300"
+                >
+                  Sign In with Google
                 </button>
                 <p className="text-sm text-center font-titleFont font-medium">
                   Don't have an Account?{" "}

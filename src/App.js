@@ -12,6 +12,7 @@ import Header from "./components/home/Header/Header";
 import HeaderBottom from "./components/home/Header/HeaderBottom";
 import About from "./pages/About/About";
 import SignIn from "./pages/Account/SignIn";
+import OAuth2Callback from "./pages/Account/OAuth2Callback";
 import SignUp from "./pages/Account/SignUp";
 import Cart from "./pages/Cart/Cart";
 import Contact from "./pages/Contact/Contact";
@@ -51,6 +52,7 @@ const router = createBrowserRouter(
         <Route path="/paymentgateway" element={<Payment />}></Route>
       </Route>
       <Route path="/signup" element={<SignUp />}></Route>
+      <Route path="/oauth2/callback" element={<OAuth2Callback />}> </Route>
       <Route path="/signin" element={<SignIn />}></Route>
       <Route path="/test" element={<Test />} />
     </Route>
