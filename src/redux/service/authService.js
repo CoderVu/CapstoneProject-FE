@@ -16,7 +16,23 @@ const loginUserService = async (phoneNumber, password) => {
         throw error;
     }
 }
+const fetchOAuth2UserData = async (token) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/user/info/${token}`,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
 
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching OAuth2 user data:", error);
+        throw error;
+    }
+};
 export {
-    loginUserService
+    loginUserService,
+    fetchOAuth2UserData,
 };

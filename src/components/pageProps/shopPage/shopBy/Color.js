@@ -1,43 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavTitle from "./NavTitle";
+import { getAllColors } from "../../../../redux/actions/colorAction";
+import { useSelector, useDispatch } from "react-redux";
 
-const Color = () => {
+const Color = ({ onChange, selectedColor, setSelectedColor }) => {
   const [showColors, setShowColors] = useState(true);
-  const colors = [
-    {
-      id: 9001,
-      title: "Green",
-      base: "#22c55e",
-    },
-    {
-      id: 9002,
-      title: "Gray",
-      base: "#a3a3a3",
-    },
-    {
-      id: 9003,
-      title: "Red",
-      base: "#dc2626",
-    },
-    {
-      id: 9004,
-      title: "Yellow",
-      base: "#f59e0b",
-    },
-    {
-      id: 9005,
-      title: "Blue",
-      base: "#3b82f6",
-    },
-  ];
+  const colors = useSelector((state) => state.color.colors);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllColors());
+  }, [dispatch]);
+
+  const handleColorChange = (color) => {
+    setSelectedColor(color.id); // Update selected color for CSS highlight
+    onChange({ target: { name: "colorProduct", value: color.color } });
+  };
+
+  const handleClearColor = () => {
+    setSelectedColor(null); // Reset selected color
+    onChange({ target: { name: "colorProduct", value: "" } }); // Clear color filter
+  };
 
   return (
     <div>
-      <div
-        onClick={() => setShowColors(!showColors)}
-        className="cursor-pointer"
-      >
+      <div onClick={() => setShowColors(!showColors)} className="cursor-pointer">
         <NavTitle title="Shop by Color" icons={true} />
       </div>
       {showColors && (
@@ -50,16 +38,25 @@ const Color = () => {
             {colors.map((item) => (
               <li
                 key={item.id}
-                className="border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2"
+                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer ${
+                  selectedColor === item.id ? "bg-blue-500 text-white" : ""
+                }`}
+                onClick={() => handleColorChange(item)}
               >
                 <span
-                  style={{ background: item.base }}
-                  className={`w-3 h-3 bg-gray-500 rounded-full`}
+                  style={{ background: item.colorCode }}
+                  className={`w-3 h-3 rounded-full`}
                 ></span>
-                {item.title}
+                {item.color}
               </li>
             ))}
           </ul>
+          <button
+            onClick={handleClearColor}
+            className="mt-4 text-sm text-red-500"
+          >
+            Clear Color Filter
+          </button>
         </motion.div>
       )}
     </div>

@@ -31,7 +31,24 @@ const fetchProductDetail = async (productId) => {
     }
 }
 
+const filterProducts = async (filter) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: '/api/v1/public/products/filter',
+            params: filter,
+        });
+        const { data } = response.data;
+        console.log("Filtered products:", data);
+        return data;
+    } catch (error) {
+        console.error("Error filtering products:", error);
+        throw error;
+    }
+}
+
 export {
     fetchAllProducts,
     fetchProductDetail,
+    filterProducts,
 };

@@ -1,5 +1,5 @@
 import types from "../types";
-import { fetchAllProducts, fetchProductDetail } from "../service/productService";
+import { fetchAllProducts, fetchProductDetail , filterProducts} from "../service/productService";
 
 // Action to fetch the list of products
 export const getProducts = (page, size) => async (dispatch) => {
@@ -31,5 +31,24 @@ export const getProductDetail = (productId) => async (dispatch) => {
     });
   } catch (error) {
     dispatch({ type: types.FETCH_PRODUCT_DETAIL_ERROR, payload: error.message });
+  }
+};
+
+// Action to filter products 
+export const filterProduct = (filter) => async (dispatch) => {
+  dispatch({ type: types.FILTER_PRODUCTS_REQUEST });
+  try {
+    const data = await filterProducts(filter);
+    const { response: products, totalPages, totalElements } = data;
+    dispatch({
+      type: types.FILTER_PRODUCTS_SUCCESS,
+      payload: {
+        products,
+        totalPages,
+        totalElements,
+      },
+    });
+  } catch (error) {
+    dispatch({ type: types.FILTER_PRODUCTS_ERROR, payload: error.message });
   }
 };

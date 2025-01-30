@@ -18,6 +18,7 @@ const initialState = {
           isAuthenticated: true,
           user: action.payload,
           loading: false,
+
         };
       case 'LOGIN_FAILURE':
         return {
@@ -30,6 +31,8 @@ const initialState = {
           ...state,
           isAuthenticated: false,
           user: null,
+          loading: false,
+          error: null,
         };
       default:
         return state;

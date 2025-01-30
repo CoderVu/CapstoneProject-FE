@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { oauth2LoginSuccess } from "../../redux/actions/authActions";
+import { fetchOAuth2UserData } from "../../redux/service/authService";
 
 const OAuth2Callback = () => {
     const dispatch = useDispatch();
@@ -10,9 +11,8 @@ const OAuth2Callback = () => {
     useEffect(() => {
         const fetchOAuth2Data = async () => {
             try {
-                // Lấy token từ URL
                 const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('token'); 
+                const token = urlParams.get('token');
 
                 if (!token) {
                     console.error("Token is missing from URL");
@@ -20,36 +20,28 @@ const OAuth2Callback = () => {
                     return;
                 }
 
-                // Fetch user data using the token
-                const response = await fetch(`http://localhost:8080/api/v1/user/info/${token}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                // Use the service to fetch user data
+                const data = await fetchOAuth2UserData(token);
 
-                const data = await response.json();
-            
-                if (response.ok) {
+                if (data && data.data) {
                     const { id, email, fullName, phoneNumber, address, avatar, roles } = data.data;
                     const user = { id, email, fullName, phoneNumber, address, avatar, roles };
                     dispatch(oauth2LoginSuccess(user, token)); 
-                    navigate("/"); 
+                    navigate("/");
                 } else {
                     console.error("Failed to fetch user data:", data);
-                    navigate("/signin"); 
+                    navigate("/signin");
                 }
             } catch (error) {
                 console.error("Error fetching OAuth2 data:", error);
-                navigate("/signin"); 
+                navigate("/signin");
             }
         };
 
         fetchOAuth2Data();
     }, [dispatch, navigate]);
 
-    return <div>Loading...</div>; // Display loading while fetching data
+    return <div>Loading...</div>;
 };
 
 export default OAuth2Callback;

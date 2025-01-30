@@ -6,7 +6,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import Flex from "../../designLayouts/Flex";
 import "./HeaderBottom.css";
-import {getCategories} from "../../../redux/actions/categoryAction";
+import { getCategories } from "../../../redux/actions/categoryAction";
+import { logout } from "../../../redux/actions/authActions";
 
 const HeaderBottom = () => {
   const products = useSelector((state) => state.product.products || []);
@@ -41,9 +42,10 @@ const HeaderBottom = () => {
     return () => document.body.removeEventListener("click", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    console.log("usesr", user);
-  }, [user]);
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
   useEffect(() => {
     setFilteredProducts(
       products.filter((item) =>
@@ -107,7 +109,7 @@ const HeaderBottom = () => {
                     <Link to="/signup"><li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer">Sign Up</li></Link>
                   </>
                 ) : (
-                  <li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer">Logout</li>
+                  <li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer" onClick={handleLogout}>Logout</li>
                 )}
               </motion.ul>
             )}

@@ -16,12 +16,16 @@ import productReducer from "./reducers/productReducer";
 import productDetailReducer from "./reducers/productDetailReducer";
 import authReducer from "./reducers/authReducer"; // Import the authReducer
 import categoryReducer from "./reducers/categoryReducer";
+import colorReducer from "./reducers/colorReducer";
+import brandReducer from "./reducers/brandReducer";
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
   product: productReducer,
   productDetail: productDetailReducer,
   category : categoryReducer,
+  brand  : brandReducer,
+  color : colorReducer,
   auth: authReducer,
 });
 

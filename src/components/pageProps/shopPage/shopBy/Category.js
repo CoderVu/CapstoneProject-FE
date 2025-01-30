@@ -1,43 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavTitle from "./NavTitle";
+import { getCategories } from "../../../../redux/actions/categoryAction";
+import { useSelector, useDispatch } from "react-redux";
 
-const Category = () => {
+const Category = ({ onChange, selectedCategory, setSelectedCategory }) => {
   const [showCategories, setShowCategories] = useState(true);
-  const categories = [
-    {
-      id: 990,
-      title: "New Arrivalss",
-    },
-    {
-      id: 991,
-      title: "Sneakers",
-    },
-    {
-      id: 992,
-      title: "Boots",
-    },
-    {
-      id: 993,
-      title: "Sandals",
-    },
-    {
-      id: 994,
-      title: "Accessories",
-    },
-  ];
+  const categories = useSelector((state) => state.category.categories);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getCategories());
+  }, [dispatch]);
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category.id); // Update selected category for CSS highlight
+    onChange({ target: { name: "categoryProduct", value: category.name } });
+  };
+
+  const handleClearCategory = () => {
+    setSelectedCategory(null); // Reset selected category
+    onChange({ target: { name: "categoryProduct", value: "" } }); // Clear category filter
+  };
 
   return (
     <div>
-      {/* Header with toggle functionality */}
-      <div
-        onClick={() => setShowCategories(!showCategories)}
-        className="cursor-pointer"
-      >
+      <div onClick={() => setShowCategories(!showCategories)} className="cursor-pointer">
         <NavTitle title="Shop by Category" icons={true} />
       </div>
-      
-      {/* Conditional rendering of categories */}
       {showCategories && (
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -48,12 +38,21 @@ const Category = () => {
             {categories.map((category) => (
               <li
                 key={category.id}
-                className="border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2"
+                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer ${
+                  selectedCategory === category.id ? "bg-blue-500 text-white" : ""
+                }`}
+                onClick={() => handleCategoryChange(category)}
               >
-                {category.title}
+                {category.name}
               </li>
             ))}
           </ul>
+          <button
+            onClick={handleClearCategory}
+            className="mt-4 text-sm text-red-500"
+          >
+            Clear Category Filter
+          </button>
         </motion.div>
       )}
     </div>
