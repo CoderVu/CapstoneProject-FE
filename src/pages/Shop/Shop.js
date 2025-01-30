@@ -26,7 +26,7 @@ const Shop = () => {
 
   const itemsPerPageFromBanner = (itemsPerPage) => {
     setItemsPerPage(itemsPerPage);
-    setPage(0); // Reset to the first page when itemsPerPage changes
+    setPage(0);
   };
 
   const handlePageChange = (newPage) => {
@@ -34,7 +34,6 @@ const Shop = () => {
   };
 
   const handleViewChange = (isGridView) => {
-    console.log("View changed to:", isGridView ? "Grid" : "List");
     setIsGridView(isGridView);
   };
 
@@ -48,59 +47,67 @@ const Shop = () => {
       <Breadcrumbs title="Products" />
       <div className="w-full h-full flex pb-20 gap-10">
         <div className="w-[20%] lgl:w-[25%] hidden mdl:inline-flex h-full">
-          <ShopSideNav page={page} size={itemsPerPage} onFilterChange={handleFilterChange} />
+          <ShopSideNav onFilterChange={handleFilterChange} />
         </div>
         <div className="w-full mdl:w-[80%] lgl:w-[75%] h-full flex flex-col gap-10">
-          <ProductBanner
-            itemsPerPage={itemsPerPage}
-            page={page}
-            itemsPerPageFromBanner={itemsPerPageFromBanner}
-            onViewChange={handleViewChange}
-            products={products} // Directly pass the products from backend
-            loading={loading} // Pass the loading state
-          />
+          {totalElements > 0 ? (
+            <ProductBanner
+              itemsPerPage={itemsPerPage}
+              page={page}
+              itemsPerPageFromBanner={itemsPerPageFromBanner}
+              onViewChange={handleViewChange}
+              products={products}
+              loading={loading}
+            />
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-lg text-gray-500"></p>
+            </div>
+          )}
           {loading ? (
             <div>Loading...</div>
           ) : error ? (
             <div>Error: {error}</div>
           ) : (
             <div className="flex flex-col justify-between flex-grow">
-              <div className="flex space-x-1 justify-center items-center">
-                {/* Prev Button */}
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 0}
-                  className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                >
-                  Prev
-                </button>
-
-                {/* Page Numbers */}
-                {Array.from({ length: totalPages }, (_, index) => (
+              {totalElements > 0 && (
+                <div className="flex space-x-1 justify-center items-center">
                   <button
-                    key={index}
-                    onClick={() => handlePageChange(index)}
-                    className={`min-w-9 rounded-full py-2 px-3.5 text-center text-sm transition-all shadow-sm ${
-                      index === page
-                        ? "bg-slate-800 text-white"
-                        : "border border-slate-300 text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800"
-                    }`}
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800"
                   >
-                    {index + 1}
+                    Prev
                   </button>
-                ))}
 
-                {/* Next Button */}
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages - 1}
-                  className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800 focus:text-white focus:bg-slate-800 focus:border-slate-800 active:border-slate-800 active:text-white active:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                >
-                  Next
-                </button>
-              </div>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePageChange(index)}
+                      className={`min-w-9 rounded-full py-2 px-3.5 text-center text-sm transition-all shadow-sm ${index === page ? "bg-slate-800 text-white" : "border border-slate-300 text-slate-600"
+                        }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages - 1}
+                    className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
               <p className="text-base font-normal text-lightText mt-4">
-                Products from {page * itemsPerPage + 1} to {Math.min((page + 1) * itemsPerPage, totalElements)} of {totalElements}
+
+                {totalElements > 0 ? (
+                  `Showing ${page * itemsPerPage + 1} - ${page * itemsPerPage + products.length
+                  } of ${totalElements} products`
+                ) : (
+                  ""
+                )}
               </p>
             </div>
           )}

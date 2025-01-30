@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
+import { FcGoogle } from "react-icons/fc"; // Import biểu tượng Google từ react-icons
 
 const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -126,9 +127,9 @@ const SignIn = () => {
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
-                  className="bg-blue-500 hover:bg-blue-700 text-white cursor-pointer w-full text-base font-medium h-10 rounded-md mt-4 duration-300"
+                  className="bg-blue-500 hover:bg-blue-700 text-white cursor-pointer w-full text-base font-medium h-10 rounded-md mt-4 duration-300 flex items-center justify-center gap-2"
                 >
-                  Sign In with Google
+                  <FcGoogle className="text-xl" /> Sign In with Google
                 </button>
                 <p className="text-sm text-center font-titleFont font-medium">
                   Don't have an Account?{" "}

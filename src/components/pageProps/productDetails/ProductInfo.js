@@ -4,13 +4,17 @@ import { addToCart } from "../../../redux/orebiSlice";
 
 const ProductInfo = ({ productInfo }) => {
   const dispatch = useDispatch();
-  const [selectedColor, setSelectedColor] = useState(productInfo.variants[0]?.color || "");
-  const [selectedSize, setSelectedSize] = useState(productInfo.variants[0]?.sizeName || "");
-  const [selectedImage, setSelectedImage] = useState(null); // Quản lý ảnh được chọn
-  const [isImageModalOpen, setImageModalOpen] = useState(false); // Quản lý modal
+  const [selectedColor, setSelectedColor] = useState(
+    productInfo.variants?.[0]?.color || "" 
+  );
+  const [selectedSize, setSelectedSize] = useState(
+    productInfo.variants?.[0]?.sizeName || "" 
+  );
+  const [selectedImage, setSelectedImage] = useState(null); 
+  const [isImageModalOpen, setImageModalOpen] = useState(false); 
 
-  // Tìm variant được chọn dựa trên color và size
-  const selectedVariant = productInfo.variants.find(
+
+  const selectedVariant = productInfo.variants?.find(
     (variant) => variant.color === selectedColor && variant.sizeName === selectedSize
   );
 
@@ -63,7 +67,7 @@ const ProductInfo = ({ productInfo }) => {
         <span className="font-normal">Quantity:</span>
         <div className="flex items-center gap-2 mt-1">
           <span className="px-3 py-1 border border-gray-300 rounded-md">
-            {selectedVariant?.quantity || 0}
+            {selectedVariant?.quantity || 0} {/* Safely access quantity */}
           </span>
         </div>
       </div>
@@ -79,7 +83,7 @@ const ProductInfo = ({ productInfo }) => {
               }`}
               onClick={() => {
                 setSelectedImage(image.path);
-                setImageModalOpen(true); // Mở modal khi ảnh được chọn
+                setImageModalOpen(true); // Open modal when image is clicked
               }}
             >
               <img
@@ -91,7 +95,7 @@ const ProductInfo = ({ productInfo }) => {
           ))}
       </div>
 
-      {/* Modal xem ảnh */}
+      {/* Modal to view image */}
       {isImageModalOpen && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="relative">
@@ -102,7 +106,7 @@ const ProductInfo = ({ productInfo }) => {
             />
             <button
               className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white rounded-full text-black font-bold"
-              onClick={() => setImageModalOpen(false)} // Đóng modal
+              onClick={() => setImageModalOpen(false)} // Close modal
             >
               ✕
             </button>

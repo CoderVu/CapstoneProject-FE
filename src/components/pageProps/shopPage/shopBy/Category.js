@@ -14,19 +14,19 @@ const Category = ({ onChange, selectedCategory, setSelectedCategory }) => {
   }, [dispatch]);
 
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category.id); // Update selected category for CSS highlight
-    onChange({ target: { name: "categoryProduct", value: category.name } });
-  };
-
-  const handleClearCategory = () => {
-    setSelectedCategory(null); // Reset selected category
-    onChange({ target: { name: "categoryProduct", value: "" } }); // Clear category filter
+    if (selectedCategory === category.id) {
+      setSelectedCategory(null);
+      onChange({ target: { name: "categoryProduct", value: "" } });
+    } else {
+      setSelectedCategory(category.id);
+      onChange({ target: { name: "categoryProduct", value: category.name } });
+    }
   };
 
   return (
     <div>
       <div onClick={() => setShowCategories(!showCategories)} className="cursor-pointer">
-        <NavTitle title="Shop by Category" icons={true} />
+        <NavTitle title="Category" icons={true} />
       </div>
       {showCategories && (
         <motion.div
@@ -38,21 +38,17 @@ const Category = ({ onChange, selectedCategory, setSelectedCategory }) => {
             {categories.map((category) => (
               <li
                 key={category.id}
-                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer ${
-                  selectedCategory === category.id ? "bg-blue-500 text-white" : ""
-                }`}
+                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer relative
+    ${selectedCategory === category.id ? "font-bold text-black after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-full after:h-[2px] after:bg-blue-500" : ""}`}
                 onClick={() => handleCategoryChange(category)}
               >
                 {category.name}
               </li>
+
+
             ))}
           </ul>
-          <button
-            onClick={handleClearCategory}
-            className="mt-4 text-sm text-red-500"
-          >
-            Clear Category Filter
-          </button>
+
         </motion.div>
       )}
     </div>

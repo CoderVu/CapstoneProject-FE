@@ -3,10 +3,8 @@ import Brand from "./shopBy/Brand";
 import Category from "./shopBy/Category";
 import Color from "./shopBy/Color";
 import Price from "./shopBy/Price";
-import { useDispatch } from "react-redux";
-import { filterProduct } from "../../../redux/actions/productActions";
 
-const ShopSideNav = ({ page, size, onFilterChange }) => {
+const ShopSideNav = ({ onFilterChange }) => {
   const [filters, setFilters] = useState({
     categoryProduct: "",
     brandProduct: "",
@@ -21,18 +19,19 @@ const ShopSideNav = ({ page, size, onFilterChange }) => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
 
-  const dispatch = useDispatch();
-
-  // Handle change for filters
   const handleChange = (e) => {
-    const newFilters = {
-      ...filters,
-      [e.target.name]: e.target.value,
-    };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-    dispatch(filterProduct({ ...newFilters, page, size }));
+    if (e.target.name === "price") {
+      const { priceMin, priceMax } = e.target.value;
+      const newFilters = { ...filters, priceMin, priceMax };
+      setFilters(newFilters);
+      onFilterChange(newFilters);
+    } else {
+      const newFilters = { ...filters, [e.target.name]: e.target.value };
+      setFilters(newFilters);
+      onFilterChange(newFilters);
+    }
   };
+  
 
   const handleClearFilters = () => {
     const resetFilters = {
@@ -49,7 +48,6 @@ const ShopSideNav = ({ page, size, onFilterChange }) => {
     setSelectedColor(null);
     setSelectedPrice(null);
     onFilterChange(resetFilters);
-    dispatch(filterProduct({ ...resetFilters, page, size }));
   };
 
   return (
@@ -86,6 +84,5 @@ const ShopSideNav = ({ page, size, onFilterChange }) => {
     </div>
   );
 };
-
 
 export default ShopSideNav;

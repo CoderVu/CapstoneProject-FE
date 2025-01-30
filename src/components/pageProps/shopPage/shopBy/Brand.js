@@ -14,19 +14,20 @@ const Brand = ({ onChange, selectedBrand, setSelectedBrand }) => {
   }, [dispatch]);
 
   const handleBrandChange = (brand) => {
-    setSelectedBrand(brand.brandId); // Update selected brand for CSS highlight
-    onChange({ target: { name: "brandProduct", value: brand.brandName } });
-  };
-
-  const handleClearBrand = () => {
-    setSelectedBrand(null); // Reset selected brand
-    onChange({ target: { name: "brandProduct", value: "" } }); // Clear brand filter
+    if (selectedBrand === brand.brandId) {
+      setSelectedBrand(null);
+      onChange({ target: { name: "brandProduct", value: "" } });
+    }
+    else {
+      setSelectedBrand(brand.brandId);
+      onChange({ target: { name: "brandProduct", value: brand.brandName } });
+    }
   };
 
   return (
     <div>
       <div onClick={() => setShowBrands(!showBrands)} className="cursor-pointer">
-        <NavTitle title="Shop by Brand" icons={true} />
+        <NavTitle title="Brand" icons={true} />
       </div>
       {showBrands && (
         <motion.div
@@ -38,25 +39,18 @@ const Brand = ({ onChange, selectedBrand, setSelectedBrand }) => {
             {brands.map((item) => (
               <li
                 key={item.brandId}
-                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer ${
-                  selectedBrand === item.brandId ? "bg-blue-500 text-white" : ""
-                }`}
+                className={`border-b-[1px] border-b-[#F0F0F0] pb-2 flex items-center gap-2 cursor-pointer relative ${selectedBrand === item.brandId ? "font-bold text-black after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:w-full after:h-[2px] after:bg-blue-500" : ""
+                  }`}
                 onClick={() => handleBrandChange(item)}
               >
                 {item.brandName}
               </li>
             ))}
           </ul>
-          <button
-            onClick={handleClearBrand}
-            className="mt-4 text-sm text-red-500"
-          >
-            Clear Brand Filter
-          </button>
         </motion.div>
       )}
     </div>
   );
-};
+}
 
 export default Brand;
