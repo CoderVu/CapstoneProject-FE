@@ -64,6 +64,7 @@ const Test = () => {
       const response = await axios.post('http://localhost:8080/api/v1/admin/products/add', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          "Authorization": `Bearer ${localStorage.getItem('token')}`, // Add token to the request
         },
       });
 

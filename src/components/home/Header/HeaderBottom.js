@@ -109,7 +109,10 @@ const HeaderBottom = () => {
                     <Link to="/signup"><li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer">Sign Up</li></Link>
                   </>
                 ) : (
-                  <li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer" onClick={handleLogout}>Logout</li>
+                  <>
+                    <li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer" onClick={handleLogout}>Logout</li>
+                    <Link to="/profile"><li className="user-modal-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer">Account</li></Link>
+                  </>
                 )}
               </motion.ul>
             )}

@@ -9,6 +9,7 @@ const loginUserService = async (phoneNumber, password) => {
         });
 
         const { data } = response;
+        console.log("Login data:", data);
 
         return data;
     } catch (error) {
@@ -25,8 +26,10 @@ const fetchOAuth2UserData = async (token) => {
                 'Authorization': `Bearer ${token}`,
             },
         });
+        console.log("OAuth2 user data:", response.data);
 
         return response.data;
+
     } catch (error) {
         console.error("Error fetching OAuth2 user data:", error);
         throw error;

@@ -1,17 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import Heading from "../Products/Heading";
 import Product from "../Products/Product";
-import {
-  newArrOne,
-  newArrTwo,
-  newArrThree,
-  newArrFour,
-} from "../../../assets/images/index";
 import SampleNextArrow from "./SampleNextArrow";
 import SamplePrevArrow from "./SamplePrevArrow";
+import { fetchProductByCollection } from "../../../redux/service/productService";
 
-const NewArrivals = () => {
+const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await fetchProductByCollection(collectionId, 0, 20);
+        setProducts(data.response);
+        console.log("New arrivals:", data.response);
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [collectionId]);
+
   const settings = {
     infinite: true,
     speed: 500,
@@ -22,89 +37,38 @@ const NewArrivals = () => {
     responsive: [
       {
         breakpoint: 1025,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          infinite: true,
-        },
+        settings: { slidesToShow: 3, slidesToScroll: 1, infinite: true },
       },
       {
         breakpoint: 769,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
-          infinite: true,
-        },
+        settings: { slidesToShow: 2, slidesToScroll: 2, infinite: true },
       },
       {
         breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          infinite: true,
-        },
+        settings: { slidesToShow: 1, slidesToScroll: 1, infinite: true },
       },
     ],
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
   return (
     <div className="w-full pb-16">
       <Heading heading="New Arrivals" />
       <Slider {...settings}>
-        <div className="px-2">
-          <Product
-            id="100001"
-            img={newArrOne}
-            productName="Round Table Clock"
-            price="44.00"
-            color="Black"
-            badge={true}
-            des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-          />
-        </div>
-        <div className="px-2">
-          <Product
-            id="100002"
-            img={newArrTwo}
-            productName="Smart Watch"
-            price="250.00"
-            color="Black"
-            badge={true}
-            des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-          />
-        </div>
-        <div className="px-2">
-          <Product
-            id="100003"
-            img={newArrThree}
-            productName="cloth Basket"
-            price="80.00"
-            color="Mixed"
-            badge={true}
-            des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-          />
-        </div>
-        <div className="px-2">
-          <Product
-            id="100004"
-            img={newArrFour}
-            productName="Funny toys for babies"
-            price="60.00"
-            color="Mixed"
-            badge={false}
-            des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-          />
-        </div>
-        <div className="px-2">
-          <Product
-            id="100005"
-            img={newArrTwo}
-            productName="Funny toys for babies"
-            price="60.00"
-            color="Mixed"
-            badge={false}
-            des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-          />
-        </div>
+        {products.map((product) => (
+          <div key={product.id} className="px-2">
+            <Product
+              id={product.id}
+              img={product.mainImage?.path}
+              productName={product.productName}
+              price={product.price}
+              colors={product.variants?.map((variant) => variant.color) || []}
+              badge={product.newProduct ? "New" : ""}
+            />
+          </div>
+        ))}
       </Slider>
     </div>
   );

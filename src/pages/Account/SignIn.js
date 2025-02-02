@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
-import { FcGoogle } from "react-icons/fc"; // Import biểu tượng Google từ react-icons
+import { FcGoogle } from "react-icons/fc"; 
 
 const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");

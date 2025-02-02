@@ -7,10 +7,6 @@ import Product from "../../home/Products/Product";
 const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBanner, onViewChange, loading }) => {
   const [gridViewActive, setGridViewActive] = useState(true);
 
-  useEffect(() => {
-    console.log("Products in banner:", products);
-  }, [products]);
-
   const handleGridViewClick = () => {
     console.log("Grid view clicked");
     setGridViewActive(true);
@@ -75,13 +71,10 @@ const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBann
               id="items-per-page"
               className="w-16 md:w-20 border-[1px] border-gray-200 py-1 px-4 cursor-pointer text-primeColor text-base block dark:placeholder-gray-400 appearance-none focus-within:outline-none focus-visible:border-primeColor"
             >
-              <option value="3">3</option>
               <option value="6">6</option>
-              <option value="9">9</option>
               <option value="12">12</option>
-              <option value="15">15</option>
-              <option value="18">18</option>
-              <option value="21">21</option>
+              <option value="24">24</option>
+              <option value="48">48</option>
             </select>
 
             <span className="absolute text-sm right-3 top-2.5">

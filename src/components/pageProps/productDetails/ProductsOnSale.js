@@ -1,8 +1,14 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const ProductsOnSale = () => {
-  const productsOnSale = useSelector((state) => state.product.products.filter(product => product.onSale));
+  const navigate = useNavigate();
+  const productsOnSale = useSelector((state) => state.product.products.filter(product => product.newProduct === true));
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
 
   return (
     <div>
@@ -13,10 +19,11 @@ const ProductsOnSale = () => {
         {productsOnSale.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 border-b-[1px] border-b-gray-300 py-2"
+            className="flex items-center gap-4 border-b-[1px] border-b-gray-300 py-2 cursor-pointer"
+            onClick={() => handleProductClick(item.id)}
           >
             <div>
-              <img className="w-24" src={item.img} alt={item.img} />
+              <img className="w-24" src={item.mainImage?.path} alt={item.productName} />
             </div>
             <div className="flex flex-col gap-2 font-titleFont">
               <p className="text-base font-medium">{item.productName}</p>
