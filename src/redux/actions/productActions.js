@@ -1,5 +1,5 @@
 import types from "../types";
-import { fetchAllProducts, fetchProductDetail , filterProducts} from "../service/productService";
+import { fetchAllProducts, fetchProductDetail , filterProducts, fetchAllProductsOnSale} from "../service/productService";
 
 // Action to fetch the list of products
 export const getProducts = (page, size) => async (dispatch) => {
@@ -50,5 +50,19 @@ export const filterProduct = (filter) => async (dispatch) => {
     });
   } catch (error) {
     dispatch({ type: types.FILTER_PRODUCTS_ERROR, payload: error.message });
+  }
+};
+
+// Action to fetch products on sale
+export const getProductsOnSale = () => async (dispatch) => {
+  dispatch({ type: types.FETCH_PRODUCT_ON_SALE_REQUEST });
+  try {
+    const data = await fetchAllProductsOnSale();
+    dispatch({
+      type: types.FETCH_PRODUCT_ON_SALE_SUCCESS,
+      payload: data, 
+    });
+  } catch (error) {
+    dispatch({ type: types.FETCH_PRODUCT_ON_SALE_ERROR, payload: error.message });
   }
 };

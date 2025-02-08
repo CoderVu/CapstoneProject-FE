@@ -10,13 +10,13 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  console.log("Product ratings:", products.map(product => product.rate));
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const data = await fetchProductByCollection(collectionId, 0, 20);
         setProducts(data.response);
-        console.log("New arrivals:", data.response);
         setLoading(false);
       } catch (error) {
         setError(error);
@@ -64,8 +64,12 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) 
               img={product.mainImage?.path}
               productName={product.productName}
               price={product.price}
+              discountPrice= "80"
               colors={product.variants?.map((variant) => variant.color) || []}
               badge={product.newProduct ? "New" : ""}
+              rating={product.rate?.rating} 
+              totalRate={product.rate?.totalRate} 
+              totalSold= "100"
             />
           </div>
         ))}

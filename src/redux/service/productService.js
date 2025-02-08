@@ -64,10 +64,26 @@ const filterProducts = async (filter) => {
         throw error;
     }
 }
+const fetchAllProductsOnSale = async () => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: '/api/v1/public/products/sale',
+        });
+        const { data } = response.data;
 
+        console.log("Fetched products on sale:", data);
+
+        return data;
+    } catch (error) {
+        console.error("Error fetching products on sale:", error);
+        throw error;
+    }
+}
 export {
     fetchAllProducts,
     fetchProductDetail,
     filterProducts,
-    fetchProductByCollection
+    fetchProductByCollection,
+    fetchAllProductsOnSale,
 };

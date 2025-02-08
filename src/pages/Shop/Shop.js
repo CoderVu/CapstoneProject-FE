@@ -8,7 +8,7 @@ import { getProducts, filterProduct } from "../../redux/actions/productActions";
 const Shop = () => {
   const dispatch = useDispatch();
   const { products, totalPages, totalElements, loading, error } = useSelector((state) => state.product);
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isGridView, setIsGridView] = useState(true);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState({

@@ -1,10 +1,17 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect} from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { getProductsOnSale} from "../../../redux/actions/productActions";
 
 const ProductsOnSale = () => {
   const navigate = useNavigate();
-  const productsOnSale = useSelector((state) => state.product.products.filter(product => product.newProduct === true));
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    dispatch(getProductsOnSale());
+  }, [dispatch]);
+
+  const productsOnSale = useSelector((state) => state.product.productsOnSale);  
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);

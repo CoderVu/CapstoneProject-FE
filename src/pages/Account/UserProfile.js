@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserInfo} from '../../redux/actions/userAction';
+import { fetchUserInfo } from '../../redux/actions/userAction';
+import { FaCamera } from 'react-icons/fa';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
@@ -26,10 +27,9 @@ const UserProfile = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setAvatar(reader.result);
+                dispatch(); // Add necessary dispatch if you want to update the avatar on the server
             };
             reader.readAsDataURL(file);
-            // Dispatch action to update avatar
-            dispatch();
         }
     };
 
@@ -48,16 +48,24 @@ const UserProfile = () => {
             </div>
             <div className="w-full md:w-1/2 p-6">
                 <h1 className="text-2xl font-bold mb-6">THÔNG TIN TÀI KHOẢN</h1>
-                <div className="flex flex-col items-center">
-                    {avatar && (
-                        <img src={avatar} alt="User Avatar" className="w-32 h-32 rounded-full object-cover mb-4" />
-                    )}
-                    <input type="file" accept="image/*" onChange={handleAvatarChange} className="mb-4" />
-                    <div className="w-full">
-                        <p className="mb-2"><strong>{profile.fullName}</strong></p>
+                <div className="flex flex-col items-center relative">
+                    <div className="relative w-32 h-32 mb-4">
+                        {avatar && (
+                            <img src={avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
+                        )}
+                        <label className="absolute bottom-0 right-0 bg-gray-800 p-2 rounded-full cursor-pointer">
+                            <FaCamera className="text-white" size={20} />
+                            <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                        </label>
+                    </div>
+                    <div className="w-full text-center">
+                        <p className="mb-2 font-bold">{profile.fullName}</p>
                         <p className="mb-2">{profile.email}</p>
                         <p className="mb-2">{profile.phoneNumber}</p>
-                        <a href="#" className="hover:underline">Xem địa chỉ</a>
+                        {/* Hide password change option if methodLogin is GOOGLE */}
+                        {profile.methodLogin !== 'GOOGLE' && (
+                            <a href="#" className="text-blue-500 hover:underline">Thay đổi mật khẩu</a>
+                        )}
                     </div>
                     <div className="mt-6 w-full">
                         <textarea className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ghi chú..."></textarea>

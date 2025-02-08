@@ -71,10 +71,11 @@ const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBann
               id="items-per-page"
               className="w-16 md:w-20 border-[1px] border-gray-200 py-1 px-4 cursor-pointer text-primeColor text-base block dark:placeholder-gray-400 appearance-none focus-within:outline-none focus-visible:border-primeColor"
             >
-              <option value="6">6</option>
               <option value="12">12</option>
               <option value="24">24</option>
+              <option value="36">36</option>
               <option value="48">48</option>
+              <option value="60">60</option>
             </select>
 
             <span className="absolute text-sm right-3 top-2.5">
@@ -97,8 +98,12 @@ const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBann
               img={product.mainImage?.path}
               productName={product.productName}
               price={product.price}
+              discountPrice= "80"
               colors={product.variants.map((variant) => variant.color)}
               badge={product.newProduct ? "New" : ""}
+              rating={product.rate?.rating} 
+              totalRate={product.rate?.totalRate} 
+              totalSold= "100"
             />
           ))}
         </div>
