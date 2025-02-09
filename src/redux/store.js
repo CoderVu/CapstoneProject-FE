@@ -19,6 +19,7 @@ import categoryReducer from "./reducers/categoryReducer";
 import colorReducer from "./reducers/colorReducer";
 import brandReducer from "./reducers/brandReducer";
 import userReducer from "./reducers/userReducer";
+import rateReducer from "./reducers/rateReducer";
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   color : colorReducer,
   auth: authReducer,
   user: userReducer,
+  rating: rateReducer,
 });
 
 const persistConfig = {
