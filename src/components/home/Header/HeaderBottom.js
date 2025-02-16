@@ -13,7 +13,6 @@ const HeaderBottom = () => {
   const products = useSelector((state) => state.product.products || []);
   const categories = useSelector((state) => state.category.categories);
   const auth = useSelector((state) => state.auth.auth);
-  console.log("Authh:", auth);
   const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
 
   const navigate = useNavigate();
@@ -46,6 +45,7 @@ const HeaderBottom = () => {
     dispatch(logoutUser());
     navigate("/");
   };
+
   useEffect(() => {
     setFilteredProducts(
       products.filter((item) =>
@@ -58,6 +58,11 @@ const HeaderBottom = () => {
     console.log("User Avatar:", auth?.avatar);
   }, [auth]);
 
+  const handleCategorySelect = (category) => {
+    navigate("/shop", { state: { category } });
+    console.log("Category Selected:", category);
+  };
+
   return (
     <div className="w-full bg-[#F5F5F3] relative">
       <div className="max-w-container mx-auto">
@@ -69,7 +74,7 @@ const HeaderBottom = () => {
             {showCategories && (
               <motion.ul initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }} className="category-dropdown absolute top-full left-0 z-50 bg-white shadow-lg rounded-lg w-48 text-[#767676] h-auto p-4">
                 {categories.map((category) => (
-                  <li key={category.id} className="category-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer">{category.name}</li>
+                  <li key={category.id} className="category-item text-gray-700 px-4 py-2 hover:bg-gray-100 duration-300 cursor-pointer" onClick={() => handleCategorySelect(category)}>{category.name}</li>
                 ))}
               </motion.ul>
             )}

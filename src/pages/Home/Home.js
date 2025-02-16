@@ -10,12 +10,20 @@ const Home = () => {
   return (
     <div className="w-full mx-auto">
       <Banner />
-      <div className="max-w-container mx-auto px-4">
+      <div className="max-w-container mx-auto mt-4">
         <Sale />
-        <NewArrivals />
-        <BestSellers />
-        <YearProduct />
-        <SpecialOffers />
+        <div className="mt-8">
+          <NewArrivals />
+        </div>
+        <div className="mt-8">
+          <BestSellers />
+        </div>
+        <div className="mt-8">
+          <YearProduct />
+        </div>
+        <div className="mt-8">
+          <SpecialOffers />
+        </div>
       </div>
     </div>
   );

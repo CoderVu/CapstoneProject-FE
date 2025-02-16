@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavTitle from "./NavTitle";
-import { getCategories } from "../../../../redux/actions/categoryAction";
+import { getCategories } from "../../../redux/actions/categoryAction";
 import { useSelector, useDispatch } from "react-redux";
 
 const Category = ({ onChange, selectedCategory, setSelectedCategory }) => {

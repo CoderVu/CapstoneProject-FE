@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Breadcrumbs from "../Breadcrumbs";
-import SampleNextArrow from "../../home/ButtonSlide/SampleNextArrow";
-import SamplePrevArrow from "../../home/ButtonSlide/SamplePrevArrow";
 import ProductInfo from "../productDetails/ProductInfo";
 import ProductsOnSale from "./ProductsOnSale";
 import { getProductDetail } from "../../../redux/actions/productActions";
@@ -29,6 +27,7 @@ const ProductDetails = () => {
     averageRating: 0,
     starCounts: [0, 0, 0, 0, 0],
   });
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -97,25 +96,26 @@ const ProductDetails = () => {
         <div className="xl:-mt-10 -mt-7">
           <Breadcrumbs title="" prevLocation={prevLocation} />
         </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
-          <div className="h-full">
-            <ProductsOnSale />
-          </div>
-          <div className="h-full xl:col-span-2 flex items-center justify-center">
-            {product.mainImage?.path ? (
+        
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
+          {/* Hình ảnh chiếm 60% */}
+          <div className="h-full md:col-span-2 xl:col-span-3 flex items-center justify-center">
+            {selectedImage || product.mainImage?.path ? (
               <img
-                className="max-w-full max-h-[400px] w-auto h-auto object-contain"
-                src={product.mainImage.path}
+                className="max-w-full max-h-[500px] w-auto h-auto object-contain"
+                src={selectedImage || product.mainImage.path}
                 alt={product.productName}
               />
             ) : (
-              <div className="w-full h-[300px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
+              <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
                 No Image Available
               </div>
             )}
           </div>
-          <div className="h-full w-full md:col-span-2 xl:col-span-3 xl:p-14 flex flex-col gap-6 justify-center">
-            <ProductInfo productInfo={product} />
+          
+          {/* Chi tiết sản phẩm chiếm 40% */}
+          <div className="h-full w-full md:col-span-1 xl:col-span-2 xl:p-14 flex flex-col gap-6 justify-center">
+            <ProductInfo productInfo={product} onImageClick={setSelectedImage} />
           </div>
         </div>
 
@@ -141,15 +141,7 @@ const ProductDetails = () => {
           {/* Biểu đồ thống kê số sao */}
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={[
-                  { star: "5 sao", count: ratingSummary.starCounts[4] },
-                  { star: "4 sao", count: ratingSummary.starCounts[3] },
-                  { star: "3 sao", count: ratingSummary.starCounts[2] },
-                  { star: "2 sao", count: ratingSummary.starCounts[1] },
-                  { star: "1 sao", count: ratingSummary.starCounts[0] },
-                ]}
-              >
+              <BarChart data={ratingSummary.starCounts.map((count, index) => ({ star: `${5 - index} sao`, count }))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="star" />
                 <YAxis allowDecimals={false} />
@@ -158,7 +150,6 @@ const ProductDetails = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-
 
           {/* Danh sách đánh giá */}
           {reviews.length > 0 ? (

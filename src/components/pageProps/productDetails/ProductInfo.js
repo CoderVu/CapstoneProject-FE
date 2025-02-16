@@ -1,29 +1,62 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../../redux/orebiSlice";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
-const ProductInfo = ({ productInfo }) => {
+const ProductInfo = ({ productInfo, onImageClick }) => {
   const dispatch = useDispatch();
   const [selectedColor, setSelectedColor] = useState(
-    productInfo.variants?.[0]?.color || "" 
+    productInfo.variants?.[0]?.color || ""
   );
   const [selectedSize, setSelectedSize] = useState(
-    productInfo.variants?.[0]?.sizeName || "" 
+    productInfo.variants?.[0]?.sizeName || ""
   );
-  const [selectedImage, setSelectedImage] = useState(null); 
-  const [isImageModalOpen, setImageModalOpen] = useState(false); 
-
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const selectedVariant = productInfo.variants?.find(
     (variant) => variant.color === selectedColor && variant.sizeName === selectedSize
   );
 
+  const handleImageClick = (imagePath) => {
+    setSelectedImage(imagePath);
+    onImageClick(imagePath);
+  };
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars.push(<FaStar key={i} className="text-yellow-500" />);
+      } else if (i - 0.5 === rating) {
+        stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
+      } else {
+        stars.push(<FaRegStar key={i} className="text-gray-400" />);
+      }
+    }
+    return stars;
+  };
+
   return (
     <div className="flex flex-col gap-y-4">
       <h2 className="text-3xl font-semibold">{productInfo.productName}</h2>
-      <p className="text-lg font-semibold">${productInfo.price}</p>
+
+      {/* Rating */}
+      <div className="flex items-center gap-2">
+        <div className="flex">{renderStars(productInfo.rating || 4)}</div>
+        <p className="text-gray-500 text-sm">({productInfo.reviewCount || 4} đánh giá)</p>
+      </div>
+
+      {/* Giá sản phẩm */}
+      <div className="flex items-center gap-2">
+        <p className="text-red-600 text-2xl font-bold">{productInfo.discountPrice}đ</p>
+        <p className="text-gray-500 line-through">{productInfo.price}đ</p>
+        <span className="bg-red-600 text-white px-2 py-1 text-sm font-bold rounded">
+          -{Math.round(((productInfo.price - productInfo.discountPrice) / productInfo.price) * 100)}%
+        </span>
+      </div>
+
       <p className="text-base text-gray-600">{productInfo.description}</p>
       <p className="text-sm text-gray-500">Be the first to leave a review.</p>
+
 
       {/* Colors */}
       <div className="font-medium text-base">
@@ -33,9 +66,8 @@ const ProductInfo = ({ productInfo }) => {
             [...new Set(productInfo.variants.map((variant) => variant.color))].map((color, index) => (
               <span
                 key={index}
-                className={`w-6 h-6 cursor-pointer ${
-                  selectedColor === color ? "border-2 border-black" : "border border-gray-300"
-                }`}
+                className={`w-6 h-6 cursor-pointer ${selectedColor === color ? "border-2 border-black" : "border border-gray-300"
+                  }`}
                 style={{ backgroundColor: color }}
                 onClick={() => setSelectedColor(color)}
               ></span>
@@ -51,9 +83,8 @@ const ProductInfo = ({ productInfo }) => {
             [...new Set(productInfo.variants.map((variant) => variant.sizeName))].map((sizeName, index) => (
               <span
                 key={index}
-                className={`px-3 py-1 border border-gray-300 rounded-md cursor-pointer ${
-                  selectedSize === sizeName ? "bg-gray-200" : ""
-                }`}
+                className={`px-3 py-1 border border-gray-300 rounded-md cursor-pointer ${selectedSize === sizeName ? "bg-gray-200" : ""
+                  }`}
                 onClick={() => setSelectedSize(sizeName)}
               >
                 {sizeName}
@@ -78,13 +109,9 @@ const ProductInfo = ({ productInfo }) => {
           productInfo.images.map((image, index) => (
             <div
               key={index}
-              className={`w-full h-28 border rounded-md cursor-pointer overflow-hidden ${
-                selectedImage === image.path ? "border-2 border-black" : "border-gray-300"
-              }`}
-              onClick={() => {
-                setSelectedImage(image.path);
-                setImageModalOpen(true); // Open modal when image is clicked
-              }}
+              className={`w-full h-28 border rounded-md cursor-pointer overflow-hidden ${selectedImage === image.path ? "border-2 border-black" : "border-gray-300"
+                }`}
+              onClick={() => handleImageClick(image.path)}
             >
               <img
                 src={image.path}
@@ -94,25 +121,6 @@ const ProductInfo = ({ productInfo }) => {
             </div>
           ))}
       </div>
-
-      {/* Modal to view image */}
-      {isImageModalOpen && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="relative">
-            <img
-              src={selectedImage}
-              alt="Selected product"
-              className="max-w-full max-h-screen rounded-md"
-            />
-            <button
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white rounded-full text-black font-bold"
-              onClick={() => setImageModalOpen(false)} // Close modal
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Add to Cart and Buy Now Buttons */}
       <div className="flex gap-4 mt-2">

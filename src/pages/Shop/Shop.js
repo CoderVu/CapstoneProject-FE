@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
@@ -7,6 +8,7 @@ import { getProducts, filterProduct } from "../../redux/actions/productActions";
 
 const Shop = () => {
   const dispatch = useDispatch();
+  const location = useLocation(); // Để lấy dữ liệu từ URL
   const { products, totalPages, totalElements, loading, error } = useSelector((state) => state.product);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isGridView, setIsGridView] = useState(true);
@@ -21,9 +23,21 @@ const Shop = () => {
   });
 
   useEffect(() => {
-    dispatch(getProducts(page, itemsPerPage));
-  }, [dispatch, page, itemsPerPage]);
+    if (location.state?.category) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        categoryProduct: location.state.category.name,
+      }));
+    }
+  }, [location.state]);
 
+  useEffect(() => {
+    if (filters.categoryProduct) {
+      dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
+    } else {
+      dispatch(getProducts(page, itemsPerPage));
+    }
+  }, [dispatch, filters, page, itemsPerPage]);
   const itemsPerPageFromBanner = (itemsPerPage) => {
     setItemsPerPage(itemsPerPage);
     setPage(0);

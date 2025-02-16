@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Brand from "./shopBy/Brand";
-import Category from "./shopBy/Category";
-import Color from "./shopBy/Color";
-import Price from "./shopBy/Price";
+import Brand from "./Brand";
+import Category from "./Category";
+import Color from "./Color";
+import Price from "./Price";
 
 const ShopSideNav = ({ onFilterChange }) => {
   const [filters, setFilters] = useState({

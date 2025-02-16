@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavTitle from "./NavTitle";
-import { getAllColors } from "../../../../redux/actions/colorAction";
+import { getAllColors } from "../../../redux/actions/colorAction";
 import { useSelector, useDispatch } from "react-redux";
 
 const Color = ({ onChange, selectedColor, setSelectedColor }) => {

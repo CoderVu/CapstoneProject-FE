@@ -3,9 +3,24 @@ import logoLight from "./logoLight.png";
 import bannerImgOne from "./banner/bannerImgOne.webp";
 import bannerImgTwo from "./banner/bannerImgTwo.webp";
 import bannerImgThree from "./banner/bannerImgThree.webp";
-import saleImgOne from "./sale/saleImgOne.webp";
-import saleImgTwo from "./sale/saleImgTwo.webp";
-import saleImgThree from "./sale/saleImgThree.webp";
+import bannerImgFour from "./banner/bannerImgFour.webp";
+import bannerImgFive from "./banner/bannerImgFive.webp";
+// Sale
+import saleImgOne from "./sale/saleImg1.webp";
+import saleImgTwo from "./sale/saleImg2.webp";
+import saleImgThree from "./sale/saleImg3.webp";
+import saleImgFour from "./sale/saleImg4.webp";
+import saleImgFive from "./sale/saleImg5.webp";
+import saleImgSix from "./sale/saleImg1.webp";
+import saleImgSeven from "./sale/saleImg2.webp";
+import saleImgEight from "./sale/saleImg3.webp";
+import saleImgNine from "./sale/saleImg4.webp";
+import saleImgTen from "./sale/saleImg5.webp";
+import saleImgEleven from "./sale/saleImg6.webp";
+import saleImgTwelve from "./sale/saleImg7.webp";
+import saleImgThirteen from "./sale/saleImg7.webp";
+
+
 // ============== Products Start here ====================
 // New Arrivals
 import newArrOne from "./products/newArrival/newArrOne.webp";
@@ -31,15 +46,29 @@ import productOfTheYear from "./products/productOfTheYear.webp";
 import paymentCard from "./payment.png";
 import emptyCart from "../images/emptyCart.png";
 
+
 export {
   logo,
   logoLight,
   bannerImgOne,
   bannerImgTwo,
   bannerImgThree,
+  bannerImgFour,
+  bannerImgFive,
+  // Sale
   saleImgOne,
   saleImgTwo,
   saleImgThree,
+  saleImgFour,
+  saleImgFive,
+  saleImgSix,
+  saleImgSeven,
+  saleImgEight,
+  saleImgNine,
+  saleImgTen,
+  saleImgEleven,
+  saleImgTwelve,
+  saleImgThirteen,
   // ===================== Products start here ============
   // New Arrivals
   newArrOne,
@@ -53,7 +82,7 @@ export {
   bestSellerThree,
   bestSellerFour,
 
-  // Sprcial Offers
+  // Special Offers
   spfOne,
   spfTwo,
   spfThree,

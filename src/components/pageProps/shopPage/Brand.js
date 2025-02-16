@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavTitle from "./NavTitle";
-import { getAllBrands } from "../../../../redux/actions/brandAction";
+import { getAllBrands } from "../../../redux/actions/brandAction";
 import { useSelector, useDispatch } from "react-redux";
 
 const Brand = ({ onChange, selectedBrand, setSelectedBrand }) => {

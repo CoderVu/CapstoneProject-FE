@@ -5,55 +5,52 @@ import {
   bannerImgOne,
   bannerImgTwo,
   bannerImgThree,
+  bannerImgFour,
+  bannerImgFive
 } from "../../assets/images";
 import Image from "../designLayouts/Image";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Banner = () => {
-  const [dotActive, setDocActive] = useState(0);
+  const [dotActive, setDotActive] = useState(0);
+
+  const NextArrow = ({ onClick }) => (
+    <div
+      className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 cursor-pointer bg-gray-800 bg-opacity-50 p-2 rounded-full"
+      onClick={onClick}
+    >
+      <i className="fas fa-chevron-right text-white text-2xl"></i>
+    </div>
+  );
+
+  const PrevArrow = ({ onClick }) => (
+    <div
+      className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 cursor-pointer bg-gray-800 bg-opacity-50 p-2 rounded-full"
+      onClick={onClick}
+    >
+      <i className="fas fa-chevron-left text-white text-2xl"></i>
+    </div>
+  );
+
   const settings = {
     dots: true,
     infinite: true,
     autoplay: true,
     slidesToShow: 1,
     slidesToScroll: 1,
-    arrows: false,
-    beforeChange: (prev, next) => {
-      setDocActive(next);
-    },
+    arrows: true,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+    beforeChange: (_, next) => setDotActive(next),
     appendDots: (dots) => (
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "7%",
-          transform: "translateY(-50%)",
-        }}
-      >
-        <ul style={{ margin: "0px" }}> {dots} </ul>
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+        <ul className="flex p-0 bg-opacity-50 bg-gray-900 rounded-full px-2 py-1">{dots}</ul>
       </div>
     ),
     customPaging: (i) => (
       <div
-        style={
-          i === dotActive
-            ? {
-                width: "30px",
-                color: "#262626",
-                borderRight: "3px #262626 solid",
-                padding: "8px 0",
-                cursor: "pointer",
-              }
-            : {
-                width: "30px",
-                color: "transparent",
-                borderRight: "3px white solid",
-                padding: "8px 0",
-                cursor: "pointer",
-              }
-        }
-      >
-        0{i + 1}
-      </div>
+        className={`rounded-full ${i === dotActive ? "bg-white" : "bg-gray-400"} w-3 h-3 cursor-pointer transition-all`}
+      />
     ),
     responsive: [
       {
@@ -61,62 +58,32 @@ const Banner = () => {
         settings: {
           dots: true,
           appendDots: (dots) => (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "2%",
-                transform: "translateY(-50%)",
-              }}
-            >
-              <ul style={{ margin: "0px" }}> {dots} </ul>
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-20">
+              <ul className="flex p-0 bg-opacity-50 bg-gray-900 rounded-full px-2 py-1">{dots}</ul>
             </div>
           ),
           customPaging: (i) => (
             <div
-              style={
-                i === dotActive
-                  ? {
-                      width: "25px",
-                      color: "#262626",
-                      borderRight: "3px #262626 solid",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }
-                  : {
-                      width: "25px",
-                      color: "transparent",
-                      borderRight: "3px white solid",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }
-              }
-            >
-              0{i + 1}
-            </div>
+              className={`rounded-full ${i === dotActive ? "bg-white" : "bg-gray-400"} w-2 h-2 cursor-pointer transition-all`}
+            />
           ),
         },
       },
     ],
   };
+
   return (
-    <div className="w-full bg-white">
-      <Slider {...settings}>
-        <Link to="/offer">
-          <div>
-            <Image imgSrc={bannerImgOne} />
+    <div className="w-full bg-white overflow-hidden relative">
+      <Slider {...settings} className="w-full relative">
+        {[bannerImgOne, bannerImgTwo, bannerImgThree, bannerImgFour, bannerImgFive].map((img, index) => (
+          <div key={index} className="relative w-full">
+            <Link to="/offer" className="w-full block">
+              <div className="w-full relative flex justify-center items-center">
+                <Image imgSrc={img} className="w-full object-cover" />
+              </div>
+            </Link>
           </div>
-        </Link>
-        <Link to="/offer">
-          <div>
-            <Image imgSrc={bannerImgTwo} />
-          </div>
-        </Link>
-        <Link to="/offer">
-          <div>
-            <Image imgSrc={bannerImgThree} />
-          </div>
-        </Link>
+        ))}
       </Slider>
     </div>
   );
