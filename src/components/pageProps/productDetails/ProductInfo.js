@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../../redux/orebiSlice";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const ProductInfo = ({ productInfo, onImageClick }) => {
+const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const dispatch = useDispatch();
   const [selectedColor, setSelectedColor] = useState(
     productInfo.variants?.[0]?.color || ""
@@ -21,6 +23,7 @@ const ProductInfo = ({ productInfo, onImageClick }) => {
     setSelectedImage(imagePath);
     onImageClick(imagePath);
   };
+
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -35,14 +38,33 @@ const ProductInfo = ({ productInfo, onImageClick }) => {
     return stars;
   };
 
+  const handleAddToCart = () => {
+    dispatch(
+      addToCart({
+        id: productInfo.id,
+        name: productInfo.productName,
+        quantity: 1,
+        availableQuantity: selectedVariant?.quantity || 0,
+        image: productInfo.mainImage?.path,
+        price: productInfo.price,
+        color: selectedColor,
+        size: selectedSize,
+      })
+    );
+    toast.success("Thêm vào giỏ hàng thành công!", {
+      position: "top-right",
+    });
+  };
+
   return (
     <div className="flex flex-col gap-y-4">
+      <ToastContainer />
       <h2 className="text-3xl font-semibold">{productInfo.productName}</h2>
 
       {/* Rating */}
       <div className="flex items-center gap-2">
-        <div className="flex">{renderStars(productInfo.rating || 4)}</div>
-        <p className="text-gray-500 text-sm">({productInfo.reviewCount || 4} đánh giá)</p>
+        <div className="flex">{renderStars(productInfo.rate.rating || 0)}</div>
+        <p className="text-gray-500 text-sm">({productInfo.rate.totalRate} đánh giá)</p>
       </div>
 
       {/* Giá sản phẩm */}
@@ -56,7 +78,6 @@ const ProductInfo = ({ productInfo, onImageClick }) => {
 
       <p className="text-base text-gray-600">{productInfo.description}</p>
       <p className="text-sm text-gray-500">Be the first to leave a review.</p>
-
 
       {/* Colors */}
       <div className="font-medium text-base">
@@ -103,42 +124,10 @@ const ProductInfo = ({ productInfo, onImageClick }) => {
         </div>
       </div>
 
-      {/* Image Gallery */}
-      <div className="grid grid-cols-3 gap-2 mt-2">
-        {productInfo.images &&
-          productInfo.images.map((image, index) => (
-            <div
-              key={index}
-              className={`w-full h-28 border rounded-md cursor-pointer overflow-hidden ${selectedImage === image.path ? "border-2 border-black" : "border-gray-300"
-                }`}
-              onClick={() => handleImageClick(image.path)}
-            >
-              <img
-                src={image.path}
-                alt={`Product image ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-      </div>
-
       {/* Add to Cart and Buy Now Buttons */}
       <div className="flex gap-4 mt-2">
         <button
-          onClick={() =>
-            dispatch(
-              addToCart({
-                id: productInfo.id,
-                name: productInfo.productName,
-                quantity: 1,
-                availableQuantity: selectedVariant?.quantity || 0,
-                image: productInfo.mainImage?.path,
-                price: productInfo.price,
-                color: selectedColor,
-                size: selectedSize,
-              })
-            )
-          }
+          onClick={handleAddToCart}
           className="flex-1 py-3 bg-primeColor hover:bg-black duration-300 text-white text-base font-titleFont"
         >
           Add to Cart

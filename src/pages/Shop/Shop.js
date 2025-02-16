@@ -4,11 +4,11 @@ import { useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
-import { getProducts, filterProduct } from "../../redux/actions/productActions";
+import { filterProduct } from "../../redux/actions/productActions";
 
 const Shop = () => {
   const dispatch = useDispatch();
-  const location = useLocation(); // Để lấy dữ liệu từ URL
+  const location = useLocation();
   const { products, totalPages, totalElements, loading, error } = useSelector((state) => state.product);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isGridView, setIsGridView] = useState(true);
@@ -32,12 +32,9 @@ const Shop = () => {
   }, [location.state]);
 
   useEffect(() => {
-    if (filters.categoryProduct) {
-      dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
-    } else {
-      dispatch(getProducts(page, itemsPerPage));
-    }
+    dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
   }, [dispatch, filters, page, itemsPerPage]);
+
   const itemsPerPageFromBanner = (itemsPerPage) => {
     setItemsPerPage(itemsPerPage);
     setPage(0);
@@ -57,13 +54,13 @@ const Shop = () => {
   };
 
   return (
-    <div className="max-w-container mx-auto px-4">
+    <div className="max-w-container mx-auto px-3">
       <Breadcrumbs title="Products" />
       <div className="w-full h-full flex pb-20 gap-10">
-        <div className="w-[20%] lgl:w-[25%] hidden mdl:inline-flex h-full">
+        <div className="w-[15%] lgl:w-[15%] hidden mdl:inline-flex h-full">
           <ShopSideNav onFilterChange={handleFilterChange} />
         </div>
-        <div className="w-full mdl:w-[80%] lgl:w-[75%] h-full flex flex-col gap-10">
+        <div className="w-full mdl:w-[80%] lgl:w-[95%] h-full flex flex-col gap-10">
           {totalElements > 0 ? (
             <ProductBanner
               itemsPerPage={itemsPerPage}
@@ -115,9 +112,8 @@ const Shop = () => {
                 </div>
               )}
               <p className="text-base font-normal text-lightText mt-4">
-
                 {totalElements > 0 ? (
-                  `Showing ${page * itemsPerPage + 1} - ${page * itemsPerPage + products.length
+                  `Showing ${page * itemsPerPage + 1} - ${page * itemsPerPage + (products ? products.length : 0)
                   } of ${totalElements} products`
                 ) : (
                   ""

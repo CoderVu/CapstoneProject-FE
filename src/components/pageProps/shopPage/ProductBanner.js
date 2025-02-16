@@ -88,7 +88,7 @@ const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBann
       {/* Product list */}
       {!loading && (
         <div
-          className={`grid ${gridViewActive ? "grid-cols-3 gap-6" : "grid-cols-1 gap-4"
+          className={`grid ${gridViewActive ? "grid-cols-4 gap-6" : "grid-cols-1 gap-4"
             }`}
         >
           {products.map((product) => (
@@ -98,12 +98,12 @@ const ProductBanner = ({ products = [], itemsPerPage, page, itemsPerPageFromBann
               img={product.mainImage?.path}
               productName={product.productName}
               price={product.price}
-              discountPrice= "80"
+              discountPrice="80"
               colors={product.variants.map((variant) => variant.color)}
               badge={product.newProduct ? "New" : ""}
-              rating={product.rate?.rating} 
-              totalRate={product.rate?.totalRate} 
-              totalSold= "100"
+              rating={product.rate?.rating}
+              totalRate={product.rate?.totalRate}
+              totalSold="100"
             />
           ))}
         </div>

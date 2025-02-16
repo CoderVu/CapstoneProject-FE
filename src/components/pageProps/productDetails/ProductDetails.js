@@ -8,6 +8,8 @@ import ProductInfo from "../productDetails/ProductInfo";
 import ProductsOnSale from "./ProductsOnSale";
 import { getProductDetail } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
+import ProductTabs from "./ProductTabs";
+import "../productDetails/productDetails.css"; // Import the CSS file
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -28,6 +30,7 @@ const ProductDetails = () => {
     starCounts: [0, 0, 0, 0, 0],
   });
   const [selectedImage, setSelectedImage] = useState(null);
+  const [slideDirection, setSlideDirection] = useState("left");
 
   useEffect(() => {
     if (id) {
@@ -87,6 +90,11 @@ const ProductDetails = () => {
     dispatch(getRating(id, nextPage, size));
   };
 
+  const handleImageClick = (imagePath) => {
+    setSlideDirection(selectedImage ? "left" : "right");
+    setSelectedImage(imagePath);
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -96,31 +104,57 @@ const ProductDetails = () => {
         <div className="xl:-mt-10 -mt-7">
           <Breadcrumbs title="" prevLocation={prevLocation} />
         </div>
-        
+
         <div className="w-full grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
           {/* Hình ảnh chiếm 60% */}
-          <div className="h-full md:col-span-2 xl:col-span-3 flex items-center justify-center">
-            {selectedImage || product.mainImage?.path ? (
-              <img
-                className="max-w-full max-h-[500px] w-auto h-auto object-contain"
-                src={selectedImage || product.mainImage.path}
-                alt={product.productName}
-              />
-            ) : (
-              <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
-                No Image Available
+          <div className="h-full md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center">
+            <div className="image-container">
+              <div className={`image-slide ${slideDirection === "left" ? "slide-left" : "slide-right"}`}>
+                {selectedImage || product.mainImage?.path ? (
+                  <img
+                    src={selectedImage || product.mainImage.path}
+                    alt={product.productName}
+                  />
+                ) : (
+                  <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
+                    No Image Available
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Image Gallery */}
+            <div className="thumbnail-container mt-2">
+              {product.images &&
+                product.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`thumbnail ${selectedImage === image.path ? "selected" : ""}`}
+                    onClick={() => handleImageClick(image.path)}
+                  >
+                    <img
+                      src={image.path}
+                      alt={`Product image ${index + 1}`}
+                    />
+                  </div>
+                ))}
+            </div>
           </div>
-          
+
           {/* Chi tiết sản phẩm chiếm 40% */}
           <div className="h-full w-full md:col-span-1 xl:col-span-2 xl:p-14 flex flex-col gap-6 justify-center">
-            <ProductInfo productInfo={product} onImageClick={setSelectedImage} />
+            <ProductInfo productInfo={product} onImageClick={handleImageClick} />
           </div>
         </div>
+        {/* ProductTabs */}
+        <div className="w-full bg-white p-4 rounded-lg shadow-md mt-8">
+          <ProductTabs product={product} />
+        </div>
+
 
         {/* Thống kê đánh giá */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
+
           <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
           <div className="flex items-center mb-4">
             <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating}/5</div>

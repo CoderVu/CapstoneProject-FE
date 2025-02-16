@@ -1,0 +1,79 @@
+.image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .image-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .image-slide img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+   
+  }
+  
+  .thumbnail-container {
+    display: flex;
+    gap: 0.5rem;
+    overflow: hidden; /* Chặn cuộn */
+    clip-path: inset(0 0 0 0); /* Ẩn phần cuộn bị dư */
+}
+
+  
+  .thumbnail-container::-webkit-scrollbar {
+    display: none;
+    scrollbar-width: none;
+  }
+  
+  .thumbnail {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 80px;
+    overflow-x: hidden; /* Ẩn cuộn ngang */
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  
+  .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .thumbnail.selected {
+    border: 2px solid black;
+  }
+  .product-tabs {
+    width: 100%;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    overflow: hidden;
+  }
+  
+  .product-tabs .tab-content {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  /* Đảm bảo không ảnh hưởng đến phần hình ảnh */
+  .product-tabs img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  
