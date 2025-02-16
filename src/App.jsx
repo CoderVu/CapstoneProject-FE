@@ -6,6 +6,7 @@ import {
   Route,
   ScrollRestoration,
 } from "react-router-dom";
+import AdminRoute from "./components/Auth/AdminRoute";
 import Footer from "./components/home/Footer/Footer";
 import FooterBottom from "./components/home/Footer/FooterBottom";
 import Header from "./components/home/Header/Header";
@@ -19,10 +20,12 @@ import Contact from "./pages/Contact/Contact";
 import Home from "./pages/Home/Home";
 import Offer from "./pages/Offer/Offer";
 import Payment from "./pages/payment/Payment";
-import ProductDetails from "../src/components/pageProps/productDetails/ProductDetails";
+import ProductDetails from "./components/pageProps/productDetails/ProductDetails";
 import Shop from "./pages/Shop/Shop";
-import Test from "./components/home/Products/test";
+import Dashboard from "./pages/Admin/Home/Dashboard";
+import AdminLayout from "./pages/Admin/Layout/AdminLayout";
 import UserProfile from "./pages/Account/UserProfile";
+import Products from "./pages/Admin/Products";
 
 const Layout = () => {
   return (
@@ -40,25 +43,30 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
       <Route path="/" element={<Layout />}>
-        {/* ==================== Header Navlink Start here =================== */}
-        <Route index element={<Home />}></Route>
-        <Route path="/shop" element={<Shop />}></Route>
-        <Route path="/about" element={<About />}></Route>
-        <Route path="/contact" element={<Contact />}></Route>
-    
-        {/* ==================== Header Navlink End here ===================== */}
-        <Route path="/offer" element={<Offer />}></Route>
-        <Route path="/product/:id" element={<ProductDetails />}></Route>
-        <Route path="/cart" element={<Cart />}></Route>
-        <Route path="/paymentgateway" element={<Payment />}></Route>
-        <Route path="/profile" element={<UserProfile />}></Route>
-  
+        <Route index element={<Home />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/offer" element={<Offer />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/paymentgateway" element={<Payment />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Route>
-   
-      <Route path="/signup" element={<SignUp />}></Route>
-      <Route path="/oauth2/callback" element={<OAuth2Callback />}> </Route>
-      <Route path="/signin" element={<SignIn />}></Route>
-      <Route path="/test" element={<Test />} />
+
+      {/* Route đăng nhập & đăng ký */}
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/signin" element={<SignIn />} />
+
+      {/* Route Admin cần bảo vệ */}
+      <Route path="/admin" element={<AdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="home" element={<Dashboard />} />
+          <Route path="products" element={<Products />} />
+          {/* Thêm các trang admin khác nếu cần */}
+        </Route>
+      </Route>
     </Route>
   )
 );

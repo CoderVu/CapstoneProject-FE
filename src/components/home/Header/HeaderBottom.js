@@ -7,12 +7,13 @@ import { useSelector, useDispatch } from "react-redux";
 import Flex from "../../designLayouts/Flex";
 import "./HeaderBottom.css";
 import { getCategories } from "../../../redux/actions/categoryAction";
-import { logout } from "../../../redux/actions/authActions";
+import { logoutUser } from "../../../redux/actions/authActions";
 
 const HeaderBottom = () => {
   const products = useSelector((state) => state.product.products || []);
   const categories = useSelector((state) => state.category.categories);
-  const user = useSelector((state) => state.auth.user);
+  const auth = useSelector((state) => state.auth.auth);
+  console.log("Authh:", auth);
   const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
 
   const navigate = useNavigate();
@@ -25,7 +26,6 @@ const HeaderBottom = () => {
   const categoriesRef = useRef(null);
   const userMenuRef = useRef(null);
   useEffect(() => {
-
     dispatch(getCategories());
   }, [dispatch]);
 
@@ -43,7 +43,7 @@ const HeaderBottom = () => {
   }, []);
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     navigate("/");
   };
   useEffect(() => {
@@ -53,6 +53,10 @@ const HeaderBottom = () => {
       )
     );
   }, [searchQuery, products]);
+
+  useEffect(() => {
+    console.log("User Avatar:", auth?.avatar);
+  }, [auth]);
 
   return (
     <div className="w-full bg-[#F5F5F3] relative">
@@ -94,8 +98,8 @@ const HeaderBottom = () => {
           {/* User & Cart Icons */}
           <div className="header-bottom-icons flex gap-4 mt-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
             <div onClick={() => setShowUserMenu(!showUserMenu)} ref={userMenuRef} className="flex items-center gap-2">
-              {isLoggedIn && user?.avatar ? (
-                <img src={user.avatar} alt="User Avatar" className="w-8 h-8 rounded-full object-cover" />
+              {isLoggedIn && auth?.avatar ? (
+                <img src={auth.avatar} alt="User Avatar" className="w-8 h-8 rounded-full object-cover" />
               ) : (
                 <FaUser />
               )}

@@ -14,11 +14,10 @@ import storage from "redux-persist/lib/storage";
 import orebiReducer from "./orebiSlice";
 import productReducer from "./reducers/productReducer";
 import productDetailReducer from "./reducers/productDetailReducer";
-import authReducer from "./reducers/authReducer"; // Import the authReducer
+import authReducer from "./reducers/authReducer"; 
 import categoryReducer from "./reducers/categoryReducer";
 import colorReducer from "./reducers/colorReducer";
 import brandReducer from "./reducers/brandReducer";
-import userReducer from "./reducers/userReducer";
 import rateReducer from "./reducers/rateReducer";
 
 const rootReducer = combineReducers({
@@ -29,7 +28,6 @@ const rootReducer = combineReducers({
   brand  : brandReducer,
   color : colorReducer,
   auth: authReducer,
-  user: userReducer,
   rating: rateReducer,
 });
 

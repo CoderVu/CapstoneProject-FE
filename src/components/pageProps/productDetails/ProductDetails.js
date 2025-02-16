@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Breadcrumbs from "../Breadcrumbs";
+import SampleNextArrow from "../../home/ButtonSlide/SampleNextArrow";
+import SamplePrevArrow from "../../home/ButtonSlide/SamplePrevArrow";
 import ProductInfo from "../productDetails/ProductInfo";
 import ProductsOnSale from "./ProductsOnSale";
 import { getProductDetail } from "../../../redux/actions/productActions";
@@ -139,7 +141,15 @@ const ProductDetails = () => {
           {/* Biểu đồ thống kê số sao */}
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ratingSummary.starCounts.map((count, index) => ({ star: `${5 - index} sao`, count }))}>
+              <BarChart
+                data={[
+                  { star: "5 sao", count: ratingSummary.starCounts[4] },
+                  { star: "4 sao", count: ratingSummary.starCounts[3] },
+                  { star: "3 sao", count: ratingSummary.starCounts[2] },
+                  { star: "2 sao", count: ratingSummary.starCounts[1] },
+                  { star: "1 sao", count: ratingSummary.starCounts[0] },
+                ]}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="star" />
                 <YAxis allowDecimals={false} />
@@ -148,6 +158,7 @@ const ProductDetails = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+
 
           {/* Danh sách đánh giá */}
           {reviews.length > 0 ? (

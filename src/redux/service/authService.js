@@ -17,7 +17,8 @@ const loginUserService = async (phoneNumber, password) => {
         throw error;
     }
 }
-const fetchOAuth2UserData = async (token) => {
+
+const fetchUserData = async (token) => {
     try {
         const response = await axios({
             method: 'GET',
@@ -26,16 +27,25 @@ const fetchOAuth2UserData = async (token) => {
                 'Authorization': `Bearer ${token}`,
             },
         });
-        console.log("OAuth2 user data:", response.data);
-
         return response.data;
-
     } catch (error) {
-        console.error("Error fetching OAuth2 user data:", error);
+        console.error("Error fetching user data:", error);
         throw error;
     }
 };
+const logoutUserService = () => {
+    try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        console.log("User logged out successfully");
+    } catch (error) {
+        console.error("Error logging out user:", error);
+        throw error;
+    }
+};
+
 export {
     loginUserService,
-    fetchOAuth2UserData,
+    fetchUserData,
+    logoutUserService,
 };

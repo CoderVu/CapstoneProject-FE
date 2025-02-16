@@ -11,18 +11,24 @@ const SignIn = () => {
   const [errPassword, setErrPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loading = useSelector((state) => state.auth.loading);
   const error = useSelector((state) => state.auth.error);
+  const auth = useSelector(state => state.auth.auth);
+
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      const isAdmin = auth?.role?.name === "ROLE_ADMIN";
+      if (isAdmin) {
+        navigate("/admin/test");
+      } else {
+        navigate("/");
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, auth, navigate]);
 
   const handlePhoneNumber = (e) => {
     setPhoneNumber(e.target.value);

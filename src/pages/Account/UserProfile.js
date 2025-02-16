@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserInfo } from '../../redux/actions/userAction';
+import { fetchUserInfo } from '../../redux/actions/authActions';
 import { FaCamera } from 'react-icons/fa';
 
 const UserProfile = () => {
     const dispatch = useDispatch();
-    const { profile, loading, error } = useSelector(state => state.user);
+    const { auth, loading, error } = useSelector(state => state.auth);
     const [avatar, setAvatar] = useState(null);
-
+    const profile = auth || {};
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -16,11 +16,10 @@ const UserProfile = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        if (profile) {
+        if (profile.avatar) {
             setAvatar(profile.avatar);
         }
-    }, [profile]);
-
+    }, [profile.avatar]);
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {

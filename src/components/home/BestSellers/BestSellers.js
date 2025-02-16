@@ -1,55 +1,69 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Slider from "react-slick";
 import Heading from "../Products/Heading";
 import Product from "../Products/Product";
-import {
-  bestSellerOne,
-  bestSellerTwo,
-  bestSellerThree,
-  bestSellerFour,
-} from "../../../assets/images/index";
+import SampleNextArrow from "../ButtonSlide/SampleNextArrow";
+import SamplePrevArrow from "../ButtonSlide/SamplePrevArrow";
+import { fetchProductByCollection } from "../../../redux/service/productService";
 
-const BestSellers = () => {
+const BestSellers = ({ collectionId = "cef76a21-1fae-4454-b353-b8c9c1833a3b" }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await fetchProductByCollection(collectionId, 0, 20);
+        setProducts(data.response);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [collectionId]);
+
+  const settings = {
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    nextArrow: <SampleNextArrow />,
+    prevArrow: <SamplePrevArrow />,
+    responsive: [
+      { breakpoint: 1025, settings: { slidesToShow: 3, slidesToScroll: 1 } },
+      { breakpoint: 769, settings: { slidesToShow: 2, slidesToScroll: 2 } },
+      { breakpoint: 480, settings: { slidesToShow: 1, slidesToScroll: 1 } },
+    ],
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">Error: {error.message}</div>;
+
   return (
-    <div className="w-full pb-20">
+    <div className="w-full pb-16">
       <Heading heading="Our Bestsellers" />
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lgl:grid-cols-3 xl:grid-cols-4 gap-10">
-        <Product
-          id="1011"
-          img={bestSellerOne}
-          productName="Flower Base"
-          price="35.00"
-          color="Blank and White"
-          badge={true}
-          des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-        />
-        <Product
-          id="1012"
-          img={bestSellerTwo}
-          productName="New Backpack"
-          price="180.00"
-          color="Gray"
-          badge={false}
-          des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-        />
-        <Product
-          id="1013"
-          img={bestSellerThree}
-          productName="Household materials"
-          price="25.00"
-          color="Mixed"
-          badge={true}
-          des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-        />
-        <Product
-          id="1014"
-          img={bestSellerFour}
-          productName="Travel Bag"
-          price="220.00"
-          color="Black"
-          badge={false}
-          des="Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic excepturi quibusdam odio deleniti reprehenderit facilis."
-        />
-      </div>
+      <Slider {...settings}>
+        {products.map((product) => (
+          <div key={product.id} className="px-2">
+            <Product
+              id={product.id}
+              img={product.mainImage?.path}
+              productName={product.productName}
+              price={product.price}
+              discountPrice="80"
+              colors={product.variants?.map((variant) => variant.color) || []}
+              badge={product.bestSeller ? "Best Seller" : ""}
+              rating={product.rate?.rating}
+              totalRate={product.rate?.totalRate}
+              totalSold="100"
+            />
+          </div>
+        ))}
+      </Slider>
     </div>
   );
 };

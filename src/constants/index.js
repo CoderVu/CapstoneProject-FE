@@ -1,17 +1,3 @@
-import {
-  spfOne,
-  spfTwo,
-  spfThree,
-  spfFour,
-  bestSellerOne,
-  bestSellerTwo,
-  bestSellerThree,
-  bestSellerFour,
-  newArrOne,
-  newArrTwo,
-  newArrThree,
-  newArrFour,
-} from "../assets/images/index";
 
 // =================== NavBarList Start here ====================
 export const navBarList = [

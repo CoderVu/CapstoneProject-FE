@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import Heading from "../Products/Heading";
 import Product from "../Products/Product";
-import SampleNextArrow from "./SampleNextArrow";
-import SamplePrevArrow from "./SamplePrevArrow";
+import SampleNextArrow from "../ButtonSlide/SampleNextArrow";
+import SamplePrevArrow from "../ButtonSlide/SamplePrevArrow";
 import { fetchProductByCollection } from "../../../redux/service/productService";
 
-const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) => {
+const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22"}) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
