@@ -24,6 +24,7 @@ const rootReducer = combineReducers({
   orebi: orebiReducer,
   product: productReducer,
   productDetail: productDetailReducer,
+  productDescription: productDetailReducer,
   category : categoryReducer,
   brand  : brandReducer,
   color : colorReducer,

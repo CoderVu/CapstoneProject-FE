@@ -80,10 +80,24 @@ const fetchAllProductsOnSale = async () => {
         throw error;
     }
 }
+const fetchProductDescription = async (productId) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/${productId}/description`,
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching product description:", error);
+        throw error;
+    }
+}
 export {
     fetchAllProducts,
     fetchProductDetail,
     filterProducts,
     fetchProductByCollection,
     fetchAllProductsOnSale,
+    fetchProductDescription,
 };

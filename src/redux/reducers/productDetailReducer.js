@@ -1,7 +1,8 @@
 import types from "../types";
 
 const initialState = {
-  product: {},
+  productDetail: {},
+  productDescription: {},
   loading: false,
   error: null,
 };
@@ -13,8 +14,10 @@ const productDetailReducer = (state = initialState, action) => {
 
     case types.FETCH_PRODUCT_DETAIL_SUCCESS:
       return {
+        ...state,
         loading: false,
-        product: action.payload,
+        productDetail: action.payload.productDetail,
+        productDescription: action.payload.productDescription,
         error: null,
       };
 

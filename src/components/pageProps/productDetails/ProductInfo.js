@@ -8,14 +8,14 @@ import "react-toastify/dist/ReactToastify.css";
 const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const dispatch = useDispatch();
   const [selectedColor, setSelectedColor] = useState(
-    productInfo.variants?.[0]?.color || ""
+    productInfo?.variants?.[0]?.color || ""
   );
   const [selectedSize, setSelectedSize] = useState(
-    productInfo.variants?.[0]?.sizeName || ""
+    productInfo?.variants?.[0]?.sizeName || ""
   );
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const selectedVariant = productInfo.variants?.find(
+  const selectedVariant = productInfo?.variants?.find(
     (variant) => variant.color === selectedColor && variant.sizeName === selectedSize
   );
 
@@ -41,12 +41,12 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const handleAddToCart = () => {
     dispatch(
       addToCart({
-        id: productInfo.id,
-        name: productInfo.productName,
+        id: productInfo?.id,
+        name: productInfo?.productName,
         quantity: 1,
         availableQuantity: selectedVariant?.quantity || 0,
-        image: productInfo.mainImage?.path,
-        price: productInfo.price,
+        image: productInfo?.mainImage?.path,
+        price: productInfo?.price,
         color: selectedColor,
         size: selectedSize,
       })
@@ -59,32 +59,32 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   return (
     <div className="flex flex-col gap-y-4">
       <ToastContainer />
-      <h2 className="text-3xl font-semibold">{productInfo.productName}</h2>
+      <h2 className="text-3xl font-semibold">{productInfo?.productName}</h2>
 
       {/* Rating */}
       <div className="flex items-center gap-2">
-        <div className="flex">{renderStars(productInfo.rate.rating || 0)}</div>
-        <p className="text-gray-500 text-sm">({productInfo.rate.totalRate} đánh giá)</p>
+        <div className="flex">{renderStars(productInfo?.rate.rating || 0)}</div>
+        <p className="text-gray-500 text-sm">({productInfo?.rate.totalRate} đánh giá)</p>
       </div>
 
       {/* Giá sản phẩm */}
       <div className="flex items-center gap-2">
-        <p className="text-red-600 text-2xl font-bold">{productInfo.discountPrice}đ</p>
-        <p className="text-gray-500 line-through">{productInfo.price}đ</p>
+        <p className="text-red-600 text-2xl font-bold">{productInfo?.discountPrice}đ</p>
+        <p className="text-gray-500 line-through">{productInfo?.price}đ</p>
         <span className="bg-red-600 text-white px-2 py-1 text-sm font-bold rounded">
-          -{Math.round(((productInfo.price - productInfo.discountPrice) / productInfo.price) * 100)}%
+          -{Math.round(((productInfo?.price - productInfo?.discountPrice) / productInfo?.price) * 100)}%
         </span>
       </div>
 
-      <p className="text-base text-gray-600">{productInfo.description}</p>
+      <p className="text-base text-gray-600">{productInfo?.description}</p>
       <p className="text-sm text-gray-500">Be the first to leave a review.</p>
 
       {/* Colors */}
       <div className="font-medium text-base">
         <span className="font-normal">Colors:</span>
         <div className="flex gap-x-2 gap-y-2 mt-1 flex-wrap">
-          {productInfo.variants &&
-            [...new Set(productInfo.variants.map((variant) => variant.color))].map((color, index) => (
+          {productInfo?.variants &&
+            [...new Set(productInfo?.variants.map((variant) => variant.color))].map((color, index) => (
               <span
                 key={index}
                 className={`w-6 h-6 cursor-pointer ${selectedColor === color ? "border-2 border-black" : "border border-gray-300"
@@ -100,8 +100,8 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
       <div className="font-medium text-base">
         <span className="font-normal">Size:</span>
         <div className="flex gap-x-2 gap-y-2 mt-1 flex-wrap">
-          {Array.isArray(productInfo.variants) &&
-            [...new Set(productInfo.variants.map((variant) => variant.sizeName))].map((sizeName, index) => (
+          {Array.isArray(productInfo?.variants) &&
+            [...new Set(productInfo?.variants.map((variant) => variant.sizeName))].map((sizeName, index) => (
               <span
                 key={index}
                 className={`px-3 py-1 border border-gray-300 rounded-md cursor-pointer ${selectedSize === sizeName ? "bg-gray-200" : ""

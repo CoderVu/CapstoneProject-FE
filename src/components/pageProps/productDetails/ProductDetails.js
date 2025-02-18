@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import Breadcrumbs from "../Breadcrumbs";
 import ProductInfo from "../productDetails/ProductInfo";
 import ProductsOnSale from "./ProductsOnSale";
-import { getProductDetail } from "../../../redux/actions/productActions";
+import { getProductDetailAndDescription } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
 import "../productDetails/productDetails.css"; // Import the CSS file
@@ -15,9 +15,10 @@ const ProductDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const dispatch = useDispatch();
-  const productDetail = useSelector((state) => state.productDetail);
+  const { productDetail, loading, error } = useSelector((state) => state.productDetail);
+  const productDescription = useSelector((state) => state.productDescription);
+  console.log("productDescription", productDescription);
   const ratingState = useSelector((state) => state.rating);
-  const { loading, error, product } = productDetail;
   const { rating, totalPages, totalElements } = ratingState;
   const [prevLocation, setPrevLocation] = useState("");
   const [reviews, setReviews] = useState([]);
@@ -34,7 +35,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (id) {
-      dispatch(getProductDetail(id));
+      dispatch(getProductDetailAndDescription(id));
       dispatch(getRating(id, 0, size));
     }
     setPrevLocation(location.pathname);
@@ -110,10 +111,10 @@ const ProductDetails = () => {
           <div className="h-full md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center">
             <div className="image-container">
               <div className={`image-slide ${slideDirection === "left" ? "slide-left" : "slide-right"}`}>
-                {selectedImage || product.mainImage?.path ? (
+                {selectedImage || productDetail?.mainImage?.path ? (
                   <img
-                    src={selectedImage || product.mainImage.path}
-                    alt={product.productName}
+                    src={selectedImage || productDetail.mainImage.path}
+                    alt={productDetail.productName}
                   />
                 ) : (
                   <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
@@ -125,8 +126,8 @@ const ProductDetails = () => {
 
             {/* Image Gallery */}
             <div className="thumbnail-container mt-2">
-              {product.images &&
-                product.images.map((image, index) => (
+              {productDetail?.images &&
+                productDetail?.images.map((image, index) => (
                   <div
                     key={index}
                     className={`thumbnail ${selectedImage === image.path ? "selected" : ""}`}
@@ -143,12 +144,12 @@ const ProductDetails = () => {
 
           {/* Chi tiết sản phẩm chiếm 40% */}
           <div className="h-full w-full md:col-span-1 xl:col-span-2 xl:p-14 flex flex-col gap-6 justify-center">
-            <ProductInfo productInfo={product} onImageClick={handleImageClick} />
+            <ProductInfo productInfo={productDetail} onImageClick={handleImageClick} />
           </div>
         </div>
         {/* ProductTabs */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-8">
-          <ProductTabs product={product} />
+          <ProductTabs productDescription={productDescription} />
         </div>
 
 

@@ -1,22 +1,15 @@
 import React, { useState } from "react";
 
-const ProductTabs = () => {
+const ProductTabs = ({ productDescription }) => {
+  console.log("productDescriptionn", productDescription);
   const [activeTab, setActiveTab] = useState("description");
 
   // Dữ liệu của từng tab
   const tabData = {
     description: {
       title: "MÔ TẢ SẢN PHẨM",
-      content: `Đồng hành cùng chiếc balo đa năng này dù đi học hay đi gym. Thiết kế nhiều ngăn sắp xếp mọi món đồ cần thiết gọn gàng, cùng ngăn lót đệm bảo vệ laptop của bạn.
-        Sản phẩm này được làm từ ít nhất 50% chất liệu tái chế, giúp giảm lãng phí và giảm phụ thuộc vào các nguồn tài nguyên hữu hạn.`,
-      table: [
-        ["Dịp sử dụng", "Hàng ngày"],
-        ["Môn thể thao", "Lifestyle"],
-        ["Tính năng nổi bật", "Chống trầy xước"],
-        ["Họa tiết", "In hình"],
-        ["Chất liệu", "Polyester"],
-        ["Kiểu khóa (Túi / Ba Lô)", "Khóa zip"],
-      ],
+      content: productDescription.productDescription.description,
+      table: Object.entries(productDescription.productDescription.attributes),
     },
     returnPolicy: {
       title: "QUY ĐỊNH ĐỔI TRẢ",
