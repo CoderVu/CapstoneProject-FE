@@ -1,5 +1,7 @@
 import types from "../types";
-import { fetchAllProducts, fetchProductDetail , filterProducts, fetchAllProductsOnSale, fetchProductDescription} from "../service/productService";
+import { fetchAllProducts, fetchProductDetail , filterProducts, fetchAllProductsOnSale, fetchProductDescription,
+  fetchProductCareInstructions
+} from "../service/productService";
 
 // Action to fetch the list of products
 export const getProducts = (page, size) => async (dispatch) => {
@@ -24,15 +26,17 @@ export const getProducts = (page, size) => async (dispatch) => {
 export const getProductDetailAndDescription = (productId) => async (dispatch) => {
   dispatch({ type: types.FETCH_PRODUCT_DETAIL_REQUEST });
   try {
-    const [productDetail, productDescription] = await Promise.all([
+    const [productDetail, productDescription,productCareInstructions] = await Promise.all([
       fetchProductDetail(productId),
       fetchProductDescription(productId),
+      fetchProductCareInstructions(productId),
     ]);
     dispatch({
       type: types.FETCH_PRODUCT_DETAIL_SUCCESS,
       payload: {
         productDetail,
         productDescription,
+        productCareInstructions,
       },
     });
   } catch (error) {

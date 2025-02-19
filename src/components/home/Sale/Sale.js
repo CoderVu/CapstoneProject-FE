@@ -19,18 +19,18 @@ import Image from "../../designLayouts/Image";
 
 const Sale = () => {
   const images = [
-    { src: saleImgOne, discount: "35%" },
-    { src: saleImgTwo, discount: "40%" },
-    { src: saleImgThree, discount: "50%" },
-    { src: saleImgFour, discount: "50%" },
-    { src: saleImgFive, discount: "50%" },
-    { src: saleImgSix, discount: "50%" },
-    { src: saleImgSeven, discount: "50%" },
-    { src: saleImgEight, discount: "50%" },
-    { src: saleImgNine, discount: "50%" },
-    { src: saleImgTen, discount: "50%" },
-    { src: saleImgEleven, discount: "50%" },
-    { src: saleImgTwelve, discount: "50%" },
+    { src: saleImgOne},
+    { src: saleImgTwo },
+    { src: saleImgThree},
+    { src: saleImgFour},
+    { src: saleImgFive},
+    { src: saleImgSix},
+    { src: saleImgSeven},
+    { src: saleImgEight},
+    { src: saleImgNine},
+    { src: saleImgTen},
+    { src: saleImgEleven},
+    { src: saleImgTwelve},
    
   ];
 
@@ -47,9 +47,6 @@ const Sale = () => {
           <div key={index} className="relative">
             <Link to="/shop">
               <Image className="h-full w-full object-cover" imgSrc={item.src} />
-              <div className="absolute top-2 left-2 text-white bg-red-600 px-2 py-1 rounded">
-                {item.discount}
-              </div>
             </Link>
           </div>
         ))}

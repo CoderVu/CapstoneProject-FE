@@ -3,6 +3,7 @@ import types from "../types";
 const initialState = {
   productDetail: {},
   productDescription: {},
+  productCareInstructions: {},
   loading: false,
   error: null,
 };
@@ -18,6 +19,7 @@ const productDetailReducer = (state = initialState, action) => {
         loading: false,
         productDetail: action.payload.productDetail,
         productDescription: action.payload.productDescription,
+        productCareInstructions: action.payload.productCareInstructions,
         error: null,
       };
 

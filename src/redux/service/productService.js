@@ -93,6 +93,19 @@ const fetchProductDescription = async (productId) => {
         throw error;
     }
 }
+const fetchProductCareInstructions = async (productId) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/${productId}/careInstruction`,
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching product care instructions:", error);
+        throw error;
+    }
+}
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -100,4 +113,5 @@ export {
     fetchProductByCollection,
     fetchAllProductsOnSale,
     fetchProductDescription,
+    fetchProductCareInstructions,
 };

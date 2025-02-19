@@ -47,7 +47,7 @@ const SpecialOffers = () => {
             color={product.color}
             badge={product.newProduct}
             des={product.description}
-            discountPrice="80"
+            discountPrice={product.discountPrice}
             rating={product.rate?.rating}
             totalRate={product.rate?.totalRate}
             totalSold="100"

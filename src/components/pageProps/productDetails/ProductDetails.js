@@ -17,7 +17,11 @@ const ProductDetails = () => {
   const dispatch = useDispatch();
   const { productDetail, loading, error } = useSelector((state) => state.productDetail);
   const productDescription = useSelector((state) => state.productDescription);
+  const productCareInstructions = useSelector((state) => state.productCareInstructions);
+
+  console.log("productDetail", productDetail);
   console.log("productDescription", productDescription);
+  console.log("productCareInstructions", productCareInstructions);
   const ratingState = useSelector((state) => state.rating);
   const { rating, totalPages, totalElements } = ratingState;
   const [prevLocation, setPrevLocation] = useState("");
@@ -149,7 +153,7 @@ const ProductDetails = () => {
         </div>
         {/* ProductTabs */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-8">
-          <ProductTabs productDescription={productDescription} />
+          <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
 
 

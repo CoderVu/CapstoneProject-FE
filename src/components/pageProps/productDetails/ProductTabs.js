@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const ProductTabs = ({ productDescription }) => {
+const ProductTabs = ({ productDescription, careInstructions }) => {
   console.log("productDescriptionn", productDescription);
   const [activeTab, setActiveTab] = useState("description");
 
@@ -9,7 +9,9 @@ const ProductTabs = ({ productDescription }) => {
     description: {
       title: "MÔ TẢ SẢN PHẨM",
       content: productDescription.productDescription.description,
-      table: Object.entries(productDescription.productDescription.attributes),
+      table: productDescription.productDescription.attributes
+      ? Object.entries(productDescription.productDescription.attributes)
+      : [],
     },
     returnPolicy: {
       title: "QUY ĐỊNH ĐỔI TRẢ",
@@ -22,7 +24,7 @@ const ProductTabs = ({ productDescription }) => {
     },
     careInstructions: {
       title: "HƯỚNG DẪN CHĂM SÓC",
-      content: `Giặt nhẹ bằng tay với nước lạnh. Không dùng chất tẩy rửa mạnh.`,
+      content: careInstructions.productCareInstructions.description,
       table: [
         ["Giặt máy", "Không"],
         ["Giặt tay", "Có"],
