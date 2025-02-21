@@ -45,13 +45,17 @@ const BestSellers = ({ collectionId = "cef76a21-1fae-4454-b353-b8c9c1833a3b" }) 
 
   return (
     <div className="w-full pb-16">
-      <Heading heading="Our Bestsellers" />
+      {/* Tiêu đề in hoa và căn giữa */}
+      <h2 className="text-2xl font-bold text-center uppercase mb-8">
+        SẢN PHẨM NỔI BẬT
+      </h2>
       <Slider {...settings}>
         {products.map((product) => (
           <div key={product.id} className="px-2">
             <Product
               id={product.id}
               img={product.mainImage?.path}
+              secondaryImg={product.images[0]?.path}
               productName={product.productName}
               price={product.price}
               discountPrice="80"

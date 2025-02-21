@@ -8,29 +8,19 @@ const ToastNotification = () => {
 
 export const showCustomToast = ({ userName, productName, productCode, timeAgo }) => {
   toast(
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        background: "white",
-        borderRadius: "8px",
-        padding: "10px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
-        maxWidth: "300px",
-      }}
-    >
+    <div className="flex items-center bg-white rounded-lg p-2 shadow-md max-w-xs">
       <img
-        src="https://dbimage.blob.core.windows.net/images/c7ce4a03-1ad8-4874-9a80-292bcb88087b-orebiLogo.png" // Thay bằng ảnh đại diện nếu có
-        alt="User Avatar"
-        style={{ width: "40px", height: "40px", borderRadius: "50%", marginRight: "10px" }}
+        src="https://dbimage.blob.core.windows.net/images/c7ce4a03-1ad8-4874-9a80-292bcb88087b-orebiLogo.png" 
+        alt="User  Avatar"
+        className="w-10 h-10 rounded-full mr-2"
       />
       <div>
-        <strong>{userName}</strong> vừa mua{" "}
-        <span style={{ fontWeight: "bold" }}>{productName}</span>
+        <strong className="font-semibold">{userName}</strong> vừa mua{" "}
+        <span className="font-bold">{productName}</span>
         <br />
-        <span style={{ color: "gray" }}>{productCode}</span>
+        <span className="text-gray-500">{productCode}</span>
         <br />
-        <span style={{ fontSize: "12px", color: "gray" }}>{timeAgo}</span>
+        <span className="text-gray-400 text-xs">{timeAgo}</span>
       </div>
     </div>,
     { position: "bottom-left", autoClose: 5000 }

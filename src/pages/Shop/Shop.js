@@ -53,14 +53,38 @@ const Shop = () => {
     dispatch(filterProduct({ ...newFilters, page, size: itemsPerPage }));
   };
 
+  const handleClearFilter = (filterKey) => {
+    const newFilters = { ...filters, [filterKey]: "" };
+    setFilters(newFilters);
+    dispatch(filterProduct({ ...newFilters, page, size: itemsPerPage }));
+  };
+
   return (
     <div className="max-w-container mx-auto px-3">
       <Breadcrumbs title="Products" />
       <div className="w-full h-full flex pb-20 gap-10">
         <div className="w-[15%] lgl:w-[15%] hidden mdl:inline-flex h-full">
-          <ShopSideNav onFilterChange={handleFilterChange} />
+          <div className="w-full p-4 bg-white rounded-lg shadow-md">
+            <ShopSideNav onFilterChange={handleFilterChange} />
+          </div>
         </div>
-        <div className="w-full mdl:w-[80%] lgl:w-[95%] h-full flex flex-col gap-10">
+        <div className="w-full mdl:w-[75%] lgl:w-[75%] h-full flex flex-col">
+          {/* Applied Filters */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {Object.keys(filters).map((key) => (
+              filters[key] && (
+                <div key={key} className="flex items-center bg-gray-200 text-gray-700 px-3 py-1 rounded-full">
+                  <span>{`${filters[key]}`}</span>
+                  <button
+                    onClick={() => handleClearFilter(key)}
+                    className="ml-2 text-red-500 hover:text-red-700"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )
+            ))}
+          </div>
           {totalElements > 0 ? (
             <ProductBanner
               itemsPerPage={itemsPerPage}

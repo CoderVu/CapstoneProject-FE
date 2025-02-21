@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ const renderStars = (rating) => {
 const Product = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleProductDetails = () => {
     navigate(`/product/${props.id}`, {
@@ -34,11 +35,18 @@ const Product = (props) => {
       : null;
 
   return (
-    <div className="w-full relative group bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
+    <div
+      className="w-full relative group bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Ảnh sản phẩm */}
       <div className="w-full h-[280px] relative">
-        <Image className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" imgSrc={props.img} />
-        
+        <Image
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          imgSrc={isHovered && props.secondaryImg ? props.secondaryImg : props.img}
+        />
+
         {/* Badge hiển thị "New" */}
         {props.badge && (
           <span className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">
@@ -57,7 +65,7 @@ const Product = (props) => {
       {/* Thông tin sản phẩm */}
       <div className="p-4 flex flex-col gap-2">
         <h2 className="text-lg font-bold text-gray-900 truncate">{props.productName}</h2>
-        
+
         {/* Màu sắc */}
         <p className="text-[#767676] text-[14px]">
           {props.colors && props.colors.length > 0 ? (
@@ -99,7 +107,7 @@ const Product = (props) => {
 
         {/* Nút hành động */}
         <div className="flex gap-2 mt-3">
-          <button 
+          <button
             onClick={() =>
               dispatch(
                 addToCart({
@@ -116,7 +124,7 @@ const Product = (props) => {
           >
             Thêm vào giỏ
           </button>
-          <button 
+          <button
             onClick={handleProductDetails}
             className="flex-1 bg-gray-100 text-gray-900 py-2 text-sm font-semibold rounded hover:bg-gray-200 transition"
           >

@@ -106,6 +106,33 @@ const fetchProductCareInstructions = async (productId) => {
         throw error;
     }
 }
+const fetchProductViewed = async () => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: '/api/v1/public/products/viewed',
+        });
+        const { data } = response.data;
+        console.log("Fetched viewed products:", data);
+        return data;
+    } catch (error) {
+        console.error("Error fetching viewed products:", error);
+        throw error;
+    }
+}
+
+const postViewedProduct = async (productId) => {
+    try {
+        const response = await axios({
+            method: 'POST',
+            url: `/api/v1/public/products/${productId}/view`,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error posting viewed product:", error);
+        throw error;
+    }
+};
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -114,4 +141,6 @@ export {
     fetchAllProductsOnSale,
     fetchProductDescription,
     fetchProductCareInstructions,
+    fetchProductViewed,
+    postViewedProduct,
 };

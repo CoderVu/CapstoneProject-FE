@@ -9,6 +9,7 @@ import ProductsOnSale from "./ProductsOnSale";
 import { getProductDetailAndDescription } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
+import { postViewedProduct } from "../../../redux/service/productService";
 import "../productDetails/productDetails.css"; // Import the CSS file
 
 const ProductDetails = () => {
@@ -37,6 +38,7 @@ const ProductDetails = () => {
     if (id) {
       dispatch(getProductDetailAndDescription(id));
       dispatch(getRating(id, 0, size));
+      postViewedProduct(id); // Post the viewed product ID when the component mounts
     }
     setPrevLocation(location.pathname);
   }, [dispatch, id, location, size]);
@@ -115,6 +117,7 @@ const ProductDetails = () => {
                   <img
                     src={selectedImage || productDetail.mainImage.path}
                     alt={productDetail.productName}
+                    onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the image is clicked
                   />
                 ) : (
                   <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
@@ -136,6 +139,7 @@ const ProductDetails = () => {
                     <img
                       src={image.path}
                       alt={`Product image ${index + 1}`}
+                      onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the thumbnail is clicked
                     />
                   </div>
                 ))}
@@ -152,10 +156,8 @@ const ProductDetails = () => {
           <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
 
-
         {/* Thống kê đánh giá */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
-
           <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
           <div className="flex items-center mb-4">
             <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating}/5</div>

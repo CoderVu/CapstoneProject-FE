@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import Heading from "../Products/Heading";
 import Product from "../Products/Product";
@@ -6,11 +7,11 @@ import SampleNextArrow from "../ButtonSlide/SampleNextArrow";
 import SamplePrevArrow from "../ButtonSlide/SamplePrevArrow";
 import { fetchProductByCollection } from "../../../redux/service/productService";
 
-const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22"}) => {
+const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log("Product ratings:", products.map(product => product.rate));
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -55,25 +56,37 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22"}) =
 
   return (
     <div className="w-full pb-16">
-      <Heading heading="New Arrivals" />
+      {/* Tiêu đề in hoa và căn giữa */}
+      <h2 className="text-2xl font-bold text-center uppercase mb-8">
+        SẢN PHẨM MỚI
+      </h2>
       <Slider {...settings}>
         {products.map((product) => (
           <div key={product.id} className="px-2">
             <Product
               id={product.id}
               img={product.mainImage?.path}
+              secondaryImg={product.images[0]?.path}
               productName={product.productName}
               price={product.price}
-              discountPrice= "80"
+              discountPrice="80"
               colors={product.variants?.map((variant) => variant.color) || []}
               badge={product.newProduct ? "New" : ""}
-              rating={product.rate?.rating} 
-              totalRate={product.rate?.totalRate} 
-              totalSold= "100"
+              rating={product.rate?.rating}
+              totalRate={product.rate?.totalRate}
+              totalSold="100"
             />
           </div>
         ))}
       </Slider>
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => navigate("/shop")}
+          className="bg-primeColor text-white py-2 px-4 rounded hover:bg-black transition duration-300"
+        >
+          Xem tất cả
+        </button>
+      </div>
     </div>
   );
 };

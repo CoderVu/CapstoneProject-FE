@@ -83,7 +83,7 @@ function App() {
       try {
         const data = await fetchOrderMock();
         showCustomToast({
-          userName: "Nguyễn Văn A",
+          userName: data.userName,
           productName: "Áo thun nam",
           productCode: "Mã SP: 123456",
           timeAgo: "15 phút trước",
@@ -92,7 +92,8 @@ function App() {
         console.error("Failed to fetch mock order data:", error);
       }
     };
-
+    const interval = setInterval(fetchMockOrder, 10000);
+    return () => clearInterval(interval);
     fetchMockOrder();
   }, []);
 

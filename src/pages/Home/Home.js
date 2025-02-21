@@ -5,6 +5,7 @@ import NewArrivals from "../../components/home/NewArrivals/NewArrivals";
 import Sale from "../../components/home/Sale/Sale";
 import SpecialOffers from "../../components/home/SpecialOffers/SpecialOffers";
 import YearProduct from "../../components/home/YearProduct/YearProduct";
+import ViewedProducts from "../../components/home/Viewed/ViewedProducts";
 
 const Home = () => {
   return (
@@ -15,6 +16,9 @@ const Home = () => {
         <div className="mt-8">
           <NewArrivals />
         </div>
+        <div>
+        <ViewedProducts />
+        </div>
         <div className="mt-8">
           <BestSellers />
         </div>
@@ -24,6 +28,7 @@ const Home = () => {
         <div className="mt-8">
           <SpecialOffers />
         </div>
+        
       </div>
     </div>
   );
