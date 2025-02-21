@@ -1,5 +1,5 @@
 import axios from "../setup/axios"; 
-
+import { toast } from "react-toastify";
 const loginUserService = async (phoneNumber, password) => {
     try {
         const response = await axios({
@@ -10,10 +10,16 @@ const loginUserService = async (phoneNumber, password) => {
 
         const { data } = response;
         console.log("Login data:", data);
+        toast.success(data.message, {
+            position: "top-right",
+        });
 
         return data;
     } catch (error) {
         console.error("Error fetching login:", error);
+        toast.error(error.response.data.message, {
+            position: "top-right",
+        });
         throw error;
     }
 }

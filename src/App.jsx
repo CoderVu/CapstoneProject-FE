@@ -6,6 +6,7 @@ import {
   Route,
   ScrollRestoration,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import AdminRoute from "./components/Auth/AdminRoute";
 import Footer from "./components/home/Footer/Footer";
 import FooterBottom from "./components/home/Footer/FooterBottom";
@@ -75,6 +76,7 @@ function App() {
   return (
     <div className="font-bodyFont">
       <RouterProvider router={router} />
+      <ToastContainer />
     </div>
   );
 }

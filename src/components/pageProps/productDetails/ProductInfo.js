@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(
     productInfo?.variants?.[0]?.color || ""
   );
@@ -56,8 +57,20 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
     });
   };
 
+  const increaseQuantity = () => {
+    if (quantity < (selectedVariant?.quantity || 0)) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-4 border-b pb-4 border-radius-[10px]">
       <ToastContainer />
       <h2 className="text-3xl font-semibold">{productInfo?.productName}</h2>
 
@@ -81,7 +94,7 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
 
       {/* Colors */}
       <div className="font-medium text-base">
-        <span className="font-normal">Colors:</span>
+        <span className="font-normal">Màu Sắc :</span>
         <div className="flex gap-x-2 gap-y-2 mt-1 flex-wrap">
           {productInfo?.variants &&
             [...new Set(productInfo?.variants.map((variant) => variant.color))].map((color, index) => (
@@ -98,7 +111,7 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
 
       {/* Size */}
       <div className="font-medium text-base">
-        <span className="font-normal">Size:</span>
+        <span className="font-normal">Kích Thước :</span>
         <div className="flex gap-x-2 gap-y-2 mt-1 flex-wrap">
           {Array.isArray(productInfo?.variants) &&
             [...new Set(productInfo?.variants.map((variant) => variant.sizeName))].map((sizeName, index) => (
@@ -114,15 +127,31 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
         </div>
       </div>
 
-      {/* Quantity */}
+      {/* Số lượng */}
       <div className="font-medium text-base">
-        <span className="font-normal">Quantity:</span>
+        <span className="font-normal">Số Lượng :</span>
         <div className="flex items-center gap-2 mt-1">
+          <button
+            onClick={decreaseQuantity}
+            className="px-3 py-1 border border-gray-300 rounded-md"
+          >
+            -
+          </button>
           <span className="px-3 py-1 border border-gray-300 rounded-md">
-            {selectedVariant?.quantity || 0} {/* Safely access quantity */}
+            {quantity}
+          </span>
+          <button
+            onClick={increaseQuantity}
+            className="px-3 py-1 border border-gray-300 rounded-md"
+          >
+            +
+          </button>
+          <span className="text-sm text-gray-500 ml-2">
+            (Còn lại: {selectedVariant?.quantity || 0})
           </span>
         </div>
       </div>
+
 
       {/* Add to Cart and Buy Now Buttons */}
       <div className="flex gap-4 mt-2">

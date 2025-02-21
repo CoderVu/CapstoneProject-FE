@@ -1,21 +1,20 @@
 import React, { useState } from "react";
 
-const ProductTabs = ({ productDescription, careInstructions }) => {
-  console.log("productDescriptionn", productDescription);
+const ProductTabs = ({ productDescription, productCareInstructions }) => {
   const [activeTab, setActiveTab] = useState("description");
 
   // Dữ liệu của từng tab
   const tabData = {
     description: {
       title: "MÔ TẢ SẢN PHẨM",
-      content: productDescription.productDescription.description,
-      table: productDescription.productDescription.attributes
-      ? Object.entries(productDescription.productDescription.attributes)
-      : [],
+      content: productDescription?.description || "Không có mô tả sản phẩm.",
+      table: productDescription?.attributes
+        ? Object.entries(productDescription.attributes)
+        : [],
     },
     returnPolicy: {
       title: "QUY ĐỊNH ĐỔI TRẢ",
-      content: `Sản phẩm có thể được đổi trả trong vòng 7 ngày kể từ khi nhận hàng. Sản phẩm đổi trả phải còn nguyên vẹn, chưa qua sử dụng.`,
+      content: "Chúng tôi chấp nhận đổi trả sản phẩm trong vòng 7 ngày kể từ ngày mua hàng.",
       table: [
         ["Thời gian đổi trả", "7 ngày"],
         ["Điều kiện sản phẩm", "Chưa qua sử dụng"],
@@ -23,13 +22,11 @@ const ProductTabs = ({ productDescription, careInstructions }) => {
       ],
     },
     careInstructions: {
-      title: "HƯỚNG DẪN CHĂM SÓC",
-      content: careInstructions.productCareInstructions.description,
-      table: [
-        ["Giặt máy", "Không"],
-        ["Giặt tay", "Có"],
-        ["Nhiệt độ nước", "Dưới 30°C"],
-      ],
+      title: "HƯỚNG DẪN SỬ DỤNG",
+      content: productCareInstructions?.description || "Không có mô tả sản phẩm.",
+      table: productCareInstructions?.attributes
+        ? Object.entries(productCareInstructions.attributes)
+        : [],
     },
     storageInstructions: {
       title: "HƯỚNG DẪN BẢO QUẢN",
@@ -49,9 +46,8 @@ const ProductTabs = ({ productDescription, careInstructions }) => {
         {Object.keys(tabData).map((tab) => (
           <button
             key={tab}
-            className={`py-2 px-4 ${
-              activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
-            }`}
+            className={`py-2 px-4 ${activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"
+              }`}
             onClick={() => setActiveTab(tab)}
           >
             {tabData[tab].title}

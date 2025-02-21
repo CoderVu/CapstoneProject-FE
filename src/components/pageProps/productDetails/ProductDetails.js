@@ -16,12 +16,8 @@ const ProductDetails = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { productDetail, loading, error } = useSelector((state) => state.productDetail);
-  const productDescription = useSelector((state) => state.productDescription);
-  const productCareInstructions = useSelector((state) => state.productCareInstructions);
-
-  console.log("productDetail", productDetail);
-  console.log("productDescription", productDescription);
-  console.log("productCareInstructions", productCareInstructions);
+  const productDescription = useSelector((state) => state.productDescription.productDescription);
+  const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
   const ratingState = useSelector((state) => state.rating);
   const { rating, totalPages, totalElements } = ratingState;
   const [prevLocation, setPrevLocation] = useState("");
@@ -104,7 +100,7 @@ const ProductDetails = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="w-full mx-auto border-b-[1px] border-b-gray-300">
+    <div className="w-full mx-auto border-b-[1px] border-b-gray-300 border-t-[1px] border-radius-[10px]">
       <div className="max-w-container mx-auto px-4">
         <div className="xl:-mt-10 -mt-7">
           <Breadcrumbs title="" prevLocation={prevLocation} />
