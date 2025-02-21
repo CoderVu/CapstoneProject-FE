@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -27,6 +28,9 @@ import Dashboard from "./pages/Admin/Home/Dashboard";
 import AdminLayout from "./pages/Admin/Layout/AdminLayout";
 import UserProfile from "./pages/Account/UserProfile";
 import Products from "./pages/Admin/Products";
+import ToastNotification, { showCustomToast } from "./components/Toast/ToastNotification";
+
+import { fetchOrderMock } from "./redux/service/orderService";
 
 const Layout = () => {
   return (
@@ -40,6 +44,7 @@ const Layout = () => {
     </div>
   );
 };
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
@@ -73,10 +78,29 @@ const router = createBrowserRouter(
 );
 
 function App() {
+  useEffect(() => {
+    const fetchMockOrder = async () => {
+      try {
+        const data = await fetchOrderMock();
+        showCustomToast({
+          userName: "Nguyễn Văn A",
+          productName: "Áo thun nam",
+          productCode: "Mã SP: 123456",
+          timeAgo: "15 phút trước",
+        });
+      } catch (error) {
+        console.error("Failed to fetch mock order data:", error);
+      }
+    };
+
+    fetchMockOrder();
+  }, []);
+
   return (
     <div className="font-bodyFont">
       <RouterProvider router={router} />
       <ToastContainer />
+      <ToastNotification />
     </div>
   );
 }
