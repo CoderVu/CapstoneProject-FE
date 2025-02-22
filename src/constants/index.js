@@ -1,4 +1,3 @@
-
 // =================== NavBarList Start here ====================
 export const navBarList = [
   {
@@ -10,6 +9,28 @@ export const navBarList = [
     id: 1002,
     title: "Shop",
     link: "/shop",
+    subMenu: [
+      {
+        id: 2001,
+        title: "Male",
+        link: "/shop/male",
+      },
+      {
+        id: 2002,
+        title: "Female",
+        link: "/shop/female",
+      },
+      {
+        id: 2003,
+        title: "Unisex",
+        link: "/shop/unisex",
+      },
+      {
+        id: 2004,
+        title: "All Categories",
+        link: "/shop",
+      },
+    ],
   },
   {
     id: 1003,
@@ -19,7 +40,7 @@ export const navBarList = [
   {
     id: 1004,
     title: "Contact",
-    link: "contact",
+    link: "/contact",
   },
 ];
 // =================== NavBarList End here ======================

@@ -6,11 +6,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import Breadcrumbs from "../Breadcrumbs";
 import ProductInfo from "../productDetails/ProductInfo";
 import ProductsOnSale from "./ProductsOnSale";
-import { getProductDetailAndDescription } from "../../../redux/actions/productActions";
+import { getProductDetail } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
 import { postViewedProduct } from "../../../redux/service/productService";
-import "../productDetails/productDetails.css"; // Import the CSS file
+import "../productDetails/productDetails.css"; 
+import ProductRelated from "./ProductRelated";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -36,12 +37,12 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (id) {
-      dispatch(getProductDetailAndDescription(id));
+      dispatch(getProductDetail(id, page, size)); // Pass page and size
       dispatch(getRating(id, 0, size));
       postViewedProduct(id); // Post the viewed product ID when the component mounts
     }
     setPrevLocation(location.pathname);
-  }, [dispatch, id, location, size]);
+  }, [dispatch, id, location, page, size]);
 
   useEffect(() => {
     if (rating) {
@@ -74,7 +75,7 @@ const ProductDetails = () => {
           totalRating += review.rate;
         });
 
-        const averageRating = totalRating / totalReviews;
+        const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
 
         setRatingSummary({
           totalReviews,
@@ -155,27 +156,31 @@ const ProductDetails = () => {
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-8">
           <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
-
-        {/* Thống kê đánh giá */}
+        
+        {/* Sản phẩm liên quan */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
-          <div className="flex items-center mb-4">
-            <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating}/5</div>
-            <div className="ml-2">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, index) =>
-                  index < Math.round(ratingSummary.averageRating) ? (
-                    <FaStar key={index} className="text-yellow-500 text-lg" />
-                  ) : (
-                    <FaRegStar key={index} className="text-gray-300 text-lg" />
-                  )
-                )}
-              </div>
-              <div className="text-sm text-gray-600">{ratingSummary.totalReviews} đánh giá</div>
-            </div>
-          </div>
+          <ProductRelated />
+        </div>
 
-          {/* Biểu đồ thống kê số sao */}
+          <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
+            <div className="flex items-center mb-4">
+              <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating || 0}/5</div>
+              <div className="ml-2">
+                <div className="flex items-center">
+            {Array.from({ length: 5 }).map((_, index) =>
+              index < Math.round(ratingSummary.averageRating) ? (
+                <FaStar key={index} className="text-yellow-500 text-lg" />
+              ) : (
+                <FaRegStar key={index} className="text-gray-300 text-lg" />
+              )
+            )}
+                </div>
+                <div className="text-sm text-gray-600">{ratingSummary.totalReviews} đánh giá</div>
+              </div>
+            </div>
+
+            {/* Biểu đồ thống kê số sao */}
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ratingSummary.starCounts.map((count, index) => ({ star: `${5 - index} sao`, count }))}>
@@ -216,7 +221,7 @@ const ProductDetails = () => {
                 {review.imageRatings && review.imageRatings.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {review.imageRatings.map((image, index) => (
-                      <img key={index} className="w-20 h-20 object-cover rounded-lg" src={image} alt={`Review ${index}`} />
+                      <img key={index} className="w-20 h-20 object-cover rounded" src={image} alt={`Review ${index}`} />
                     ))}
                   </div>
                 )}

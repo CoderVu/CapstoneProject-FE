@@ -5,12 +5,13 @@ const Price = ({ onChange, selectedPrice, setSelectedPrice }) => {
   const [showPrices, setShowPrices] = useState(true);
 
   const priceList = [
-    { id: 950, priceOne: 0, priceTwo: 50 },
-    { id: 951, priceOne: 50, priceTwo: 100 },
-    { id: 952, priceOne: 100, priceTwo: 200 },
-    { id: 953, priceOne: 200, priceTwo: 400 },
-    { id: 954, priceOne: 400, priceTwo: 600 },
-    { id: 955, priceOne: 600, priceTwo: 1000 },
+    { id: 950, priceOne: 50, priceTwo: 100 },
+    { id: 951, priceOne: 100, priceTwo: 200 },
+    { id: 952, priceOne: 200, priceTwo: 300 },
+    { id: 953, priceOne: 300, priceTwo: 500 },
+    { id: 954, priceOne: 500, priceTwo: 700 },
+    { id: 955, priceOne: 700, priceTwo: 1000 },
+    
   ];
 
   const handlePriceChange = (price) => {

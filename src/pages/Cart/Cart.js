@@ -6,21 +6,34 @@ import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { resetCart } from "../../redux/orebiSlice";
 import { emptyCart } from "../../assets/images/index";
 import ItemCard from "./ItemCard";
+import { getCartItems } from "../../redux/actions/cartActions";
+import ProductRelated from "../../components/pageProps/productDetails/ProductRelated";
+import { FaTruck } from "react-icons/fa"; // Import the truck icon
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const products = useSelector((state) => state.orebiReducer.products);
+  const { cartItems } = useSelector((state) => state.cart);
   const [totalAmt, setTotalAmt] = useState("");
   const [shippingCharge, setShippingCharge] = useState("");
+  const [shippingStatus, setShippingStatus] = useState("pending");
+  const [progress, setProgress] = useState(0); // Set initial progress to 50%
+
+  useEffect(() => {
+    dispatch(getCartItems());
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log("cartItems", cartItems);
+  }, [cartItems]);
 
   useEffect(() => {
     let price = 0;
-    products.map((item) => {
-      price += item.price * item.quantity;
+    cartItems.map((item) => {
+      price += item.unitPrice * item.quantity;
       return price;
     });
     setTotalAmt(price);
-  }, [products]);
+  }, [cartItems]);
 
   useEffect(() => {
     if (totalAmt <= 200) {
@@ -32,10 +45,32 @@ const Cart = () => {
     }
   }, [totalAmt]);
 
+  // Function to update shipping status
+  const updateShippingStatus = (status) => {
+    setShippingStatus(status);
+    if (status === "pending") {
+      setProgress(25);
+    } else if (status === "processed") {
+      setProgress(50);
+    } else if (status === "shipped") {
+      setProgress(75);
+    } else if (status === "delivered") {
+      setProgress(100);
+    }
+  };
+
+  // Function to determine truck color based on progress
+  const getTruckColor = () => {
+    if (progress === 100) return "blue";
+    if (progress >= 75) return "blue";
+    if (progress >= 50) return "blue";
+    return "blue";
+  };
+
   return (
     <div className="max-w-container mx-auto px-4">
       <Breadcrumbs title="Cart" />
-      {products.length > 0 ? (
+      {cartItems.length > 0 ? (
         <div className="pb-20">
           <div className="w-full h-20 bg-[#F5F7F7] text-primeColor hidden lgl:grid grid-cols-5 place-content-center px-6 text-lg font-titleFont font-semibold">
             <h2 className="col-span-2">Product</h2>
@@ -44,8 +79,8 @@ const Cart = () => {
             <h2>Sub Total</h2>
           </div>
           <div className="mt-5">
-            {products.map((item) => (
-              <div key={item.id}>
+            {cartItems.map((item) => (
+              <div key={item.productId}>
                 <ItemCard item={item} />
               </div>
             ))}
@@ -103,6 +138,28 @@ const Cart = () => {
               </div>
             </div>
           </div>
+
+          {/* Shipping Progress */}
+          <div className="relative flex flex-col items-center mt-8">
+            <div className="w-full max-w-lg bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 relative">
+              {/* Progress Bar */}
+              <div
+                className="bg-primeColor h-2.5 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              ></div>
+
+              {/* Truck Icon */}
+              <FaTruck
+                className="absolute -top-6 text-3xl transition-all duration-500"
+                style={{ left: `calc(${progress}% - 1rem)`, transform: 'translateX(-50%)', color: getTruckColor() }}
+              />
+            </div>
+
+            {/* Shipping Status */}
+            <p className="mt-2 text-lg font-semibold">
+              {shippingStatus === "shipped" ? "Đơn hàng đã được giao" : "Đang giao hàng"}
+            </p>
+          </div>
         </div>
       ) : (
         <motion.div
@@ -134,6 +191,10 @@ const Cart = () => {
           </div>
         </motion.div>
       )}
+      {/* Sản phẩm liên quan */}
+      <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
+        <ProductRelated />
+      </div>
     </div>
   );
 };

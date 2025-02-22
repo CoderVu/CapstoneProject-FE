@@ -28,7 +28,7 @@ import Dashboard from "./pages/Admin/Home/Dashboard";
 import AdminLayout from "./pages/Admin/Layout/AdminLayout";
 import UserProfile from "./pages/Account/UserProfile";
 import Products from "./pages/Admin/Products";
-import ToastNotification, { showCustomToast } from "./components/Toast/ToastNotification";
+import { showCustomToast } from "./components/Toast/ToastNotification";
 
 import { fetchOrderMock } from "./redux/service/orderService";
 
@@ -92,16 +92,18 @@ function App() {
         console.error("Failed to fetch mock order data:", error);
       }
     };
-    const interval = setInterval(fetchMockOrder, 10000);
-    return () => clearInterval(interval);
-    fetchMockOrder();
+
+    fetchMockOrder(); 
+
+    const interval = setInterval(fetchMockOrder, 10000); 
+
+    return () => clearInterval(interval); 
   }, []);
 
   return (
     <div className="font-bodyFont">
       <RouterProvider router={router} />
       <ToastContainer />
-      <ToastNotification />
     </div>
   );
 }

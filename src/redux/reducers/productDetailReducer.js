@@ -4,6 +4,7 @@ const initialState = {
   productDetail: {},
   productDescription: {},
   productCareInstructions: {},
+  ProductRelated : {},
   loading: false,
   error: null,
 };
@@ -20,6 +21,7 @@ const productDetailReducer = (state = initialState, action) => {
         productDetail: action.payload.productDetail,
         productDescription: action.payload.productDescription,
         productCareInstructions: action.payload.productCareInstructions,
+        productRelated: action.payload.productRelated,
         error: null,
       };
 

@@ -133,6 +133,19 @@ const postViewedProduct = async (productId) => {
         throw error;
     }
 };
+const fetchProductRelated = async (productId, page, size) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/related/${productId}?page=${page}&size=${size}`,
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching related products:", error);
+        throw error;
+    }
+}
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -143,4 +156,5 @@ export {
     fetchProductCareInstructions,
     fetchProductViewed,
     postViewedProduct,
+    fetchProductRelated
 };

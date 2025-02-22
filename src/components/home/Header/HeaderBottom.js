@@ -12,6 +12,7 @@ import { logoutUser } from "../../../redux/actions/authActions";
 const HeaderBottom = () => {
   const products = useSelector((state) => state.product.products || []);
   const categories = useSelector((state) => state.category.categories);
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
   const auth = useSelector((state) => state.auth.auth);
   const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
 
@@ -125,12 +126,19 @@ const HeaderBottom = () => {
                 )}
               </motion.ul>
             )}
-            <Link to="/cart">
-              <div className="relative">
+            {isLoggedIn ? (
+              <Link to="/cart">
+                <div className="relative">
+                  <FaShoppingCart />
+                  <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">{cartItems.length}</span>
+                </div>
+              </Link>
+            ) : (
+              <div onClick={() => navigate("/signin")} className="relative">
                 <FaShoppingCart />
-                <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">{Array.isArray(products) ? products.length : 0}</span>
+                <span className="absolute font-titleFont top-3 -right-2 text-xs w-4 h-4 flex items-center justify-center rounded-full bg-primeColor text-white">0</span>
               </div>
-            </Link>
+            )}
           </div>
         </Flex>
       </div>

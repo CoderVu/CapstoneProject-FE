@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../../redux/orebiSlice";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { addToCartItems } from "../../../redux/actions/cartActions";
 
 const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const dispatch = useDispatch();
@@ -39,22 +37,12 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
     return stars;
   };
 
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        id: productInfo?.id,
-        name: productInfo?.productName,
-        quantity: 1,
-        availableQuantity: selectedVariant?.quantity || 0,
-        image: productInfo?.mainImage?.path,
-        price: productInfo?.price,
-        color: selectedColor,
-        size: selectedSize,
-      })
-    );
-    toast.success("Thêm vào giỏ hàng thành công!", {
-      position: "top-right",
-    });
+  const handleAddToCart = async () => {
+    try {
+      dispatch( addToCartItems(productInfo?.id, quantity, selectedSize, selectedColor));
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
+    }
   };
 
   const increaseQuantity = () => {
@@ -71,7 +59,6 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
 
   return (
     <div className="flex flex-col gap-y-4 border-b pb-4 border-radius-[10px]">
-      <ToastContainer />
       <h2 className="text-3xl font-semibold">{productInfo?.productName}</h2>
 
       {/* Rating */}
@@ -151,7 +138,6 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
           </span>
         </div>
       </div>
-
 
       {/* Add to Cart and Buy Now Buttons */}
       <div className="flex gap-4 mt-2">

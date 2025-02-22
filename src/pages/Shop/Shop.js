@@ -14,6 +14,7 @@ const Shop = () => {
   const [isGridView, setIsGridView] = useState(true);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState({
+    gender: "",
     categoryProduct: "",
     brandProduct: "",
     priceMin: "",
@@ -23,10 +24,10 @@ const Shop = () => {
   });
 
   useEffect(() => {
-    if (location.state?.category) {
+    if (location.state && location.state.gender) {
       setFilters((prevFilters) => ({
         ...prevFilters,
-        categoryProduct: location.state.category.name,
+        ...location.state,
       }));
     }
   }, [location.state]);
@@ -49,22 +50,32 @@ const Shop = () => {
   };
 
   const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    dispatch(filterProduct({ ...newFilters, page, size: itemsPerPage }));
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters,
+    }));
+    dispatch(filterProduct({ ...filters, ...newFilters, page, size: itemsPerPage }));
   };
 
   const handleClearFilter = (filterKey) => {
-    const newFilters = { ...filters, [filterKey]: "" };
+    let newFilters = { ...filters };
+    if (filterKey === "priceMin" || filterKey === "priceMax") {
+      newFilters = { ...newFilters, priceMin: "", priceMax: "" };
+    } else {
+      newFilters[filterKey] = "";
+    }
     setFilters(newFilters);
     dispatch(filterProduct({ ...newFilters, page, size: itemsPerPage }));
   };
 
   return (
     <div className="max-w-container mx-auto px-3">
-      <Breadcrumbs title="Products" />
+      <div className="flex justify-between items-center">
+        <Breadcrumbs title="" gender={filters.gender} />
+      </div>
       <div className="w-full h-full flex pb-20 gap-10">
         <div className="w-[15%] lgl:w-[15%] hidden mdl:inline-flex h-full">
-          <div className="w-full p-4 bg-white rounded-lg shadow-md">
+          <div className="w-full p-4 bg-white rounded-lg shadow">
             <ShopSideNav onFilterChange={handleFilterChange} />
           </div>
         </div>
@@ -72,7 +83,7 @@ const Shop = () => {
           {/* Applied Filters */}
           <div className="flex flex-wrap gap-2 mb-4">
             {Object.keys(filters).map((key) => (
-              filters[key] && (
+              key !== "gender" && filters[key] && (
                 <div key={key} className="flex items-center bg-gray-200 text-gray-700 px-3 py-1 rounded-full">
                   <span>{`${filters[key]}`}</span>
                   <button
@@ -96,7 +107,7 @@ const Shop = () => {
             />
           ) : (
             <div className="flex justify-center items-center h-full">
-              <p className="text-lg text-gray-500"></p>
+              <p className="text-lg text-gray-500">No products found</p>
             </div>
           )}
           {loading ? (
@@ -104,7 +115,7 @@ const Shop = () => {
           ) : error ? (
             <div>Error: {error}</div>
           ) : (
-            <div className="flex flex-col justify-between flex-grow">
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
               {totalElements > 0 && (
                 <div className="flex space-x-1 justify-center items-center">
                   <button

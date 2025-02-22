@@ -1,6 +1,6 @@
 import types from "../types";
 import { fetchAllProducts, fetchProductDetail , filterProducts, fetchAllProductsOnSale, fetchProductDescription,
-  fetchProductCareInstructions
+  fetchProductCareInstructions, fetchProductRelated, fetchProductViewed, postViewedProduct
 } from "../service/productService";
 
 // Action to fetch the list of products
@@ -23,13 +23,14 @@ export const getProducts = (page, size) => async (dispatch) => {
 };
 
 // Action to fetch the details of a product
-export const getProductDetailAndDescription = (productId) => async (dispatch) => {
+export const getProductDetail = (productId, page, size) => async (dispatch) => {
   dispatch({ type: types.FETCH_PRODUCT_DETAIL_REQUEST });
   try {
-    const [productDetail, productDescription,productCareInstructions] = await Promise.all([
+    const [productDetail, productDescription,productCareInstructions, productRelated] = await Promise.all([
       fetchProductDetail(productId),
       fetchProductDescription(productId),
       fetchProductCareInstructions(productId),
+      fetchProductRelated(productId, page, size),
     ]);
     dispatch({
       type: types.FETCH_PRODUCT_DETAIL_SUCCESS,
@@ -37,6 +38,7 @@ export const getProductDetailAndDescription = (productId) => async (dispatch) =>
         productDetail,
         productDescription,
         productCareInstructions,
+        productRelated,
       },
     });
   } catch (error) {

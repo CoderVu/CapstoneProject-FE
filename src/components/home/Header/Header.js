@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { logo} from "../../../assets/images";
+import { logo } from "../../../assets/images";
 import Image from "../../designLayouts/Image";
 import { navBarList } from "../../../constants";
 import Flex from "../../designLayouts/Flex";
+import Modal from "./Modal";
 import "./Header.css";
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [subMenu, setSubMenu] = useState([]);
   const location = useLocation();
+  const categories = useSelector((state) => state.category.categories);
 
   useEffect(() => {
     let ResponsiveMenu = () => {
-      if (window.innerWidth < 667) {
+      if (window.innerWidth < 167) {
         setShowMenu(false);
       } else {
         setShowMenu(true);
@@ -23,14 +28,25 @@ const Header = () => {
     window.addEventListener("resize", ResponsiveMenu);
   }, []);
 
+  const handleMouseEnter = (title, subMenu) => {
+    if (title === "Shop") {
+      setSubMenu(subMenu || []);
+      setShowModal(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setTimeout(() => {
+      setShowModal(false);
+    }, 200); 
+  };
+  
   return (
-    <div className="w-full h-20 bg-white sticky top-0 z-50 border-b-[1px] border-b-gray-200">
+    <div className="w-full h-20 bg-white sticky top-0 z-50 border-b border-transparent">
       <nav className="navbar h-full px-4 max-w-container mx-auto relative">
         <Flex className="flex items-center justify-between h-full">
           <Link to="/">
-            <div>
-              <Image className="w-20 object-cover" imgSrc={logo} />
-            </div>
+            <Image className="w-20 object-cover" imgSrc={logo} />
           </Link>
           <div className="flex-1 flex justify-center">
             {showMenu && (
@@ -40,21 +56,27 @@ const Header = () => {
                 transition={{ duration: 0.5 }}
                 className="flex items-center w-auto z-50 p-0 gap-2"
               >
-                {navBarList.map(({ id, title, link }) => (
-                  <NavLink
+                {navBarList.map(({ id, title, link, subMenu }) => (
+                  <div
                     key={id}
-                    className="flex font-normal hover:font-bold w-20 h-6 justify-center items-center px-12 text-base text-[#767676] hover:underline underline-offset-[4px] decoration-[1px] hover:text-[#262626] md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
-                    to={link}
-                    state={{ data: location.pathname.split("/")[1] }}
+                    className="relative"
+                    onMouseEnter={() => handleMouseEnter(title, subMenu)}
                   >
-                    <li>{title}</li>
-                  </NavLink>
+                    <NavLink
+                      className="flex font-normal hover:font-bold w-20 h-6 justify-center items-center px-12 text-base text-[#767676] hover:underline underline-offset-[4px] decoration-[1px] hover:text-[#262626] md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
+                      to={link}
+                      state={{ data: location.pathname.split("/")[1] }}
+                    >
+                      <li>{title}</li>
+                    </NavLink>
+                  </div>
                 ))}
               </motion.ul>
             )}
           </div>
         </Flex>
       </nav>
+      {showModal && <Modal subMenu={subMenu} categories={categories} onClose={handleMouseLeave} />}
     </div>
   );
 };
