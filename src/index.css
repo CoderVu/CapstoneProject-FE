@@ -1,34 +1,84 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer components {
-  .hoverEffect {
-    @apply duration-300 cursor-pointer;
-  }
-  .headerSedenavLi {
-    @apply hover:underline underline-offset-2 cursor-pointer text-gray-300 hover:text-white;
-  }
+.overflow_body::-webkit-scrollbar-button {
+  width: 10px;
+  height: 0px;
 }
 
-/* ============= NavLink active Start here ============== */
-nav .active li {
-  color: black;
-  font-weight: 600;
-  text-decoration: 1px underline black;
+.overflow_body::-webkit-scrollbar {
+  width: 0px;
 }
 
-@media screen and (max-width: 665px) {
-  nav .active li {
-    color: white;
-    font-weight: 600;
-    text-decoration: 1px underline white;
-  }
+.overflow_body::-webkit-scrollbar-thumb {
+  background-color: green;
+  border-radius: 10px;
+}
+.main-color{
+  color: #2D3748;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.h-10p {
+  height: 10%;
 }
-/* ============= NavLink active End here ================ */
+.h-20p {
+  height: 20%;
+}
+.h-30p{
+  height: 30%;
+}
+.h-40p{
+  height: 40%;
+}
+.h-50p {
+  height: 50%;
+}
+.h-60p {
+  height: 60%;
+}
+.h-70p{
+  height: 70%;
+}
+.h-80p{
+  height: 80%;
+}
+.h-90p{
+  height: 90%;
+}
+
+
+.w-10p {
+  width: 10%;
+}
+.w-20p {
+  width: 20%;
+}
+.w-25p{
+  width: 25%;
+}
+.w-30p{
+  width: 30%;
+}
+.w-40p{
+  width: 40%;
+}
+.w-50p {
+  width: 50%;
+}
+.w-60p {
+  width: 60%;
+}
+.w-70p{
+  width: 70%;
+}
+.w-80p{
+  width: 80%;
+}
+.w-90p{
+  width: 90%;
+}
+
+.alight-center{
+  align-items: center;
+}

@@ -1,4 +1,38 @@
 import axios from "../setup/axios"; 
+import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
+const addProduct = async (productData) => {
+    try {
+        const formData = new FormData();
+        for (const key in productData) {
+            if (Array.isArray(productData[key])) {
+                productData[key].forEach((file) => formData.append(key, file));
+            } else {
+                formData.append(key, productData[key]);
+            }
+        }
+
+        const response = await axios({
+            method: 'POST',
+            url: '/api/v1/admin/products/add',
+            data: formData,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        showSuccessToast(response.data.message);
+
+        return response.data;
+    } catch (error) {
+        console.error("Error adding product:", error);
+        if (error.response && error.response.data) {
+            showErrorToast(error.response.data.message);
+        } else {
+            showErrorToast("An unexpected error occurred.");
+        }
+        throw error;
+    }
+};
 
 const fetchAllProducts = async (page, size) => {
     try {
@@ -156,5 +190,6 @@ export {
     fetchProductCareInstructions,
     fetchProductViewed,
     postViewedProduct,
-    fetchProductRelated
+    fetchProductRelated,
+    addProduct
 };
