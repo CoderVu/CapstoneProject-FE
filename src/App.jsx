@@ -24,12 +24,13 @@ import Offer from "./pages/Offer/Offer";
 import Payment from "./pages/payment/Payment";
 import ProductDetails from "./components/pageProps/productDetails/ProductDetails";
 import Shop from "./pages/Shop/Shop";
-import Dashboard from "./pages/Admin/Home/dash_board/dashboard";
-import AdminLayout from "./pages/Admin/Layout/AdminLayout";
+import Dashboard from "./pages/Admin/Home/Slidebar"
+import Slidebar from "./pages/Admin/Home/Slidebar";
 import UserProfile from "./pages/Account/UserProfile";
-import Products from "./pages/Admin/Products";
+import ModalAddProduct from "./pages/Admin/Product/ModalAddProduct";
 import { showCustomToast } from "./components/Toast/ToastNotification";
 import { fetchOrderMock } from "./redux/service/orderService";
+import Test from "./pages/Admin/Home/Test";
 
 const Layout = () => {
   return (
@@ -66,9 +67,9 @@ const router = createBrowserRouter(
 
       {/* Route Admin cần bảo vệ */}
       <Route path="/admin" element={<AdminRoute />}>
-        <Route element={<AdminLayout />}>
-          <Route path="home" element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
+        <Route element={<Slidebar />}>
+          <Route path="home" element={<Test/>}/>
+          <Route path="products" element={<ModalAddProduct />} />
           {/* Thêm các trang admin khác nếu cần */}
         </Route>
       </Route>
