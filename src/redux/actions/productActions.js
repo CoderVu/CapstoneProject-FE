@@ -23,10 +23,10 @@ export const getProducts = (page, size) => async (dispatch) => {
 };
 
 // Action to fetch the details of a product
-export const getProductDetail = (productId, page, size) => async (dispatch) => {
+export const getProductDetail = (productId, page = 0, size = 30) => async (dispatch) => {
   dispatch({ type: types.FETCH_PRODUCT_DETAIL_REQUEST });
   try {
-    const [productDetail, productDescription,productCareInstructions, productRelated] = await Promise.all([
+    const [productDetail, productDescription, productCareInstructions, productRelated] = await Promise.all([
       fetchProductDetail(productId),
       fetchProductDescription(productId),
       fetchProductCareInstructions(productId),
@@ -45,6 +45,7 @@ export const getProductDetail = (productId, page, size) => async (dispatch) => {
     dispatch({ type: types.FETCH_PRODUCT_DETAIL_ERROR, payload: error.message });
   }
 };
+
 // Action to filter products 
 export const filterProduct = (filter) => async (dispatch) => {
   dispatch({ type: types.FILTER_PRODUCTS_REQUEST });

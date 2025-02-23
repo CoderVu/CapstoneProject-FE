@@ -37,7 +37,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (id) {
-      dispatch(getProductDetail(id, page, size)); // Pass page and size
+      dispatch(getProductDetail(id, page, size)); 
       dispatch(getRating(id, 0, size));
       postViewedProduct(id); // Post the viewed product ID when the component mounts
     }
@@ -48,7 +48,7 @@ const ProductDetails = () => {
     if (rating) {
       const fetchUserDetails = async (review) => {
         try {
-          const userResponse = await fetch(`http://localhost:8080/api/v1/public/users/${review.userId}`);
+          const userResponse = await fetch(`http://192.168.1.28:8080/api/v1/public/users/${review.userId}`);
           const userData = await userResponse.json();
           if (userData.statusCode === 200) {
             return { ...review, user: userData.data };

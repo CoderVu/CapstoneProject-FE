@@ -63,8 +63,8 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
 
       {/* Rating */}
       <div className="flex items-center gap-2">
-        <div className="flex">{renderStars(productInfo?.rate.rating || 0)}</div>
-        <p className="text-gray-500 text-sm">({productInfo?.rate.totalRate} đánh giá)</p>
+        <div className="flex">{renderStars(productInfo?.rate?.rating || 0)}</div>
+        <p className="text-gray-500 text-sm">({productInfo?.rate?.totalRate} đánh giá)</p>
       </div>
 
       {/* Giá sản phẩm */}

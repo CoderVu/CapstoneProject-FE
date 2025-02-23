@@ -9,16 +9,6 @@ export const orebiSlice = createSlice({
   name: "orebi",
   initialState,
   reducers: {
-    addToCart: (state, action) => {
-      const item = state.products.find(
-        (item) => item.id === action.payload.id
-      );
-      if (item) {
-        item.quantity += action.payload.quantity;
-      } else {
-        state.products.push(action.payload);
-      }
-    },
     increaseQuantity: (state, action) => {
       const item = state.products.find(
         (item) => item.id === action.payload.id
@@ -45,9 +35,7 @@ export const orebiSlice = createSlice({
 });
 
 export const {
-  addToCart,
   increaseQuantity,
   drecreaseQuantity,
-  resetCart,
 } = orebiSlice.actions;
 export default orebiSlice.reducer;

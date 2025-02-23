@@ -11,7 +11,7 @@ const OAuth2Callback2 = () => {
     const fetchOAuth2Data = async () => {
       try {
        // Gửi yêu cầu đến server để lấy dữ liệu người dùng
-       const response = await fetch('http://localhost:8080/api/v1/auth/oauth2/callback', {
+       const response = await fetch('http://192.168.1.28:8080/api/v1/auth/oauth2/callback', {
         method: 'GET',
         credentials: 'include', // Nếu cần thiết
 

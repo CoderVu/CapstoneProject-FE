@@ -21,6 +21,28 @@ const addToCart = async (productId, quantity, size, color) => {
     }
 };
 
+const updateCartItemService = async (cartId, quantity, color, size) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/user/cart/update/${cartId}`,
+            params: {
+                quantity: quantity,
+                color: color,
+                size: size,
+
+            },
+        });
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        showErrorToast(error.response.data.message || "Failed to update cart item");
+        throw error;
+    }
+}
+
+
+
 const deleteCartItem = async (cartId) => {
     try {
         const response = await axios({
@@ -47,4 +69,4 @@ const fetchCartItems = async () => {
     }
 };
 
-export { addToCart, fetchCartItems, deleteCartItem };
+export { addToCart, fetchCartItems, deleteCartItem, updateCartItemService };

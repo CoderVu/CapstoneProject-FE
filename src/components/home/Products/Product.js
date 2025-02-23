@@ -3,7 +3,6 @@ import { FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../../redux/orebiSlice";
 
 const renderStars = (rating) => {
   return Array.from({ length: 5 }).map((_, index) =>
@@ -110,14 +109,7 @@ const Product = (props) => {
           <button
             onClick={() =>
               dispatch(
-                addToCart({
-                  id: props.id,
-                  name: props.productName,
-                  quantity: 1,
-                  image: props.img,
-                  price: props.price,
-                  colors: props.color,
-                })
+               
               )
             }
             className="flex-1 bg-blue-600 text-white py-2 text-sm font-semibold rounded hover:bg-blue-700 transition"
