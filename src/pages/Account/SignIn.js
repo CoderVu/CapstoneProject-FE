@@ -23,7 +23,7 @@ const SignIn = () => {
     if (isAuthenticated) {
       const isAdmin = auth?.role?.name === "ROLE_ADMIN";
       if (isAdmin) {
-        navigate("/admin/test");
+        navigate("/admin/home");  
       } else {
         navigate("/");
       }

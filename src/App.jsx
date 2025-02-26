@@ -8,7 +8,7 @@ import {
   ScrollRestoration,
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import AdminRoute from "./components/Auth/AdminRoute";
+import AdminRoute from "./pages/Admin/Auth/AdminRoute";
 import Footer from "./components/home/Footer/Footer";
 import FooterBottom from "./components/home/Footer/FooterBottom";
 import Header from "./components/home/Header/Header";
@@ -28,9 +28,11 @@ import Dashboard from "./pages/Admin/Home/Slidebar"
 import Slidebar from "./pages/Admin/Home/Slidebar";
 import UserProfile from "./pages/Account/UserProfile";
 import ModalAddProduct from "./pages/Admin/Product/ModalAddProduct";
+import ModalEditProduct from "./pages/Admin/Product/ModalEditProduct";
 import { showCustomToast } from "./components/Toast/ToastNotification";
 import { fetchOrderMock } from "./redux/service/orderService";
 import Test from "./pages/Admin/Home/Test";
+import ProductTable from "./pages/Admin/Product/ProductTable";
 
 const Layout = () => {
   return (
@@ -69,7 +71,10 @@ const router = createBrowserRouter(
       <Route path="/admin" element={<AdminRoute />}>
         <Route element={<Slidebar />}>
           <Route path="home" element={<Test/>}/>
-          <Route path="products" element={<ModalAddProduct />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="products" element={<ProductTable />} />
+          <Route path="add-products" element={<ModalAddProduct />} />
+          <Route path="edit-products/:id" element={<ModalEditProduct />} />
           {/* Thêm các trang admin khác nếu cần */}
         </Route>
       </Route>

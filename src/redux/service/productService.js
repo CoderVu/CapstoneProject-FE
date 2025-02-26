@@ -34,6 +34,41 @@ const addProduct = async (productData) => {
     }
 };
 
+const updateProduct = async (productId, productData) => {
+    try {
+        const formData = new FormData();
+        for (const key in productData) {
+            if (Array.isArray(productData[key])) {
+                productData[key].forEach((file) => formData.append(key, file));
+            } else {
+                formData.append(key, productData[key]);
+            }
+        }
+
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/admin/products/update/${productId}`,
+            data: formData,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        showSuccessToast(response.data.message);
+
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product:", error);
+        if (error.response && error.response.data) {
+            showErrorToast(error.response.data.message);
+        } else {
+            showErrorToast("An unexpected error occurred.");
+        }
+        throw error;
+    }
+};
+
+
 const fetchAllProducts = async (page, size) => {
     try {
         const response = await axios({
@@ -180,6 +215,104 @@ const fetchProductRelated = async (productId, page, size) => {
         throw error;
     }
 }
+const addVariantProduct = async (productId, variantData) => {
+    try {
+        const response = await axios.post(
+            `/api/v1/admin/products/${productId}/variants`,
+            Array.isArray(variantData) ? variantData : [variantData], 
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding variant product:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+};
+const addProductDescription = async (productId, descriptionData) => {
+    try {
+        const response = await axios.put(
+            `/api/v1/admin/products/${productId}/description`,
+            descriptionData,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product description:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+};
+
+const updateProductDescription = async (productId, descriptionData) => {
+    try {
+        const response = await axios.put(
+            `/api/v1/admin/products/${productId}/description`,
+            descriptionData,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product description:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+}
+const addProductCareInstructions = async (productId, careInstructions) => {
+    try {
+        const response = await axios.post(
+            `/api/v1/admin/products/${productId}/careInstruction`,
+            careInstructions,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product care instructions:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+}
+const updateProductCareInstructions = async (productId, careInstructions) => {
+    try {
+        const response = await axios.put(
+            `/api/v1/admin/products/${productId}/careInstruction`,
+            careInstructions,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product care instructions:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+    
+}
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -191,5 +324,11 @@ export {
     fetchProductViewed,
     postViewedProduct,
     fetchProductRelated,
-    addProduct
+    addProduct,
+    updateProduct,
+    addVariantProduct,
+    addProductDescription,
+    updateProductDescription,
+    addProductCareInstructions,
+    updateProductCareInstructions,
 };

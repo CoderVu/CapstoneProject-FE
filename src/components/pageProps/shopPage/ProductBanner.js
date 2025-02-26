@@ -20,7 +20,7 @@ const ProductBanner = ({ products = [], itemsPerPageFromBanner, loading }) => {
       {/* Product list */}
       {!loading ? (
         products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-y-0 mt-10">
             {products.map((product) => (
               <Product
                 key={product.id}

@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import Dashboard from "../Home/SlideBar"; 
 
 const AdminLayout = () => {
   return (

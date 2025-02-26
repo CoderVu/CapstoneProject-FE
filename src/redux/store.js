@@ -20,6 +20,7 @@ import colorReducer from "./reducers/colorReducer";
 import brandReducer from "./reducers/brandReducer";
 import rateReducer from "./reducers/rateReducer";
 import cartReducer from "./reducers/cartReducer";
+import sizeReducer from "./reducers/sizeReducer";
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   category : categoryReducer,
   brand : brandReducer,
   color : colorReducer,
+  size: sizeReducer,
   auth: authReducer,
   rating: rateReducer,
   cart : cartReducer,

@@ -35,7 +35,7 @@ const Product = (props) => {
 
   return (
     <div
-      className="w-full relative group bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition"
+      className="w-full relative group bg-white shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -48,14 +48,14 @@ const Product = (props) => {
 
         {/* Badge hiển thị "New" */}
         {props.badge && (
-          <span className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">
+          <span className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-xs font-bold">
             New
           </span>
         )}
 
         {/* Badge hiển thị % giảm giá */}
         {discountPercentage > 0 && (
-          <span className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 text-xs font-bold rounded">
+          <span className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 text-xs font-bold">
             -{discountPercentage}%
           </span>
         )}
@@ -109,16 +109,16 @@ const Product = (props) => {
           <button
             onClick={() =>
               dispatch(
-               
+                // Add your action here
               )
             }
-            className="flex-1 bg-blue-600 text-white py-2 text-sm font-semibold rounded hover:bg-blue-700 transition"
+            className="flex-1 bg-blue-600 text-white py-2 text-sm font-semibold hover:bg-blue-700 transition"
           >
             Thêm vào giỏ
           </button>
           <button
             onClick={handleProductDetails}
-            className="flex-1 bg-gray-100 text-gray-900 py-2 text-sm font-semibold rounded hover:bg-gray-200 transition"
+            className="flex-1 bg-gray-100 text-gray-900 py-2 text-sm font-semibold hover:bg-gray-200 transition"
           >
             Xem chi tiết
           </button>

@@ -15,7 +15,6 @@ const ProductRelated = () => {
     return null;
   }
 
-
   const settings = {
     infinite: true,
     speed: 500,
@@ -38,7 +37,6 @@ const ProductRelated = () => {
       },
     ],
   };
-
 
   return (
     <div className="w-full pb-16">
