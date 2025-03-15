@@ -39,7 +39,25 @@ const fetchAllChatedWithMe = async (senderId) => {
     }
 }
 
+
+const postImageChat = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await axios.post("/api/v1/public/image/upload", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+    }
+};
+
 export {
     fetchAllChat,
     fetchAllChatedWithMe,
+    postImageChat,
 };

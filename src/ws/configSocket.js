@@ -39,10 +39,15 @@ class ChatService {
 
     sendMessage(message) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(message));
-            this.sendListeners.forEach((listener) => listener(message));
+            const payload = {
+                ...message,
+                imageUrl: message.imageUrl || null, // Add imageUrl key if it exists
+            };
+            this.ws.send(JSON.stringify(payload));
+            this.sendListeners.forEach((listener) => listener(payload));
         }
     }
+
 
     addMessageListener(listener) {
         console.log("Adding message listener...", listener);

@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import { ChatContext } from "../context/showChat";
 import chatService from "../../ws/configSocket";
 import { fetchAllUser } from "../../redux/service/userService";
-import { fetchAllChat, fetchAllChatedWithMe } from "../../redux/service/chatService";
+import { fetchAllChat, fetchAllChatedWithMe, postImageChat } from "../../redux/service/chatService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faImage } from '@fortawesome/free-solid-svg-icons';
 import { parseISO, format, differenceInMinutes } from 'date-fns';
 
 const ChatContent = () => {
@@ -15,6 +15,8 @@ const ChatContent = () => {
     const [search, setSearch] = useState(false);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
+    const [image, setImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null); // State for image preview
     const [users, setUsers] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [error, setError] = useState("");
@@ -63,12 +65,13 @@ const ChatContent = () => {
             console.log("Incoming message:", message); // Log incoming message
             if (message.type === "onlineUsers") {
                 setOnlineUsers(message.onlineUsers);
-            } else if (message && message.message && message.message.trim() !== "") {
+            } else if (message && (message.message && message.message.trim() !== "" || message.imageUrl)) {
                 setMessages((prevMessages) => {
                     // Check if the message is already in the state
                     if (!prevMessages.some(msg => msg.timestamp === message.timestamp && msg.sender === message.sender)) {
                         return [...prevMessages, message];
                     }
+                    console.log("Message already exists in the state:", message);
                     return prevMessages;
                 });
             }
@@ -118,21 +121,34 @@ const ChatContent = () => {
         fetchChatHistory();
     }, [selectedUser, auth?.id]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!selectedUser) {
             setError("Please select a recipient.");
             return;
         }
-        if (message.trim() !== "") {
+        if (message.trim() !== "" || image) {
             const payload = {
                 sender: auth?.id,
                 receiver: selectedUser.id,
                 message: message.trim(),
+                imageUrl: null,
                 timestamp: new Date().toISOString() // Add current timestamp
             };
+            if (image) {
+                try {
+                    const imageUrl = await postImageChat(image);
+                    payload.imageUrl = imageUrl; // Add imageUrl key to the payload
+                    setImage(null); // Clear the image after sending the message
+                    setPreviewUrl(null); // Clear the preview URL
+                } catch (error) {
+                    setError("Image upload failed.");
+                    return;
+                }
+            }
             chatService.sendMessage(payload);
             setMessage(""); // Clear the input field after sending the message
             setError(""); // Clear any previous error
+            document.getElementById("messageInput").innerHTML = "";
         }
     };
 
@@ -178,8 +194,36 @@ const ChatContent = () => {
 
     const sortedMessages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage(file);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = document.createElement("img");
+                img.src = event.target.result;
+                img.style.maxWidth = "100px";
+                img.style.maxHeight = "100px";
+                img.style.margin = "5px";
+                document.getElementById("messageInput").appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePaste = (e) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf("image") !== -1) {
+                const file = items[i].getAsFile();
+                setImage(file);
+                setPreviewUrl(URL.createObjectURL(file)); // Set the preview URL
+            }
+        }
+    };
+
     return (
-        <div className={`fixed bottom-0 right-0 w-1/2 h-1/2 bg-white border border-gray-300 rounded-t-lg shadow-lg flex ${showChat ? "block" : "hidden"}`} style={{ zIndex: 1000 }}>
+        <div className={`fixed bottom-0 right-0 w-3/4 h-3/4 bg-white border border-gray-300 rounded-t-lg shadow-lg flex ${showChat ? "block" : "hidden"}`} style={{ zIndex: 1000 }}>
             {/* Danh sách người dùng */}
             <div className="w-1/3 border-r border-gray-300 p-4">
                 <div className="relative" ref={searchRef}>
@@ -246,50 +290,66 @@ const ChatContent = () => {
                     </div>
                     <button className="text-gray-500 hover:text-gray-700" onClick={handleClickChatContent}>X</button>
                 </div>
-
                 <div className="flex-1 p-4 overflow-y-auto space-y-2">
-                    {sortedMessages.map((msg, index) => {
-                        const user = getUserById(msg.sender);
-                        const previousMessage = sortedMessages[index - 1];
-                        const showTimestamp = shouldShowTimestamp(msg, previousMessage) || index === clickedMessageIndex;
-                        return (
-                            <div key={index} className={`flex ${msg.sender === auth?.id ? "justify-end" : "justify-start"}`} onClick={() => toggleTimestamp(index)}>
-                                <div className="flex items-center">
-                                    {msg.sender !== auth?.id && (
-                                        <img src={user?.avatar || "default-avatar.png"} alt={user?.fullName} className="w-8 h-8 rounded-full mr-2" />
-                                    )}
-                                    <div className={`max-w-xs p-3 rounded-lg ${msg.sender === auth?.id ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}>
-                                        {msg.message}
-                                        {showTimestamp && <div className="text-xs text-gray-500 mt-1">{formatMessageTime(msg.timestamp)}</div>}
-                                    </div>
-                                </div>
+    {sortedMessages.map((msg, index) => {
+        const user = getUserById(msg.sender);
+        const previousMessage = sortedMessages[index - 1];
+        const showTimestamp = shouldShowTimestamp(msg, previousMessage) || index === clickedMessageIndex;
+        return (
+            <div key={index} className={`flex ${msg.sender === auth?.id ? "justify-end" : "justify-start"}`} onClick={() => toggleTimestamp(index)}>
+                <div className="flex items-center">
+                    {msg.sender !== auth?.id && (
+                        <img src={user?.avatar || "default-avatar.png"} alt={user?.fullName} className="w-8 h-8 rounded-full mr-2" />
+                    )}
+                    <div className="max-w-xs p-3 rounded-lg">
+                        {msg.imageUrl && <img src={msg.imageUrl} alt="Chat Image" className="mt-2 max-w-full h-auto rounded-lg" />}
+                       
+                        {msg.message && (
+                            <div className={`max-w-xs p-3 rounded-lg ${msg.sender === auth?.id ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}>
+                                {msg.message}
                             </div>
-                        );
-                    })}
-                    <div ref={messagesEndRef} />
+                        )}
+                        {showTimestamp && <div className="text-xs text-gray-500 mt-1">{formatMessageTime(msg.timestamp)}</div>}
+                    </div>
                 </div>
-
-                {/* Nhập tin nhắn */}
-                <div className="p-4 border-t border-gray-300 flex items-center">
-                    <input
-                        type="text"
-                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Type a message..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                                handleSendMessage();
-                            }
-                        }}
-                    />
-                    <button className="ml-3 bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-700" onClick={handleSendMessage}>
-                        <FontAwesomeIcon icon={faPaperPlane} />
-                    </button>
-                </div>
-                {error && <div className="text-red-500 text-center p-2">{error}</div>}
             </div>
+        );
+    })}
+    <div ref={messagesEndRef} />
+</div>
+        
+
+            {/* Nhập tin nhắn */}
+            <div className="p-4 border-t border-gray-300 flex items-center">
+                <div
+                    id="messageInput"
+                    contentEditable
+                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Type a message..."
+                    onInput={(e) => setMessage(e.currentTarget.textContent)}
+                    onPaste={handlePaste}
+                />
+                <input
+                    type="file"
+                    id="imageInput"
+                    style={{ display: "none" }}
+                    onChange={handleImageChange}
+                />
+                <label htmlFor="imageInput" className="ml-3 cursor-pointer">
+                    <FontAwesomeIcon icon={faImage} className="text-gray-500 hover:text-gray-700" />
+                </label>
+                {previewUrl && (
+                    <div className="ml-3">
+                        <img src={previewUrl} alt="Preview" className="w-16 h-16 object-cover rounded-lg" />
+                    </div>
+                )}
+                <button className="ml-3 text-gray-500 hover:text-gray-700" onClick={handleSendMessage}>
+                    <FontAwesomeIcon icon={faPaperPlane} />
+                </button>
+            </div>
+            {error && <div className="text-red-500 text-center p-2">{error}</div>}
         </div>
+        </div >
     );
 };
 
