@@ -26,7 +26,7 @@ const ChatButton = (props) => {
             </div>
 
             {/* ChatContent luôn tồn tại trong DOM nhưng được ẩn */}
-            <div className={` bottom-4 right-4 ${showChat ? 'block' : 'hidden'}`}>
+            <div className={`fixed bottom-4 right-4 ${showChat ? 'block' : 'hidden'}`}>
                 <ChatContent
                     showChat={showChat}
                     setShowChat={setShowChat}
