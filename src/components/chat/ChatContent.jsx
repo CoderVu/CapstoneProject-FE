@@ -172,6 +172,10 @@ const ChatContent = () => {
         return differenceInMinutes(currentTime, previousTime) > 1;
     };
 
+    const toggleTimestamp = (index) => {
+        setClickedMessageIndex(clickedMessageIndex === index ? null : index);
+    };
+
     const sortedMessages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     return (
@@ -249,7 +253,7 @@ const ChatContent = () => {
                         const previousMessage = sortedMessages[index - 1];
                         const showTimestamp = shouldShowTimestamp(msg, previousMessage) || index === clickedMessageIndex;
                         return (
-                            <div key={index} className={`flex ${msg.sender === auth?.id ? "justify-end" : "justify-start"}`} onClick={() => setClickedMessageIndex(index)}>
+                            <div key={index} className={`flex ${msg.sender === auth?.id ? "justify-end" : "justify-start"}`} onClick={() => toggleTimestamp(index)}>
                                 <div className="flex items-center">
                                     {msg.sender !== auth?.id && (
                                         <img src={user?.avatar || "default-avatar.png"} alt={user?.fullName} className="w-8 h-8 rounded-full mr-2" />
