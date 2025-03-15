@@ -77,7 +77,6 @@ const Cart = () => {
             <h2 >Giá</h2>
             <h2>Số lượng</h2>
             <h2>Tổng phụ</h2>
-           
           </div>
           <div className="mt-5">
             {cartItems.map((item) => (

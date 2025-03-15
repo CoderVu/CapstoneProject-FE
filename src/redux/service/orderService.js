@@ -1,4 +1,5 @@
 import axios from "../setup/axios";
+import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
 const fetchOrderMock= async () => {
     try {
         const response = await axios({
@@ -13,4 +14,25 @@ const fetchOrderMock= async () => {
     }
 }
 
+const createOrderFromCart = async (orderRequest) => {
+    try {
+        const response = await axios({
+            method: 'POST',
+            url: `/api/v1/user/order`,
+            data: orderRequest,
+            headers: {
+                'Authorization': `Bearer ${orderRequest.token}`
+            }
+        });
+        const { data } = response.data;
+
+    
+    showSuccessToast(response.data.message);
+        return data;
+    } catch (error) {
+        console.error("Error creating order from cart:", error);
+        showErrorToast(error.response.data.message || "Failed to create order from cart");
+        throw error;
+    }
+}
 export { fetchOrderMock };

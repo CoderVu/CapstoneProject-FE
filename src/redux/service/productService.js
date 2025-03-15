@@ -11,6 +11,8 @@ const addProduct = async (productData) => {
             }
         }
 
+        console.log("Form data:", formData);    
+
         const response = await axios({
             method: 'POST',
             url: '/api/v1/admin/products/add',
@@ -34,7 +36,7 @@ const addProduct = async (productData) => {
     }
 };
 
-const updateProduct = async (productId, productData) => {
+const  updateProduct = async (productId, productData) => {
     try {
         const formData = new FormData();
         for (const key in productData) {
@@ -44,15 +46,16 @@ const updateProduct = async (productId, productData) => {
                 formData.append(key, productData[key]);
             }
         }
-
-        const response = await axios({
-            method: 'PUT',
-            url: `/api/v1/admin/products/update/${productId}`,
-            data: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        console.log("Form data:", formData);
+        const response = await axios.put(
+            `/api/v1/admin/products/update/${productId}`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
 
         showSuccessToast(response.data.message);
 
@@ -235,9 +238,48 @@ const addVariantProduct = async (productId, variantData) => {
         throw error;
     }
 };
-const addProductDescription = async (productId, descriptionData) => {
+const updateVariantProduct = async (productId, variantData) => {
     try {
         const response = await axios.put(
+            `/api/v1/admin/products/${productId}/variants`,
+            variantData,
+            console.log("variantData", variantData),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating variant product:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+};
+const deleteVariantProduct = async (variantId) => {
+    try {
+        const response = await axios.delete(
+            `/api/v1/admin/products/variants/${variantId}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting variant product:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+};
+const addProductDescription = async (productId, descriptionData) => {
+    try {
+        const response = await axios.post(
             `/api/v1/admin/products/${productId}/description`,
             descriptionData,
             {
@@ -311,8 +353,21 @@ const updateProductCareInstructions = async (productId, careInstructions) => {
         showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
         throw error;
     }
-    
 }
+const getColorsByProductId = async (productId) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/colors/${productId}`,
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching colors by product id:", error);
+        throw error;
+    }
+}
+    
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -327,8 +382,11 @@ export {
     addProduct,
     updateProduct,
     addVariantProduct,
+    updateVariantProduct,
+    deleteVariantProduct,
     addProductDescription,
     updateProductDescription,
     addProductCareInstructions,
     updateProductCareInstructions,
+    getColorsByProductId,
 };

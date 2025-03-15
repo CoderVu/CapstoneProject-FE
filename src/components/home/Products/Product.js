@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
+import { FaStar, FaRegStar } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -34,52 +34,85 @@ const Product = (props) => {
       : null;
 
   return (
-    <div
-      className="w-full relative group bg-white shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="w-full flex flex-col items-center bg-white shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition">
       {/* Ảnh sản phẩm */}
-      <div className="w-full h-[280px] relative">
-        <Image
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          imgSrc={isHovered && props.secondaryImg ? props.secondaryImg : props.img}
-        />
+      <div
+        className="w-full relative group"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="w-full h-[500px] relative">
+          <Image
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            imgSrc={isHovered && props.secondaryImg ? props.secondaryImg : props.img}
+          />
 
-        {/* Badge hiển thị "New" */}
-        {props.badge && (
-          <span className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-xs font-bold">
-            New
-          </span>
-        )}
+          {/* Badge hiển thị "New" */}
+          {props.badge && (
+            <span className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-xs font-bold">
+              New
+            </span>
+          )}
 
-        {/* Badge hiển thị % giảm giá */}
-        {discountPercentage > 0 && (
-          <span className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 text-xs font-bold">
-            -{discountPercentage}%
-          </span>
-        )}
+          {/* Badge hiển thị % giảm giá */}
+          {discountPercentage > 0 && (
+            <span className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 text-xs font-bold">
+              -{discountPercentage}%
+            </span>
+          )}
+
+          {/* Nút hành động hiển thị khi hover */}
+          <div
+            className={`absolute bottom-0 left-0 w-full flex gap-2 p-4 transform transition-all duration-300 ${
+              isHovered ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+            }`}
+          >
+            <button
+              onClick={() =>
+                dispatch(
+                  // Thêm logic thêm vào giỏ hàng ở đây
+                )
+              }
+              className="flex-1 bg-yellow-500 text-white py-2 text-sm font-semibold hover:bg-yellow-600 transition"
+            >
+              Thêm vào giỏ hàng
+            </button>
+            <button
+              onClick={handleProductDetails}
+              className="flex-1 bg-blue-600 text-white py-2 text-sm font-semibold hover:bg-blue-700 transition"
+            >
+              Xem chi tiết
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Thông tin sản phẩm */}
-      <div className="p-4 flex flex-col gap-2">
-        <h2 className="text-lg font-bold text-gray-900 truncate">{props.productName}</h2>
+      <div className="w-full p-5 flex flex-col gap-2">
+        <h2 className="text-lg font-bold text-gray-900 truncate" title={props.productName}>
+          {props.productName}
+        </h2>
 
         {/* Màu sắc */}
-        <p className="text-[#767676] text-[14px]">
+        <p className="text-[#767676] text-[14px] flex items-center gap-1">
           {props.colors && props.colors.length > 0 ? (
-            <span>
-              {[...new Set(props.colors)].map((color, index) => (
+            <>
+              {[...new Set(props.colors)].slice(0, 3).map((color, index) => (
                 <span
                   key={index}
-                  className="inline-block w-4 h-4 rounded-full mr-2 mb-1"
+                  className="inline-block w-4 h-4 rounded-full border border-gray-300"
                   style={{ backgroundColor: color }}
-                  title={color} // Hiển thị mã màu khi hover
+                  title={color}
                 ></span>
               ))}
-            </span>
+              {new Set(props.colors).size > 3 && (
+                <span className="text-xs text-gray-500">
+                  +{new Set(props.colors).size - 3}
+                </span>
+              )}
+            </>
           ) : (
-            "No colors available"
+            "Không có màu sắc"
           )}
         </p>
 
@@ -103,26 +136,6 @@ const Product = (props) => {
 
         {/* Số lượng đã bán */}
         <p className="text-gray-600 text-sm">Đã bán: {props.totalSold}</p>
-
-        {/* Nút hành động */}
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() =>
-              dispatch(
-                // Add your action here
-              )
-            }
-            className="flex-1 bg-blue-600 text-white py-2 text-sm font-semibold hover:bg-blue-700 transition"
-          >
-            Thêm vào giỏ
-          </button>
-          <button
-            onClick={handleProductDetails}
-            className="flex-1 bg-gray-100 text-gray-900 py-2 text-sm font-semibold hover:bg-gray-200 transition"
-          >
-            Xem chi tiết
-          </button>
-        </div>
       </div>
     </div>
   );

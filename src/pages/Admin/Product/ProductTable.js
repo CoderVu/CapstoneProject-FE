@@ -1,252 +1,212 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useTable } from "react-table";
 import { getProducts } from "../../../redux/actions/productActions";
-import ModalUpdateProduct from "./ModalEditProduct";
-import ModalAddVariant from "./ModalAddVariant";
-import ModalEditProductDesciption from "./ModalEditProductDesciption";
-import ModalAddProductDescription from "./ModalAddProductDescription";
-import ModalAddCareInstruction from "./ModalAddCareInstruction";
-import ModalEditProductCareInstruction from "./ModalEditProductCareInstruction";
+import { useNavigate } from "react-router-dom";
+import ModalAddProduct from "./ModalAddProduct";
 
 const ProductTable = () => {
-    const dispatch = useDispatch();
-    const { products, loading, error } = useSelector((state) => state.product);
-    const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
-    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isCareInstructionModalOpen, setIsCareInstructionModalOpen] = useState(false);
-    const [isEditCareInstructionModalOpen, setIsEditCareInstructionModalOpen] = useState(false);
-    const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { products, totalPages, totalElements, loading, error } = useSelector((state) => state.product);
+
+  const [page, setPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false); // State for modal
+
+  useEffect(() => {
+    dispatch(getProducts(page, itemsPerPage));
+  }, [dispatch, page, itemsPerPage]);
 
 
-    useEffect(() => {
-        dispatch(getProducts(0, 10));
-    }, [dispatch]);
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Tên sản phẩm",
+        accessor: "productName",
+      },
+      {
+        Header: "Ảnh",
+        accessor: "mainImage",
+        Cell: ({ row }) => (
+          <div className="w-20 h-20">
+            <img
+              src={row.original.mainImage.path}
+              alt="productImage"
+              className="w-full h-full object-contain rounded"
+            />
+          </div>
+        ),
+      },
+      {
+        Header: "Giá",
+        accessor: "price",
+      },
+      {
+        Header: "Giá khuyến mãi",
+        accessor: "discountPrice",
+      },
+      {
+        Header: "Danh mục",
+        accessor: "categoryName",
+      },
+      {
+        Header: "Thương hiệu",
+        accessor: "brandName",
+      },
+      {
+        Header: "Hành động",
+        accessor: "id",
+        Cell: ({ row }) => (
+          <div className="flex space-x-2">
+            <button
+              onClick={() => navigate(`/admin/products/${row.original.id}`)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
+            >
+              View
+            </button>
+            <button
+              onClick={() => handleDeleteProduct(row.original.id)}
+              className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700 transition duration-200"
+            >
+              Delete
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [navigate]
+  );
 
-    const columns = useMemo(
-        () => [
-            {
-                Header: "Product Name",
-                accessor: "productName",
-            },
-            {
-                Header: "Description",
-                accessor: "description",
-                Cell: ({ value }) => (
-                    <div className="truncate w-full" title={value}>
-                        {value}
-                    </div>
-                ),
-            },
-            {
-                Header: "Price",
-                accessor: "price",
-            },
-            {
-                Header: "Discount Price",
-                accessor: "discountPrice",
-            },
-            {
-                Header: "On Sale",
-                accessor: "onSale",
-                Cell: ({ value }) => (value ? "Yes" : "No"),
-            },
-            {
-                Header: "Category",
-                accessor: "categoryName",
-            },
-            {
-                Header: "Brand",
-                accessor: "brandName",
-            },
-            {
-                Header: "Main Image",
-                accessor: "mainImage.path",
-                Cell: ({ value }) => (
-                    <img
-                        src={value}
-                        alt="Main"
-                        className="w-12 h-12 object-cover rounded-md"
-                    />
-                ),
-            },
-            {
-                Header: "Action",
-                accessor: "id",
-                Cell: ({ row }) => (
-                    <div className="flex space-x-2">
-                    <button
-                        onClick={() => {    
-                            setIsEditProductModalOpen(true);
-                            setSelectedProduct(row.original);
-                        }}
-                        className="bg-blue-500 text-white px-4 py-1 rounded-md"
-                    >
-                        Edit
-                    </button>
-                        <button
-                            onClick={() => {
-                                setIsVariantModalOpen(true);
-                                setSelectedProduct(row.original);
-                            }}
-                            className="bg-blue-500 text-white px-4 py-1 rounded-md"
-                        >
-                            Add Variant
-                        </button>
-                        <button
-                            onClick={() => {
-                                setIsUpdateModalOpen(true);
-                                setSelectedProduct(row.original);
-                            }}
-                            className="bg-yellow-500 text-white px-4 py-1 rounded-md"
-                        >
-                            Update Description
-                        </button>
-                        <button
-                            onClick={() => {
-                                setIsAddModalOpen(true);
-                                setSelectedProduct(row.original);
-                            }}
-                            className="bg-green-500 text-white px-4 py-1 rounded-md"
-                        >
-                            Add Description
-                        </button>
-                        <button
-                            onClick={() => {
-                                setIsCareInstructionModalOpen(true);
-                                setSelectedProduct(row.original);
-                            }}
-                            className="bg-red-500 text-white px-4 py-1 rounded-md"  
-                        >
-                            Add Care Instruction
-                        </button>
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
 
-                        <button
-                            onClick={() => {
-                                setIsEditCareInstructionModalOpen(true);
-                                setSelectedProduct(row.original);
-                            }}
-                            className="bg-red-500 text-white px-4 py-1 rounded-md"
-                        >
-                            Edit Care Instruction
-                        </button>
+  const handleItemsPerPageChange = (event) => {
+    setItemsPerPage(Number(event.target.value));
+    setPage(0);
+  };
 
-                    </div>
-                ),
-            },
-        ],
-        []
-    );
+  const handleAddProductClick = () => {
+    setIsAddProductModalOpen(true);
+  };
 
-    const data = useMemo(() => products, [products]);
-    console.log("Products id selected", selectedProduct?.id);
+  const handleAddProductModalClose = () => {
+    setIsAddProductModalOpen(false);
+  };
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({ columns, data });
-
-    if (loading) {
-        return <div>Loading...</div>;
+  const handleDeleteProduct = async (productId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
+      try {
+        await dispatch(); // Add your action here
+        dispatch(getProducts(page, itemsPerPage)); // Refresh the product list
+      } catch (error) {
+        console.error("Failed to delete product:", error);
+      }
     }
+  };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">Danh sách sản phẩm</h2>
 
-    return (
-        <div className="ml-0 p-6">
-            <div className="shadow overflow-x-auto border-b border-gray-200 sm:rounded-lg">
-                <table
-                    {...getTableProps()}
-                    className="min-w-full divide-y divide-gray-200 table-fixed"
-                >
-                    <thead className="bg-gray-50">
-                        {headerGroups.map((headerGroup) => (
-                            <tr {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map((column) => (
-                                    <th
-                                        {...column.getHeaderProps()}
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px] truncate"
-                                    >
-                                        {column.render("Header")}
-                                    </th>
-                                ))}
-                            </tr>
-                        ))}
-                    </thead>
-                    <tbody
-                        {...getTableBodyProps()}
-                        className="bg-white divide-y divide-gray-200"
-                    >
-                        {rows.map((row) => {
-                            prepareRow(row);
-                            return (
-                                <tr {...row.getRowProps()}>
-                                    {row.cells.map((cell) => (
-                                        <td
-                                            {...cell.getCellProps()}
-                                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-[150px] overflow-hidden text-ellipsis"
-                                            title={cell.value}
-                                        >
-                                            {cell.render("Cell")}
-                                        </td>
-                                    ))}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-            {/* Modal Edit Product */}
-            <ModalUpdateProduct
+      {/* Button to open Add Product modal */}
+      <button
+        onClick={handleAddProductClick}
+        className="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+      >
+        Thêm sản phẩm
+      </button>
 
-                isOpen={isEditProductModalOpen}
-                onRequestClose={() => setIsEditProductModalOpen(false)}
-                product={selectedProduct}
-            />
+      {/* Bảng sản phẩm */}
+      <table className="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr className="bg-gray-100">
+            {columns.map((col) => (
+              <th key={col.accessor} className="px-4 py-2 border">{col.Header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-4">Đang tải...</td>
+            </tr>
+          ) : error ? (
+            <tr>
+              <td colSpan={columns.length} className="text-center text-red-500">{error}</td>
+            </tr>
+          ) : products.length > 0 ? (
+            products.map((product, index) => (
+              <tr key={index} className="border-b">
+                {columns.map((col) => (
+                  <td key={col.accessor} className="px-4 py-2 border">
+                    {col.Cell ? col.Cell({ row: { original: product } }) : product[col.accessor]}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-4">Không có sản phẩm nào.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
-            {/* Modal Add Variant */}
-            <ModalAddVariant
-                isOpen={isVariantModalOpen}
-                onRequestClose={() => setIsVariantModalOpen(false)}
-                productId={selectedProduct?.id}
-            />
-
-            {/* Modal Edit Product Description */}
-            <ModalEditProductDesciption
-                isOpen={isUpdateModalOpen}
-                onRequestClose={() => setIsUpdateModalOpen(false)}
-                product={selectedProduct}
-            />
-
-            {/* Modal Add Product Description */}
-            <ModalAddProductDescription
-                isOpen={isAddModalOpen}
-                onRequestClose={() => setIsAddModalOpen(false)}
-                product={selectedProduct}
-            />
-            
-            {/* Modal Add Care Instruction */}
-            <ModalAddCareInstruction
-                isOpen={isCareInstructionModalOpen}
-                onRequestClose={() => setIsCareInstructionModalOpen(false)}
-                product={selectedProduct}
-            />
-            
-            {/* Modal Edit Care Instruction */}
-            <ModalEditProductCareInstruction
-                isOpen={isEditCareInstructionModalOpen}
-                onRequestClose={() => setIsEditCareInstructionModalOpen(false)}
-                product={selectedProduct}
-            />
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
+        <div className="text-gray-600">
+          Hiển thị {(page * itemsPerPage) + 1} - {Math.min((page + 1) * itemsPerPage, totalElements)} trên tổng số {totalElements} sản phẩm
         </div>
-    );
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 0}
+            className="px-3 py-2 rounded border bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Trước
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index)}
+              className={`px-3 py-2 rounded border ${index === page ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages - 1}
+            className="px-3 py-2 rounded border bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Sau
+          </button>
+        </div>
+
+        {/* Số sản phẩm trên mỗi trang */}
+        <select
+          value={itemsPerPage}
+          onChange={handleItemsPerPageChange}
+          className="border px-3 py-2 rounded"
+        >
+          <option value={10}>10 sản phẩm/trang</option>
+          <option value={20}>20 sản phẩm/trang</option>
+          <option value={30}>30 sản phẩm/trang</option>
+        </select>
+      </div>
+
+      {/* Add Product Modal */}
+      {isAddProductModalOpen && (
+        <ModalAddProduct
+          isOpen={isAddProductModalOpen}
+          onRequestClose={handleAddProductModalClose}
+        />
+      )}
+    </div>
+  );
 };
 
 export default ProductTable;

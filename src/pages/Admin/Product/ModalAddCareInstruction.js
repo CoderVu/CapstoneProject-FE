@@ -61,10 +61,10 @@ const ModalAddCareInstruction = ({ isOpen, onRequestClose, onSubmit, product }) 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
             <div className="bg-white rounded-lg shadow-lg w-96 p-6 max-h-[80vh] overflow-y-auto">
-                <h2 className="text-lg font-bold mb-4">Add Care Instructions</h2>
+                <h2 className="text-lg font-bold mb-4">Thêm hướng dẫn chăm sóc</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <label className="block text-sm font-medium text-gray-700">Mô tả</label>
                         <textarea
                             name="description"
                             value={careInstructionData.description}
@@ -74,7 +74,7 @@ const ModalAddCareInstruction = ({ isOpen, onRequestClose, onSubmit, product }) 
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Attributes</label>
+                        <label className="block text-sm font-medium text-gray-700">Thành phần</label>
                         {careInstructionData.attributes.map((attribute, index) => (
                             <div key={index} className="flex items-center mb-2">
                                 <input
@@ -98,7 +98,7 @@ const ModalAddCareInstruction = ({ isOpen, onRequestClose, onSubmit, product }) 
                             onClick={handleAddAttribute}
                             className="w-full px-3 py-2 mb-4 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
                         >
-                            + Add Attribute
+                            + Thêm thành phần
                         </button>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -107,13 +107,13 @@ const ModalAddCareInstruction = ({ isOpen, onRequestClose, onSubmit, product }) 
                             onClick={onRequestClose}
                             className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
                         >
-                            Cancel
+                            Hủy
                         </button>
                         <button
                             type="submit"
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
-                            Add Care Instructions
+                            Thêm mới
                         </button>
                     </div>
                 </form>

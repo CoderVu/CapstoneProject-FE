@@ -3,19 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateProductCareInstructions } from "../../../redux/service/productService";
 import { getProductDetail } from "../../../redux/actions/productActions";
 
-const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, product, onUpdateSuccess }) => {
+const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, productId, productCareInstructions, onUpdateSuccess }) => {
     const dispatch = useDispatch();
-    const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
+    
     
     const [description, setDescription] = useState("");
     const [attributes, setAttributes] = useState([]);
 
     // Gọi API lấy dữ liệu chi tiết khi mở modal
     useEffect(() => {
-        if (isOpen && product) {
-            dispatch(getProductDetail(product.id));
+        if (isOpen) {
+            dispatch(getProductDetail(productId));
         }
-    }, [isOpen, product, dispatch]);
+    }, [isOpen, productId, dispatch]);
 
     // Cập nhật state khi productCareInstructions thay đổi
     useEffect(() => {
@@ -48,9 +48,9 @@ const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, product, onUp
                 return acc;
             }, {});
             const updatedData = { description, attributes: formattedAttributes };
-            await updateProductCareInstructions(product.id, updatedData);
+            await updateProductCareInstructions(productId, updatedData);
             
-            dispatch(getProductDetail(product.id)); // Cập nhật Redux store sau khi chỉnh sửa
+            dispatch(getProductDetail(productId)); // Cập nhật Redux store sau khi chỉnh sửa
             onUpdateSuccess(updatedData); 
             onRequestClose(); 
         } catch (error) {
@@ -58,7 +58,7 @@ const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, product, onUp
         }
     };
 
-    return isOpen && product ? (
+    return isOpen ? (
         <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[80vh] overflow-y-auto">
                 <h2 className="text-lg font-bold mb-4">Cập nhật hướng dẫn chăm sóc sản phẩm</h2>

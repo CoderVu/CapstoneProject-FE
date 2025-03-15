@@ -3,15 +3,17 @@ import { useParams, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import Slider from "react-slick";
 import Breadcrumbs from "../Breadcrumbs";
 import ProductInfo from "../productDetails/ProductInfo";
-import ProductsOnSale from "./ProductsOnSale";
 import { getProductDetail } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
 import { postViewedProduct } from "../../../redux/service/productService";
-import "../productDetails/productDetails.css"; 
 import ProductRelated from "./ProductRelated";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -99,19 +101,29 @@ const ProductDetails = () => {
     setSelectedImage(imagePath);
   };
 
+  const settings = {
+    
+    infinite: true,
+    speed: 500,
+    slidesToShow: 6,
+    slidesToScroll: 1,
+    nextArrow: <button className="slick-next ">&gt;</button>,
+    prevArrow: <button className="slick-prev">&lt;</button>,
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="w-full mx-auto border-b-[1px] border-b-gray-300 border-t-[1px] border-radius-[10px]">
+    <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
       <div className="max-w-container mx-auto px-4">
         <div className="xl:-mt-10 -mt-7">
           <Breadcrumbs title="" prevLocation={prevLocation} />
         </div>
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
-          {/* Hình ảnh chiếm 60% */}
-          <div className="h-full md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center">
+        <div className="w-full grid grid-cols-1 md:grid-cols-5 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
+          {/* Hình ảnh chiếm 40% */}
+          <div className="w-full md:col-span-2 xl:col-span-2 object-cover rounded-lg">
             <div className="image-container">
               <div className={`image-slide ${slideDirection === "left" ? "slide-left" : "slide-right"}`}>
                 {selectedImage || productDetail?.mainImage?.path ? (
@@ -119,6 +131,7 @@ const ProductDetails = () => {
                     src={selectedImage || productDetail.mainImage.path}
                     alt={productDetail.productName}
                     onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the image is clicked
+                    className="w-full h-auto rounded-lg"
                   />
                 ) : (
                   <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
@@ -129,26 +142,29 @@ const ProductDetails = () => {
             </div>
 
             {/* Image Gallery */}
-            <div className="thumbnail-container mt-2">
-              {productDetail?.images &&
-                productDetail?.images.map((image, index) => (
-                  <div
-                    key={index}
-                    className={`thumbnail ${selectedImage === image.path ? "selected" : ""}`}
-                    onClick={() => handleImageClick(image.path)}
-                  >
-                    <img
-                      src={image.path}
-                      alt={`Product image ${index + 1}`}
-                      onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the thumbnail is clicked
-                    />
-                  </div>
-                ))}
+            <div className="relative mt-2">
+              <Slider {...settings}>
+                {productDetail?.images &&
+                  productDetail?.images.map((image, index) => (
+                    <div
+                      key={index}
+                      className={`thumbnail ${selectedImage === image.path ? "border-2 border-blue-500" : "border border-gray-300"} rounded-lg cursor-pointer`}
+                      onClick={() => handleImageClick(image.path)}
+                    >
+                      <img
+                        src={image.path}
+                        alt={`Product image ${index + 1}`}
+                        className="w-20 h-30 object-cover rounded-lg m"
+                        onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the thumbnail is clicked
+                      />
+                    </div>
+                  ))}
+              </Slider>
             </div>
           </div>
 
-          {/* Chi tiết sản phẩm chiếm 40% */}
-          <div className="h-full w-full md:col-span-1 xl:col-span-2 xl:p-14 flex flex-col gap-6 justify-center">
+          {/* Chi tiết sản phẩm chiếm 60% */}
+          <div className="h-full w-full md:col-span-3 xl:col-span-3 xl:p-14 flex flex-col gap-6 justify-center">
             <ProductInfo productInfo={productDetail} onImageClick={handleImageClick} />
           </div>
         </div>
@@ -162,25 +178,25 @@ const ProductDetails = () => {
           <ProductRelated />
         </div>
 
-          <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
-            <div className="flex items-center mb-4">
-              <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating || 0}/5</div>
-              <div className="ml-2">
-                <div className="flex items-center">
-            {Array.from({ length: 5 }).map((_, index) =>
-              index < Math.round(ratingSummary.averageRating) ? (
-                <FaStar key={index} className="text-yellow-500 text-lg" />
-              ) : (
-                <FaRegStar key={index} className="text-gray-300 text-lg" />
-              )
-            )}
-                </div>
-                <div className="text-sm text-gray-600">{ratingSummary.totalReviews} đánh giá</div>
+        <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
+          <div className="flex items-center mb-4">
+            <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating || 0}/5</div>
+            <div className="ml-2">
+              <div className="flex items-center">
+                {Array.from({ length: 5 }).map((_, index) =>
+                  index < Math.round(ratingSummary.averageRating) ? (
+                    <FaStar key={index} className="text-yellow-500 text-lg" />
+                  ) : (
+                    <FaRegStar key={index} className="text-gray-300 text-lg" />
+                  )
+                )}
               </div>
+              <div className="text-sm text-gray-600">{ratingSummary.totalReviews} đánh giá</div>
             </div>
+          </div>
 
-            {/* Biểu đồ thống kê số sao */}
+          {/* Biểu đồ thống kê số sao */}
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ratingSummary.starCounts.map((count, index) => ({ star: `${5 - index} sao`, count }))}>

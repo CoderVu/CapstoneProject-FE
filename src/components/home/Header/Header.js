@@ -8,7 +8,6 @@ import Image from "../../designLayouts/Image";
 import { navBarList } from "../../../constants";
 import Flex from "../../designLayouts/Flex";
 import Modal from "./Modal";
-import "./Header.css";
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false); // Responsive menu state
@@ -71,12 +70,16 @@ const Header = () => {
                     onMouseEnter={() => handleMouseEnter(title, subMenu)}
                   >
                     <NavLink
-                      className="flex font-normal hover:font-bold w-full lg:w-auto h-6 justify-center items-center px-4 lg:px-12 text-base text-[#767676] hover:underline underline-offset-[4px] decoration-[1px] hover:text-[#262626] md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0"
                       to={link}
                       state={{ data: location.pathname.split("/")[1] }}
+                      className={({ isActive }) =>
+                        `flex font-normal w-full lg:w-auto h-6 justify-center items-center px-4 lg:px-12 text-base md:border-r-[2px] border-r-gray-300 hoverEffect last:border-r-0 
+    ${isActive ? "font-bold text-[#262626] underline underline-offset-[4px]" : "text-[#767676] hover:text-[#262626] hover:underline"}`
+                      }
                     >
                       <li>{title}</li>
                     </NavLink>
+
                   </div>
                 ))}
               </motion.ul>

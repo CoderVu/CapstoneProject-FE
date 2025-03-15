@@ -24,25 +24,29 @@ import Offer from "./pages/Offer/Offer";
 import Payment from "./pages/payment/Payment";
 import ProductDetails from "./components/pageProps/productDetails/ProductDetails";
 import Shop from "./pages/Shop/Shop";
-import Dashboard from "./pages/Admin/Home/Slidebar"
+import Dashboard from "./pages/Admin/Home/Slidebar";
 import Slidebar from "./pages/Admin/Home/Slidebar";
 import UserProfile from "./pages/Account/UserProfile";
 import ModalAddProduct from "./pages/Admin/Product/ModalAddProduct";
+import ProductDetail from "./pages/Admin/Product/ProductDetail";
 import ModalEditProduct from "./pages/Admin/Product/ModalEditProduct";
 import { showCustomToast } from "./components/Toast/ToastNotification";
 import { fetchOrderMock } from "./redux/service/orderService";
-import Test from "./pages/Admin/Home/Test";
+import Categories from "./pages/Admin/Category/Categories";
 import ProductTable from "./pages/Admin/Product/ProductTable";
+import { ChatProvider } from "./components/context/showChat";
+import ChatButton from "./components/chat/ChatButton";
 
 const Layout = () => {
   return (
-    <div>
+    <div className="wider-container">
       <Header />
       <HeaderBottom />
       <ScrollRestoration />
       <Outlet />
       <Footer />
       <FooterBottom />
+      <ChatButton />
     </div>
   );
 };
@@ -70,10 +74,11 @@ const router = createBrowserRouter(
       {/* Route Admin cần bảo vệ */}
       <Route path="/admin" element={<AdminRoute />}>
         <Route element={<Slidebar />}>
-          <Route path="home" element={<Test/>}/>
+          <Route path="home" element={<Categories />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductTable />} />
-          <Route path="add-products" element={<ModalAddProduct />} />
+          <Route path="products/:id" element={<ProductDetail />} />
+          <Route path="categories" element={<Categories />} />
           <Route path="edit-products/:id" element={<ModalEditProduct />} />
           {/* Thêm các trang admin khác nếu cần */}
         </Route>
@@ -83,6 +88,14 @@ const router = createBrowserRouter(
 );
 
 function App() {
+  return (
+    <ChatProvider>
+      <AppContent />
+    </ChatProvider>
+  );
+}
+
+function AppContent() {
   useEffect(() => {
     const fetchMockOrder = async () => {
       try {

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { addToCartItems } from "../../../redux/actions/cartActions";
 
-const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
+const ProductInfo = ({ productInfo, onImageClick }) => {
   const dispatch = useDispatch();
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(
@@ -12,16 +12,21 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
   const [selectedSize, setSelectedSize] = useState(
     productInfo?.variants?.[0]?.sizeName || ""
   );
-  const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    if (selectedColor) {
+      const image = productInfo?.images?.find((img) => img.color === selectedColor);
+      if (image) {
+        onImageClick(image.path);
+      }
+    }
+  }, [selectedColor, productInfo, onImageClick]);
+
 
   const selectedVariant = productInfo?.variants?.find(
     (variant) => variant.color === selectedColor && variant.sizeName === selectedSize
   );
 
-  const handleImageClick = (imagePath) => {
-    setSelectedImage(imagePath);
-    onImageClick(imagePath);
-  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -39,7 +44,7 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
 
   const handleAddToCart = async () => {
     try {
-      dispatch( addToCartItems(productInfo?.id, quantity, selectedSize, selectedColor));
+      dispatch(addToCartItems(productInfo?.id, quantity, selectedSize, selectedColor));
     } catch (error) {
       console.error("Failed to add product to cart:", error);
     }
@@ -90,11 +95,12 @@ const ProductInfo = ({ productInfo, reviews, onImageClick }) => {
                 className={`w-6 h-6 cursor-pointer ${selectedColor === color ? "border-2 border-black" : "border border-gray-300"
                   }`}
                 style={{ backgroundColor: color }}
-                onClick={() => setSelectedColor(color)}
+                onClick={() => setSelectedColor(selectedColor === color ? null : color)} // Nếu bấm lần nữa thì bỏ chọn
               ></span>
             ))}
         </div>
       </div>
+
 
       {/* Size */}
       <div className="font-medium text-base">

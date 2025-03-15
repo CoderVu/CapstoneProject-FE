@@ -1,5 +1,6 @@
 import types from "../types";
-import { fetchAllProducts, fetchProductDetail , filterProducts, fetchAllProductsOnSale, fetchProductDescription,
+import {
+  fetchAllProducts, fetchProductDetail, filterProducts, fetchAllProductsOnSale, fetchProductDescription,
   fetchProductCareInstructions, fetchProductRelated, fetchProductViewed, postViewedProduct
 } from "../service/productService";
 
@@ -12,7 +13,7 @@ export const getProducts = (page, size) => async (dispatch) => {
     dispatch({
       type: types.FETCH_PRODUCT_SUCCESS,
       payload: {
-        products, 
+        products,
         totalPages,
         totalElements,
       },
@@ -28,8 +29,18 @@ export const getProductDetail = (productId, page = 0, size = 30) => async (dispa
   try {
     const [productDetail, productDescription, productCareInstructions, productRelated] = await Promise.all([
       fetchProductDetail(productId),
-      fetchProductDescription(productId),
-      fetchProductCareInstructions(productId),
+      fetchProductDescription(productId).catch((error) => {
+        if (error.response && error.response.status === 404) {
+          return null; // Handle 404 error for product description
+        }
+        throw error;
+      }),
+      fetchProductCareInstructions(productId).catch((error) => {
+        if (error.response && error.response.status === 404) {
+          return null; // Handle 404 error for care instructions
+        }
+        throw error;
+      }),
       fetchProductRelated(productId, page, size),
     ]);
     dispatch({
@@ -72,7 +83,7 @@ export const getProductsOnSale = () => async (dispatch) => {
     const data = await fetchAllProductsOnSale();
     dispatch({
       type: types.FETCH_PRODUCT_ON_SALE_SUCCESS,
-      payload: data, 
+      payload: data,
     });
   } catch (error) {
     dispatch({ type: types.FETCH_PRODUCT_ON_SALE_ERROR, payload: error.message });
