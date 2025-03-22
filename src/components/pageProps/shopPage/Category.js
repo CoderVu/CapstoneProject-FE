@@ -26,7 +26,7 @@ const Category = ({ onChange, selectedCategory, setSelectedCategory }) => {
   return (
     <div>
       <div onClick={() => setShowCategories(!showCategories)} className="cursor-pointer">
-        <NavTitle title="Loại sản phẩm" icons={true} />
+       
       </div>
       {showCategories && (
         <motion.div

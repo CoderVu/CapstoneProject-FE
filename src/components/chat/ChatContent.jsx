@@ -4,10 +4,11 @@ import { ChatContext } from "../context/showChat";
 import chatService from "../../ws/configSocket";
 import { fetchAllUser } from "../../redux/service/userService";
 import { fetchAllChat, fetchAllChatedWithMe, postImageChat } from "../../redux/service/chatService";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faImage, faSmile } from '@fortawesome/free-solid-svg-icons';
-import { parseISO, format, differenceInMinutes } from 'date-fns';
+import { motion } from 'framer-motion';
+import { FaPaperPlane, FaImage, FaSmile, FaTimes, FaAngleLeft, FaEllipsisV, FaSearch, FaPhone, FaVideo, FaComment } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
+import UserList from './userList';
+import ChatHistory from './ChatHistory';
 
 const ChatContent = () => {
     const { showChat, setShowChat, selectedUser, setSelectedUser } = useContext(ChatContext);
@@ -17,17 +18,36 @@ const ChatContent = () => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
     const [image, setImage] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(null); // State for image preview
+    const [previewUrl, setPreviewUrl] = useState(null);
     const [users, setUsers] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [error, setError] = useState("");
     const [clickedMessageIndex, setClickedMessageIndex] = useState(null);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false); // State for emoji picker visibility
-    const [emojiUrl, setEmojiUrl] = useState(null); // State for emoji URL
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [emojiUrl, setEmojiUrl] = useState(null);
     const messagesEndRef = useRef(null);
     const searchRef = useRef(null);
+    const messageInputRef = useRef(null);
     const [chattedUsers, setChattedUsers] = useState([]);
-    const listenerAddedRef = useRef(false); // Ref to track if listener is added
+    const listenerAddedRef = useRef(false);
+    const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
+    const [showUserList, setShowUserList] = useState(true);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobileView(mobile);
+            if (mobile && selectedUser) {
+                setShowUserList(false);
+            } else {
+                setShowUserList(true);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, [selectedUser]);
 
     const fetchChattedUsers = async () => {
         try {
@@ -44,17 +64,21 @@ const ChatContent = () => {
 
     const handleUnselectUser = () => {
         setSelectedUser(null);
-    };
-
-    const handleClickChatContent = () => {
-        setShowChat(false);
+        if (isMobileView) {
+            setShowUserList(true);
+        }
     };
 
     const handleClickOutside = useCallback((e) => {
         if (searchRef.current && !searchRef.current.contains(e.target)) {
             setSearch(false);
         }
-    }, []);
+
+        // Close emoji picker when clicking outside
+        if (showEmojiPicker && !e.target.closest('.emoji-picker-container')) {
+            setShowEmojiPicker(false);
+        }
+    }, [showEmojiPicker]);
 
     useEffect(() => {
         document.addEventListener("click", handleClickOutside);
@@ -65,7 +89,6 @@ const ChatContent = () => {
 
     useEffect(() => {
         const handleIncomingMessage = (message) => {
-            console.log("Incoming message:", message); // Log incoming message
             if (message.type === "onlineUsers") {
                 setOnlineUsers(message.onlineUsers);
             } else if (message && (message.message && message.message.trim() !== "" || message.imageUrl)) {
@@ -74,21 +97,20 @@ const ChatContent = () => {
                     if (!prevMessages.some(msg => msg.timestamp === message.timestamp && msg.sender === message.sender)) {
                         return [...prevMessages, message];
                     }
-                    console.log("Message already exists in the state:", message);
                     return prevMessages;
                 });
             }
         };
 
         if (showChat) {
-            chatService.connect("ws://192.168.1.40:8080/ws", auth?.id);
+            chatService.connect("ws://localhost:8080/ws", auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
-                listenerAddedRef.current = true; // Mark listener as added
+                listenerAddedRef.current = true;
             }
         } else {
             chatService.disconnect();
-            listenerAddedRef.current = false; // Reset listener added flag
+            listenerAddedRef.current = false;
         }
 
         return () => {
@@ -113,46 +135,73 @@ const ChatContent = () => {
             if (selectedUser) {
                 try {
                     const chatHistory = await fetchAllChat(auth?.id, selectedUser.id);
-                    console.log("senderId", auth?.id);
-                    console.log("receiverId", selectedUser.id);
                     setMessages(chatHistory);
+
+                    // On mobile, hide the user list when a user is selected
+                    if (isMobileView) {
+                        setShowUserList(false);
+                    }
                 } catch (error) {
                     console.error("Error fetching chat history:", error);
                 }
             }
         };
         fetchChatHistory();
-    }, [selectedUser, auth?.id]);
+    }, [selectedUser, auth?.id, isMobileView]);
+
+    // Get current message text from the contentEditable div
+    const getCurrentMessageText = () => {
+        if (!messageInputRef.current) return "";
+
+        // Get text content, removing any HTML tags
+        const plainText = messageInputRef.current.innerText || messageInputRef.current.textContent || "";
+        return plainText.trim();
+    };
 
     const handleSendMessage = async () => {
         if (!selectedUser) {
-            setError("Please select a recipient.");
+            setError("Vui lòng chọn người nhận.");
             return;
         }
-        if (message.trim() !== "" || image || emojiUrl) {
+
+        // Get the current message text from contentEditable
+        const currentMessageText = getCurrentMessageText();
+        console.log("Sending message:", currentMessageText);
+
+        if (currentMessageText || image || emojiUrl) {
             const payload = {
                 sender: auth?.id,
                 receiver: selectedUser.id,
-                message: message.trim(),
-                imageUrl: emojiUrl || null, // Use emojiUrl if it exists
-                timestamp: new Date().toISOString() // Add current timestamp
+                message: currentMessageText,
+                imageUrl: emojiUrl || null,
+                timestamp: new Date().toISOString()
             };
+
             if (image) {
                 try {
                     const imageUrl = await postImageChat(image);
-                    payload.imageUrl = imageUrl; // Add imageUrl key to the payload
-                    setImage(null); // Clear the image after sending the message
-                    setPreviewUrl(null); // Clear the preview URL
+                    payload.imageUrl = imageUrl;
+                    setImage(null);
+                    setPreviewUrl(null);
                 } catch (error) {
-                    setError("Image upload failed.");
+                    setError("Tải lên hình ảnh thất bại.");
                     return;
                 }
             }
+
+            console.log("Sending payload:", payload);
             chatService.sendMessage(payload);
-            setMessage(""); // Clear the input field after sending the message
-            setError(""); // Clear any previous error
-            setEmojiUrl(null); // Clear the emoji URL after sending the message
-            document.getElementById("messageInput").innerHTML = "";
+
+            // Clear message input
+            if (messageInputRef.current) {
+                messageInputRef.current.innerHTML = "";
+            }
+            setMessage("");
+            setError("");
+            setEmojiUrl(null);
+            setShowEmojiPicker(false);
+        } else {
+            console.log("Message is empty, not sending");
         }
     };
 
@@ -163,40 +212,20 @@ const ChatContent = () => {
     const handleUserSelect = (user) => {
         setSelectedUser(user);
         setSearch(false);
+
+        // On mobile, hide the user list when a user is selected
+        if (isMobileView) {
+            setShowUserList(false);
+        }
     };
 
     const getUserById = (userId) => {
         return users.find(user => user.id === userId);
     };
 
-    const formatMessageTime = (time) => {
-        if (time) {
-            try {
-                const date = parseISO(time);
-                return format(date, "HH:mm, MMM d, yyyy");
-            } catch (error) {
-                console.error("Error parsing date:", error);
-                return "Invalid Date";
-            }
-        } else {
-            console.error("Time is undefined or null");
-            return "Unknown Time";
-        }
-    };
-
-    const shouldShowTimestamp = (currentMessage, previousMessage) => {
-        if (!previousMessage) return true;
-        if (!currentMessage.timestamp || !previousMessage.timestamp) return false;
-        const currentTime = parseISO(currentMessage.timestamp);
-        const previousTime = parseISO(previousMessage.timestamp);
-        return differenceInMinutes(currentTime, previousTime) > 10;
-    };
-
     const toggleTimestamp = (index) => {
         setClickedMessageIndex(clickedMessageIndex === index ? null : index);
     };
-
-    const sortedMessages = messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -204,12 +233,7 @@ const ChatContent = () => {
             setImage(file);
             const reader = new FileReader();
             reader.onload = (event) => {
-                const img = document.createElement("img");
-                img.src = event.target.result;
-                img.style.maxWidth = "50px";
-                img.style.maxHeight = "50px";
-                img.style.margin = "5px";
-                document.getElementById("messageInput").appendChild(img);
+                setPreviewUrl(event.target.result);
             };
             reader.readAsDataURL(file);
         }
@@ -221,174 +245,288 @@ const ChatContent = () => {
             if (items[i].type.indexOf("image") !== -1) {
                 const file = items[i].getAsFile();
                 setImage(file);
-                setPreviewUrl(URL.createObjectURL(file)); // Set the preview URL
+                setPreviewUrl(URL.createObjectURL(file));
             }
         }
     };
 
-    useEffect(() => {
-        const handleEmojiClick = (event) => {
-            const imgElement = event.target.closest("img.epr-emoji-img");
+    const handleEmojiSelect = (emojiObject) => {
+        // Update emojiUrl state if it exists
+        if (emojiObject.imageUrl) {
+            setEmojiUrl(emojiObject.imageUrl);
+        }
 
-            if (imgElement && imgElement.src) {
-                const emojiUrl = imgElement.src;
-                setEmojiUrl(emojiUrl);
-                setShowEmojiPicker(false);
+        // Insert emoji at cursor position in contentEditable div
+        if (messageInputRef.current && emojiObject.emoji) {
+            // Insert at current cursor position
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const emoji = document.createTextNode(emojiObject.emoji);
+            range.deleteContents();
+            range.insertNode(emoji);
 
-                // Create an img element for the emoji and append it to the messageInput div
-                const img = document.createElement("img");
-                img.src = emojiUrl;
-                img.style.maxWidth = "20px";
-                img.style.maxHeight = "20px";
-                img.style.margin = "5px";
-                document.getElementById("messageInput").appendChild(img);
-            } else {
-                console.warn("❌ Không tìm thấy ảnh emoji.");
-            }
-        };
+            // Move cursor after the inserted emoji
+            range.setStartAfter(emoji);
+            range.setEndAfter(emoji);
+            selection.removeAllRanges();
+            selection.addRange(range);
 
-        // Add event listener
-        document.addEventListener("click", handleEmojiClick);
+            // Trigger input event to update message state
+            const inputEvent = new Event('input', { bubbles: true });
+            messageInputRef.current.dispatchEvent(inputEvent);
 
-        // Cleanup event listener on component unmount
-        return () => {
-            document.removeEventListener("click", handleEmojiClick);
-        };
-    }, []);
+            // Also update message state
+            setMessage(getCurrentMessageText());
+        }
+
+        setShowEmojiPicker(false);
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const text = e.currentTarget.innerText || e.currentTarget.textContent;
+        setMessage(text);
+    };
 
     return (
-        <div className={`fixed bottom-0 right-0 w-3/4 h-3/4 bg-white border border-gray-300 rounded-t-lg shadow-lg flex ${showChat ? "block" : "hidden"}`} style={{ zIndex: 1000 }}>
-            {/* Danh sách người dùng */}
-            <div className="w-1/3 border-r border-gray-300 p-4">
-                <div className="relative" ref={searchRef}>
-                    <input
-                        type="text"
-                        className="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Search..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onClick={() => {
-                            setSearchTerm("");
-                            setSearch(true);
-                        }}
-                    />
-                    {search && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1">
-                            {(users || []).filter(user => user.fullName.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
-                                <div key={user.id} className="p-3 cursor-pointer hover:bg-gray-200 flex items-center justify-between" onClick={() => handleUserSelect(user)}>
-                                    <div className="flex items-center">
-                                        <img src={user.avatar || "default-avatar.png"} alt={user.fullName} className="w-8 h-8 rounded-full mr-2" />
-                                        <div>
-                                            <div className="font-bold">{user.fullName}</div>
-                                            <div className="text-sm text-gray-500">{user.email}</div>
-                                        </div>
-                                    </div>
-                                    {onlineUsers.includes(user.id) && (
-                                        <span className="ml-2 w-3 h-3 bg-green-500 rounded-full"></span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {!search && (
-                        <div className="mt-4">
-                            {(chattedUsers || []).map(user => (
-                                <div key={user.id} className="p-3 cursor-pointer hover:bg-gray-200 flex items-center justify-between" onClick={() => handleUserSelect(user)}>
-                                    <div className="flex items-center">
-                                        <img src={user.avatar || "default-avatar.png"} alt={user.fullName} className="w-8 h-8 rounded-full mr-2" />
-                                        <div>
-                                            <div className="font-bold">{user.fullName}</div>
-                                            <div className="text-sm text-gray-500">{user.email}</div>
-                                        </div>
-                                    </div>
-                                    {onlineUsers.includes(user.id) && (
-                                        <span className="ml-2 w-3 h-3 bg-green-500 rounded-full"></span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Nội dung chat */}
-            <div className="w-2/3 flex flex-col">
-                {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b border-gray-300 bg-gray-100">
-                    <div className="flex items-center">
-                        <img src={selectedUser?.avatar || "https://dbimage.blob.core.windows.net/images/649dd9cb-5be3-4b34-8f4b-55e4f1182ef7-download.png"} alt={selectedUser?.fullName || "Message"} className="w-8 h-8 rounded-full mr-2" />
-                        <h2 className="text-lg font-bold">{selectedUser ? selectedUser.fullName : "Message"}</h2>
-                        {selectedUser && onlineUsers.includes(selectedUser.id) && (
-                            <span className="ml-2 w-3 h-3 bg-green-500 rounded-full"></span>
+        <div className="fixed bottom-4 right-4 w-full md:w-4/5 lg:w-3/5 h-[600px] max-h-[90vh] bg-white rounded-lg shadow-2xl flex overflow-hidden" style={{ maxWidth: '1200px', zIndex: 1000 }}>
+            {/* Header Bar - Only for Mobile */}
+            {isMobileView && selectedUser && !showUserList && (
+                <div className="absolute top-0 left-0 right-0 bg-white z-10 border-b flex items-center p-3">
+                    <button
+                        onClick={handleUnselectUser}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-full"
+                    >
+                        <FaAngleLeft className="text-lg" />
+                    </button>
+                    <div className="ml-2 flex items-center">
+                        <img
+                            src={selectedUser?.avatar || "https://dbimage.blob.core.windows.net/images/649dd9cb-5be3-4b34-8f4b-55e4f1182ef7-download.png"}
+                            alt={selectedUser?.fullName || "User"}
+                            className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <span className="ml-2 font-medium">{selectedUser?.fullName}</span>
+                        {onlineUsers.includes(selectedUser.id) && (
+                            <span className="ml-2 w-2 h-2 bg-green-500 rounded-full"></span>
                         )}
                     </div>
-                    <button className="text-gray-500 hover:text-gray-700" onClick={handleClickChatContent}>X</button>
                 </div>
-                <div className="flex-1 p-4 overflow-y-auto space-y-2">
-                    {sortedMessages.map((msg, index) => {
-                        const user = getUserById(msg.sender);
-                        const previousMessage = sortedMessages[index - 1];
-                        const showTimestamp = shouldShowTimestamp(msg, previousMessage) || index === clickedMessageIndex;
-                        return (
-                            <div key={index} className={`flex ${msg.sender === auth?.id ? "justify-end" : "justify-start"}`} onClick={() => toggleTimestamp(index)}>
-                                <div className="flex items-center">
-                                    {msg.sender !== auth?.id && (
-                                        <img src={user?.avatar || "default-avatar.png"} alt={user?.fullName} className="w-8 h-8 rounded-full mr-2" />
-                                    )}
-                                    <div className="max-w-xs p-3 rounded-lg">
-                                        {msg.imageUrl && <img src={msg.imageUrl} alt="Chat Image" className="mt-2 max-w-full h-auto rounded-lg" />}
-                                        {msg.message && (
-                                            <div className={`max-w-xs p-3 rounded-lg ${msg.sender === auth?.id ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}>
-                                                {msg.message}
-                                            </div>
+            )}
+
+            {/* User List Panel */}
+            {(showUserList || !isMobileView) && (
+                <motion.div
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    className="w-full md:w-1/3 h-full border-r border-gray-200 flex flex-col"
+                >
+                    <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h2 className="text-xl font-bold text-gray-800">Tin nhắn</h2>
+                        <button
+                            onClick={() => setShowChat(false)}
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <FaTimes />
+                        </button>
+                    </div>
+                    <UserList
+                        users={users}
+                        onlineUsers={onlineUsers}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        search={search}
+                        setSearch={setSearch}
+                        handleUserSelect={handleUserSelect}
+                        searchRef={searchRef}
+                        chattedUsers={chattedUsers}
+                        lastMessages={messages.reduce((acc, msg) => {
+                            if (msg.sender === auth?.id) {
+                                acc[msg.receiver] = msg.message || "Đã gửi một ảnh";
+                            } else {
+                                acc[msg.sender] = msg.message || "Đã gửi một ảnh";
+                            }
+                            return acc;
+                        }, {})}
+                    />
+                </motion.div>
+            )}
+
+            {/* Chat Area */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`${isMobileView && showUserList ? 'hidden' : 'flex'} flex-col h-full ${selectedUser ? 'w-full md:w-2/3' : 'w-full'}`}
+            >
+                {selectedUser ? (
+                    <>
+                        {/* Chat Header */}
+                        <div className="hidden md:flex justify-between items-center p-4 border-b border-gray-200 bg-white">
+                            <div className="flex items-center">
+                                <img
+                                    src={selectedUser?.avatar || "https://dbimage.blob.core.windows.net/images/649dd9cb-5be3-4b34-8f4b-55e4f1182ef7-download.png"}
+                                    alt={selectedUser?.fullName || "User"}
+                                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                />
+                                <div className="ml-3">
+                                    <h3 className="font-semibold text-gray-800">{selectedUser?.fullName}</h3>
+                                    <div className="flex items-center text-sm text-gray-500">
+                                        {onlineUsers.includes(selectedUser.id) ? (
+                                            <>
+                                                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                                <span>Đang hoạt động</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                                <span>Ngoại tuyến</span>
+                                            </>
                                         )}
-                                        {showTimestamp && <div className="text-xs text-gray-500 mt-1">{formatMessageTime(msg.timestamp)}</div>}
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
-                    <div ref={messagesEndRef} />
-                </div>
-
-                {/* Nhập tin nhắn */}
-                <div className="p-4 border-t border-gray-300 flex items-center relative">
-                    <div
-                        id="messageInput"
-                        contentEditable
-                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Type a message..."
-                        onInput={(e) => setMessage(e.currentTarget.textContent)}
-                        onPaste={handlePaste}
-                    />
-                  
-                    <input
-                        type="file"
-                        id="imageInput"
-                        style={{ display: "none" }}
-                        onChange={handleImageChange}
-                    />
-                    <label htmlFor="imageInput" className="ml-3 cursor-pointer">
-                        <FontAwesomeIcon icon={faImage} className="text-gray-500 hover:text-gray-700" />
-                    </label>
-             
-                    <button className="ml-3 text-gray-500 hover:text-gray-700" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-                        <FontAwesomeIcon icon={faSmile} />
-                    </button>
-                    {showEmojiPicker && (
-                        <div className="absolute bottom-16 right-4">
-                            <EmojiPicker onEmojiClick={(event, emojiObject) => setEmojiUrl(emojiObject.url)} />
-                            
+                            <div className="flex items-center">
+                                <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-full mx-1">
+                                    <FaPhone />
+                                </button>
+                                <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-full mx-1">
+                                    <FaVideo />
+                                </button>
+                                <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-full mx-1">
+                                    <FaEllipsisV />
+                                </button>
+                            </div>
                         </div>
-                    )}
-                    <button className="ml-3 text-gray-500 hover:text-gray-700" onClick={handleSendMessage}>
-                        <FontAwesomeIcon icon={faPaperPlane} />
-                    </button>
-                </div>
-                {error && <div className="text-red-500 text-center p-2">{error}</div>}
-            </div>
+
+                        {/* Chat Messages */}
+                        <div className={`flex-1 ${isMobileView && !showUserList ? 'pt-16' : ''} overflow-y-auto bg-gray-50`}>
+                            <ChatHistory
+                                messages={messages}
+                                auth={auth}
+                                getUserById={getUserById}
+                                clickedMessageIndex={clickedMessageIndex}
+                                toggleTimestamp={toggleTimestamp}
+                                messagesEndRef={messagesEndRef}
+                            />
+                        </div>
+
+                        {/* Image Preview */}
+                        {previewUrl && (
+                            <div className="p-2 border-t border-gray-200 bg-white">
+                                <div className="relative inline-block">
+                                    <img
+                                        src={previewUrl}
+                                        alt="Preview"
+                                        className="h-20 rounded-md object-cover border border-gray-300"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            setImage(null);
+                                            setPreviewUrl(null);
+                                        }}
+                                        className="absolute -top-2 -right-2 bg-gray-800 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center"
+                                    >
+                                        <FaTimes size={12} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Message Input Area */}
+                        <div className="p-3 border-t border-gray-200 bg-white">
+                            <div className="flex items-end">
+                                <div className="flex-1 relative">
+                                    <div
+                                        id="messageInput"
+                                        ref={messageInputRef}
+                                        contentEditable
+                                        onKeyPress={handleKeyPress}
+                                        className="min-h-[52px] max-h-[120px] overflow-y-auto p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                                        onInput={handleInputChange}
+                                        onPaste={handlePaste}
+                                        data-placeholder="Nhập tin nhắn..."
+                                    ></div>
+
+                                    <div className="absolute right-2 bottom-2 flex items-center">
+                                        <label htmlFor="imageInput" className="p-2 text-gray-500 hover:text-blue-500 cursor-pointer">
+                                            <FaImage />
+                                        </label>
+                                        <input
+                                            type="file"
+                                            id="imageInput"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleImageChange}
+                                        />
+
+                                        <div className="relative emoji-picker-container">
+                                            <button
+                                                type="button"
+                                                className="p-2 text-gray-500 hover:text-blue-500"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowEmojiPicker(!showEmojiPicker);
+                                                }}
+                                            >
+                                                <FaSmile />
+                                            </button>
+
+                                            {showEmojiPicker && (
+                                                <div className="absolute bottom-10 right-0 z-10">
+                                                    <EmojiPicker onEmojiClick={handleEmojiSelect} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSendMessage}
+                                    className={`ml-2 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 ${
+                                        message.trim() || image || emojiUrl
+                                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                                            : 'bg-gray-200 text-gray-400'
+                                    }`}
+                                >
+                                    <FaPaperPlane className={message.trim() || image || emojiUrl ? '' : 'opacity-50'} />
+                                </button>
+                            </div>
+
+                            {error && (
+                                <div className="mt-2 text-red-500 text-sm">{error}</div>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50">
+                        <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <FaComment className="text-blue-500 text-4xl" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Tin nhắn của bạn</h3>
+                        <p className="text-gray-500 text-center max-w-md">
+                            Chọn một người dùng từ danh sách bên trái để bắt đầu cuộc trò chuyện
+                        </p>
+                    </div>
+                )}
+            </motion.div>
         </div>
     );
 };
+
+// Add CSS for placeholder text
+const style = document.createElement('style');
+style.textContent = `
+[contenteditable=true]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  display: block;
+}`;
+document.head.appendChild(style);
 
 export default ChatContent;

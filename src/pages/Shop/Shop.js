@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
@@ -13,6 +14,7 @@ const Shop = () => {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isGridView, setIsGridView] = useState(true);
   const [page, setPage] = useState(0);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     gender: "",
     categoryProduct: "",
@@ -22,6 +24,17 @@ const Shop = () => {
     colorProduct: "",
     sizeProduct: "",
   });
+
+  // Filter names for display
+  const filterLabels = {
+    gender: "Giới tính",
+    categoryProduct: "Danh mục",
+    brandProduct: "Thương hiệu",
+    priceMin: "Giá từ",
+    priceMax: "Giá đến",
+    colorProduct: "Màu sắc",
+    sizeProduct: "Kích cỡ",
+  };
 
   useEffect(() => {
     if (location.state && location.state.gender) {
@@ -43,6 +56,8 @@ const Shop = () => {
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
+    // Scroll to top when changing page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleViewChange = (isGridView) => {
@@ -54,7 +69,8 @@ const Shop = () => {
       ...prevFilters,
       ...newFilters,
     }));
-    dispatch(filterProduct({ ...filters, ...newFilters, page, size: itemsPerPage }));
+    setPage(0); // Reset to first page when filter changes
+    dispatch(filterProduct({ ...filters, ...newFilters, page: 0, size: itemsPerPage }));
   };
 
   const handleClearFilter = (filterKey) => {
@@ -65,37 +81,166 @@ const Shop = () => {
       newFilters[filterKey] = "";
     }
     setFilters(newFilters);
-    dispatch(filterProduct({ ...newFilters, page, size: itemsPerPage }));
+    setPage(0); // Reset to first page when filter changes
+    dispatch(filterProduct({ ...newFilters, page: 0, size: itemsPerPage }));
+  };
+
+  const handleClearAllFilters = () => {
+    const resetFilters = {
+      gender: "",
+      categoryProduct: "",
+      brandProduct: "",
+      priceMin: "",
+      priceMax: "",
+      colorProduct: "",
+      sizeProduct: "",
+    };
+    setFilters(resetFilters);
+    setPage(0);
+    dispatch(filterProduct({ ...resetFilters, page: 0, size: itemsPerPage }));
+  };
+
+  const hasActiveFilters = Object.values(filters).some(value => value);
+
+  // Calculate visible page numbers
+  const getVisiblePageNumbers = () => {
+    const delta = 2; // How many pages to show before and after current page
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 0; i < totalPages; i++) {
+      if (
+        i === 0 ||
+        i === totalPages - 1 ||
+        (i >= page - delta && i <= page + delta)
+      ) {
+        range.push(i);
+      } else if (i === page - delta - 1 || i === page + delta + 1) {
+        range.push("...");
+      }
+    }
+
+    for (const i of range) {
+      if (l) {
+        if (i === "...") {
+          rangeWithDots.push(i);
+        } else if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push("...");
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
   };
 
   return (
-    <div className="max-w-container mx-auto px-3">
-      <div className="flex justify-between items-center">
+    <div className="max-w-container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
         <Breadcrumbs title="" gender={filters.gender} />
+
+        {/* Mobile filter button */}
+        <button
+          className="flex items-center gap-2 py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 md:hidden"
+          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Bộ lọc
+        </button>
       </div>
-      <div className="w-full h-full flex pb-20 gap-10">
-        <div className="w-[15%] lgl:w-[15%] hidden mdl:inline-flex h-full">
-          <div className="w-full p-4 bg-white rounded-lg shadow">
+
+      <div className="w-full h-full flex flex-col md:flex-row gap-6 pb-12">
+        {/* Mobile filter sidebar */}
+        {isMobileFilterOpen && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden" onClick={() => setIsMobileFilterOpen(false)}>
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.3 }}
+              className="absolute top-0 left-0 h-full w-80 bg-white shadow-xl overflow-y-auto p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Bộ lọc</h2>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setIsMobileFilterOpen(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <ShopSideNav onFilterChange={handleFilterChange} />
+            </motion.div>
+          </div>
+        )}
+
+        {/* Desktop sidebar */}
+        <div className="w-full md:w-[250px] lg:w-[280px] hidden md:block flex-shrink-0">
+          <div className="sticky top-20 w-full p-5 bg-white rounded-xl shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Lọc sản phẩm</h2>
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearAllFilters}
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  Xóa tất cả
+                </button>
+              )}
+            </div>
             <ShopSideNav onFilterChange={handleFilterChange} />
           </div>
         </div>
-        <div className="w-full mdl:w-[75%] lgl:w-[75%] h-full flex flex-col">
+
+        <div className="w-full md:flex-1">
           {/* Applied Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {Object.keys(filters).map((key) => (
-              key !== "gender" && filters[key] && (
-                <div key={key} className="flex items-center bg-gray-200 text-gray-700 px-3 py-1 rounded-full">
-                  <span>{`${filters[key]}`}</span>
-                  <button
-                    onClick={() => handleClearFilter(key)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                  >
-                    &times;
-                  </button>
-                </div>
-              )
-            ))}
-          </div>
+          {hasActiveFilters && (
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-medium text-gray-700">Bộ lọc đã chọn:</h3>
+                <button
+                  onClick={handleClearAllFilters}
+                  className="text-sm text-red-600 hover:text-red-800 hover:underline"
+                >
+                  Xóa tất cả
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(filters).map((key) => (
+                  filters[key] && (
+                    <motion.div
+                      key={key}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="flex items-center bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm"
+                    >
+                      <span className="text-xs text-gray-500 mr-1">{filterLabels[key]}:</span>
+                      <span className="text-sm font-medium">{filters[key]}</span>
+                      <button
+                        onClick={() => handleClearFilter(key)}
+                        className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </motion.div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+
           {totalElements > 0 ? (
             <ProductBanner
               itemsPerPage={itemsPerPage}
@@ -106,52 +251,94 @@ const Shop = () => {
               loading={loading}
             />
           ) : (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-lg text-gray-500">No products found</p>
+            !loading && (
+              <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow-md py-12 px-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p className="text-xl text-gray-700 font-medium mb-2">Không tìm thấy sản phẩm nào</p>
+                <p className="text-gray-500 text-center mb-6">Vui lòng thử lại với bộ lọc khác</p>
+                <button
+                  onClick={handleClearAllFilters}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Xóa tất cả bộ lọc
+                </button>
+              </div>
+            )
+          )}
+
+          {/* Loading state */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           )}
-          {loading ? (
-            <div>Loading...</div>
-          ) : error ? (
-            <div>Error: {error}</div>
-          ) : (
-            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-              {totalElements > 0 && (
-                <div className="flex space-x-1 justify-center items-center">
-                  <button
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 0}
-                    className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800"
-                  >
-                    Prev
-                  </button>
 
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index)}
-                      className={`min-w-9 rounded-full py-2 px-3.5 text-center text-sm transition-all shadow-sm ${index === page ? "bg-slate-800 text-white" : "border border-slate-300 text-slate-600"
+          {/* Error state */}
+          {error && !loading && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <p className="font-medium">Lỗi: {error}</p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalElements > 0 && !loading && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-md px-6 py-4">
+              <div className="flex space-x-1 justify-center items-center mb-4 sm:mb-0">
+                <button
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 0}
+                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
+                    page === 0
+                      ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                      : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
+                  }`}
+                >
+                  <span className="hidden sm:inline mr-1">«</span> Trước
+                </button>
+
+                <div className="hidden md:flex space-x-1">
+                  {getVisiblePageNumbers().map((pageNum, index) => (
+                    pageNum === "..." ? (
+                      <span key={`ellipsis-${index}`} className="px-2 py-2 text-gray-500">...</span>
+                    ) : (
+                      <button
+                        key={`page-${pageNum}`}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${
+                          pageNum === page ? "bg-blue-600 text-white border border-blue-600" : "border border-gray-300 text-gray-600 hover:border-blue-300"
                         }`}
-                    >
-                      {index + 1}
-                    </button>
+                      >
+                        {pageNum + 1}
+                      </button>
+                    )
                   ))}
-
-                  <button
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page === totalPages - 1}
-                    className="rounded-full border border-slate-300 py-2 px-3 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-800 hover:border-slate-800"
-                  >
-                    Next
-                  </button>
                 </div>
-              )}
-              <p className="text-base font-normal text-lightText mt-4">
-                {totalElements > 0 ? (
-                  `Showing ${page * itemsPerPage + 1} - ${page * itemsPerPage + (products ? products.length : 0)
-                  } of ${totalElements} products`
-                ) : (
-                  ""
+
+                <span className="md:hidden text-gray-700 text-sm px-2">
+                  {page + 1} / {totalPages}
+                </span>
+
+                <button
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages - 1}
+                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
+                    page === totalPages - 1
+                      ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                      : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
+                  }`}
+                >
+                  Tiếp <span className="hidden sm:inline ml-1">»</span>
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500">
+                {totalElements > 0 && (
+                  <>
+                    <span className="font-medium">{page * itemsPerPage + 1} - {Math.min((page + 1) * itemsPerPage, totalElements)}</span> trong{" "}
+                    <span className="font-medium">{totalElements}</span> sản phẩm
+                  </>
                 )}
               </p>
             </div>

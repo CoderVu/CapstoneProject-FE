@@ -3,11 +3,16 @@ import { getAllColors } from "../../../redux/actions/colorAction";
 import { getAllSizes } from "../../../redux/actions/sizeAction";
 import { addVariantProduct } from "../../../redux/service/productService";
 import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Save, X, Plus, Trash2, Tag, Package, DollarSign, LayoutGrid
+} from "lucide-react";
 
 const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
     const dispatch = useDispatch();
     const { colors } = useSelector((state) => state.color);
     const { sizes } = useSelector((state) => state.size);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         dispatch(getAllColors());
@@ -18,7 +23,7 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
         { sizeName: "", colorName: "", quantity: 0, price: 0 },
     ]);
 
-    // Thay đổi giá trị của một variant trong danh sách
+    // Handle change in variant input fields
     const handleChange = (index, e) => {
         const { name, value } = e.target;
         const newVariants = [...variantList];
@@ -26,12 +31,12 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
         setVariantList(newVariants);
     };
 
-    // Thêm một dòng variant mới
+    // Add a new variant row
     const addVariantRow = () => {
         setVariantList([...variantList, { sizeName: "", colorName: "", quantity: 0, price: 0 }]);
     };
 
-    // Xóa một dòng variant
+    // Remove a variant row
     const removeVariantRow = (index) => {
         if (variantList.length > 1) {
             const newVariants = variantList.filter((_, i) => i !== index);
@@ -39,128 +44,258 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
         }
     };
 
+    // Handle modal background click to close
+    const handleModalClick = (e) => {
+        if (e.target === e.currentTarget) {
+            onRequestClose();
+        }
+    };
+
+    // Update quantity with plus/minus controls
+    const handleQuantityChange = (index, change) => {
+        const newVariants = [...variantList];
+        const newQuantity = Math.max(0, parseInt(newVariants[index].quantity) + change);
+        newVariants[index].quantity = newQuantity;
+        setVariantList(newVariants);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await addVariantProduct(productId, variantList); // Gửi tất cả variants
-            onSubmit(variantList); // Cập nhật UI
-            onRequestClose(); // Đóng modal
+            setIsLoading(true);
+            await addVariantProduct(productId, variantList);
+            if (onSubmit) onSubmit(variantList);
+            onRequestClose();
         } catch (error) {
             console.error("Failed to add variants:", error);
+            setIsLoading(false);
         }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-        <div className="bg-white rounded-lg shadow-lg w-96 p-6 max-h-[80vh] overflow-y-auto">
-    
-                <h2 className="text-lg font-bold mb-4">Add Variants</h2>
-                <form onSubmit={handleSubmit}>
-                    {variantList.map((variant, index) => (
-                        <div key={index} className="border p-4 mb-4 rounded-lg">
-                            {/* Size Dropdown */}
-                            <div className="mb-2">
-                                <label className="block text-sm font-medium text-gray-700">Size</label>
-                                <select
-                                    name="sizeName"
-                                    value={variant.sizeName}
-                                    onChange={(e) => handleChange(index, e)}
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg"
-                                >
-                                    <option value="">Select Size</option>
-                                    {sizes.map((size) => (
-                                        <option key={size.id} value={size.name}>{size.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Color Dropdown */}
-                            <div className="mb-2">
-                                <label className="block text-sm font-medium text-gray-700">Color</label>
-                                <select
-                                    name="colorName"
-                                    value={variant.colorName}
-                                    onChange={(e) => handleChange(index, e)}
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg"
-                                >
-                                    <option value="">Select Color</option>
-                                    {colors.map((color) => (
-                                        <option key={color.id} value={color.color}>{color.color}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Quantity Input */}
-                            <div className="mb-2">
-                                <label className="block text-sm font-medium text-gray-700">Quantity</label>
-                                <input
-                                    type="number"
-                                    name="quantity"
-                                    value={variant.quantity}
-                                    onChange={(e) => handleChange(index, e)}
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg"
-                                />
-                            </div>
-
-                            {/* Price Input */}
-                            <div className="mb-2">
-                                <label className="block text-sm font-medium text-gray-700">Price</label>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    value={variant.price}
-                                    onChange={(e) => handleChange(index, e)}
-                                    required
-                                    className="w-full px-3 py-2 border rounded-lg"
-                                />
-                            </div>
-
-                            {/* Xóa Variant */}
-                            {variantList.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeVariantRow(index)}
-                                    className="text-red-600 hover:text-red-800 text-sm"
-                                >
-                                    Remove Variant
-                                </button>
-                            )}
-                        </div>
-                    ))}
-
-                    {/* Thêm Variant */}
+        <motion.div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleModalClick}
+        >
+            <motion.div
+                className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden"
+                initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-5 flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-white flex items-center">
+                        <LayoutGrid className="mr-2 h-5 w-5" />
+                        Thêm biến thể sản phẩm
+                    </h2>
                     <button
-                        type="button"
-                        onClick={addVariantRow}
-                        className="w-full px-3 py-2 mb-4 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
+                        onClick={onRequestClose}
+                        className="text-white rounded-full p-1 hover:bg-indigo-600 transition-colors"
                     >
-                        + Add Another Variant
+                        <X className="w-5 h-5" />
                     </button>
+                </div>
 
-                    {/* Buttons */}
-                    <div className="flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={onRequestClose}
-                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                            Add Variants
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Variants */}
+                        <div className="space-y-4">
+                            <AnimatePresence>
+                                {variantList.map((variant, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="border border-gray-200 p-5 rounded-lg bg-white shadow-sm"
+                                    >
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h3 className="text-gray-700 font-medium flex items-center">
+                                                <Tag className="h-4 w-4 mr-1 text-purple-500" />
+                                                Biến thể {index + 1}
+                                            </h3>
+                                            {variantList.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeVariantRow(index)}
+                                                    className="text-red-500 hover:text-red-700 rounded-full p-1 hover:bg-red-50 transition-colors"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Size Dropdown */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Kích cỡ</label>
+                                                <div className="relative">
+                                                    <select
+                                                        name="sizeName"
+                                                        value={variant.sizeName}
+                                                        onChange={(e) => handleChange(index, e)}
+                                                        required
+                                                        className="appearance-none w-full bg-gray-50 border border-gray-300 text-gray-900 py-2.5 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                    >
+                                                        <option value="">Chọn kích cỡ</option>
+                                                        {sizes.map((size) => (
+                                                            <option key={size.id} value={size.name}>{size.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Color Dropdown */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
+                                                <div className="relative">
+                                                    <select
+                                                        name="colorName"
+                                                        value={variant.colorName}
+                                                        onChange={(e) => handleChange(index, e)}
+                                                        required
+                                                        className="appearance-none w-full bg-gray-50 border border-gray-300 text-gray-900 py-2.5 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                    >
+                                                        <option value="">Chọn màu sắc</option>
+                                                        {colors.map((color) => (
+                                                            <option key={color.id} value={color.color}>{color.color}</option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Quantity Input */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                                                <div className="flex items-center">
+                                                    <button
+                                                        type="button"
+                                                        className="bg-gray-200 text-gray-700 px-3 py-2 rounded-l-lg hover:bg-gray-300"
+                                                        onClick={() => handleQuantityChange(index, -1)}
+                                                    >
+                                                        −
+                                                    </button>
+                                                    <input
+                                                        type="number"
+                                                        name="quantity"
+                                                        value={variant.quantity}
+                                                        onChange={(e) => handleChange(index, e)}
+                                                        required
+                                                        min="0"
+                                                        className="flex-grow text-center py-2 border-t border-b border-gray-300 focus:outline-none focus:ring-0 focus:border-purple-500"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="bg-gray-200 text-gray-700 px-3 py-2 rounded-r-lg hover:bg-gray-300"
+                                                        onClick={() => handleQuantityChange(index, 1)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Price Input */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Giá</label>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                        <DollarSign className="w-4 h-4 text-gray-500" />
+                                                    </div>
+                                                    <input
+                                                        type="number"
+                                                        name="price"
+                                                        value={variant.price}
+                                                        onChange={(e) => handleChange(index, e)}
+                                                        required
+                                                        min="0"
+                                                        className="w-full pl-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+
+                            {/* Add Another Variant Button */}
+                            <motion.button
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                type="button"
+                                onClick={addVariantRow}
+                                className="w-full flex items-center justify-center gap-1 px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Thêm biến thể khác
+                            </motion.button>
+                        </div>
+
+                        {/* Variant Summary */}
+                        {variantList.length > 0 && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 className="text-sm font-medium text-gray-700 mb-2">Tóm tắt biến thể</h3>
+                                <ul className="space-y-1 text-sm text-gray-600">
+                                    {variantList.map((variant, idx) => (
+                                        <li key={idx} className="flex items-center">
+                                            <span className="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                                            {variant.colorName || "Chưa chọn màu"} / {variant.sizeName || "Chưa chọn size"}:
+                                            <span className="font-medium ml-1">{variant.quantity} sản phẩm</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Form Actions */}
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={onRequestClose}
+                                disabled={isLoading}
+                                className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 disabled:opacity-70"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 disabled:opacity-70 flex items-center"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                        Đang thêm...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4 mr-2" />
+                                        Thêm biến thể
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </motion.div>
+        </motion.div>
     );
 };
 

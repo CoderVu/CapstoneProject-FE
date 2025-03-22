@@ -27,7 +27,7 @@ const Color = ({ onChange, selectedColor, setSelectedColor }) => {
   return (
     <div>
       <div onClick={() => setShowColors(!showColors)} className="cursor-pointer">
-        <NavTitle title="Màu sản phẩm" icons={true} />
+        
       </div>
       {showColors && (
         <motion.div

@@ -2,7 +2,7 @@ import React from "react";
 import Banner from "../../components/Banner/Banner";
 import BestSellers from "../../components/home/BestSellers/BestSellers";
 import NewArrivals from "../../components/home/NewArrivals/NewArrivals";
-import Sale from "../../components/home/Sale/Sale";
+import CategorySection from "../../components/home/Category/CategorySection";
 import SpecialOffers from "../../components/home/SpecialOffers/SpecialOffers";
 import YearProduct from "../../components/home/YearProduct/YearProduct";
 import ViewedProducts from "../../components/home/Viewed/ViewedProducts";
@@ -11,24 +11,36 @@ const Home = () => {
   return (
     <div className="w-full mx-auto">
       <Banner />
-      <div className="max-w-container mx-auto mt-4">
-        <Sale />
-        <div className="mt-8">
+      <div className="max-w-container mx-auto px-4">
+        {/* Category section */}
+        <div className="py-10">
+          <CategorySection />
+        </div>
+
+        {/* New Arrivals section */}
+        <div className="py-10 border-t border-gray-200">
           <NewArrivals />
         </div>
-        <div>
-        <ViewedProducts />
-        </div>
-        <div className="mt-8">
+
+        {/* Best Sellers section */}
+        <div className="py-10 border-t border-gray-200">
           <BestSellers />
         </div>
-        <div className="mt-8">
+
+        {/* Recently Viewed Products */}
+        <div className="py-10 border-t border-gray-200">
+          <ViewedProducts />
+        </div>
+
+        {/* Year Product section */}
+        <div className="py-10 border-t border-gray-200">
           <YearProduct />
         </div>
-        <div className="mt-8">
+
+        {/* Special Offers section */}
+        <div className="py-10 border-t border-gray-200">
           <SpecialOffers />
         </div>
-        
       </div>
     </div>
   );

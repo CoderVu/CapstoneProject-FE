@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import NavTitle from "./NavTitle";
 
 const Price = ({ onChange, selectedPrice, setSelectedPrice }) => {
   const [showPrices, setShowPrices] = useState(true);
@@ -37,7 +36,7 @@ const Price = ({ onChange, selectedPrice, setSelectedPrice }) => {
   return (
     <div className="cursor-pointer">
       <div onClick={() => setShowPrices(!showPrices)}>
-        <NavTitle title="Lọc giá" icons={true} />
+       
       </div>
       {showPrices && (
         <div className="font-titleFont">
