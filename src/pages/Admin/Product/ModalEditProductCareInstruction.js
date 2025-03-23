@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateProductDescription } from "../../../redux/service/productService";
+import { useDispatch } from "react-redux";
+import {  updateProductCareInstructions} from "../../../redux/service/productService";
 import { getProductDetail } from "../../../redux/actions/productActions";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save, X, Plus, Trash2, Info, FileText, CheckCircle, AlertTriangle
 } from "lucide-react";
 
-const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, productId, productDescription, onUpdateSuccess }) => {
+const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, productId, productCareInstructions, onUpdateSuccess }) => {
     const dispatch = useDispatch();
-
     const [description, setDescription] = useState("");
     const [attributes, setAttributes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -24,11 +23,11 @@ const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, productId, pr
 
     // Update state when productDescription changes
     useEffect(() => {
-        if (productDescription) {
-            setDescription(productDescription.description || "");
-            setAttributes(Object.entries(productDescription.attributes || {}).map(([key, value]) => ({ key, value })));
+        if (productCareInstructions) {
+            setDescription(productCareInstructions.description || "");
+            setAttributes(Object.entries(productCareInstructions.attributes || {}).map(([key, value]) => ({ key, value })));
         }
-    }, [productDescription]);
+    }, [productCareInstructions]);
 
     const handleAttributeChange = (index, field, value) => {
         const newAttributes = attributes.map((attribute, i) => {
@@ -69,7 +68,7 @@ const ModalEditProductCareInstruction = ({ isOpen, onRequestClose, productId, pr
 
             // Prepare data and update
             const updatedData = { description, attributes: formattedAttributes };
-            await updateProductDescription(productId, updatedData);
+            await updateProductCareInstructions(productId, updatedData);
 
             // Update Redux store and provide feedback
             dispatch(getProductDetail(productId));

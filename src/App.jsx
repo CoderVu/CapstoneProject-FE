@@ -33,6 +33,7 @@ import Categories from "./pages/Admin/Category/Categories";
 import ProductTable from "./pages/Admin/Product/ProductTable";
 import { ChatProvider } from "./components/context/showChat";
 import ChatButton from "./components/chat/ChatButton";
+import OrderHistory from "./pages/Order/OrderHistory";
 
 const Layout = () => {
   return (
@@ -59,6 +60,7 @@ const router = createBrowserRouter(
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/paymentgateway" element={<Payment />} />
+        <Route path="/orderHistory" element= {<OrderHistory />} />
         <Route path="/profile" element={<UserProfile />} />
       </Route>
 
@@ -116,7 +118,7 @@ function AppContent() {
 
     fetchMockOrder();
 
-    const interval = setInterval(fetchMockOrder, 10000000);
+    const interval = setInterval(fetchMockOrder, 100000);
 
     return () => clearInterval(interval);
   }, []);

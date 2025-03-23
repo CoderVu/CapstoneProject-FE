@@ -8,12 +8,27 @@ import { showSuccessToast, showErrorToast } from "../../../components/Toast/Toas
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Plus, Tag, DollarSign, Bookmark, Check } from "lucide-react";
 
+const colorOptions = [
+  { name: "Black", value: "Black", hex: "#000000" },
+  { name: "White", value: "White", hex: "#FFFFFF" },
+  { name: "Red", value: "Red", hex: "#FF0000" },
+  { name: "Blue", value: "Blue", hex: "#0000FF" },
+  { name: "Green", value: "Green", hex: "#008000" },
+  { name: "Yellow", value: "Yellow", hex: "#FFFF00" },
+  
+];
+
+const getColorHex = (colorName) => {
+  const color = colorOptions.find((c) => c.name === colorName);
+  return color ? color.hex : "#FFFFFF";
+};
+
 const AddProductForm = ({ isOpen, onRequestClose }) => {
   const categories = useSelector((state) => state.category.categories);
   const brands = useSelector((state) => state.brand.brands);
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [productData, setProductData] = useState({
     productName: "",
     description: "",
@@ -28,7 +43,8 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
     imageFiles: [],
     colorImages: {},
   });
-  
+
+
   const [imageInputs, setImageInputs] = useState([{ file: null, color: "" }]);
   const [previewImages, setPreviewImages] = useState([]);
 
@@ -48,7 +64,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
     const file = e.target.files[0];
     newImageInputs[index].file = file;
     setImageInputs(newImageInputs);
-    
+
     // Create preview URL
     if (file) {
       const newPreviews = [...previewImages];
@@ -73,7 +89,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
     if (previewImages[index]) {
       URL.revokeObjectURL(previewImages[index]);
     }
-    
+
     setImageInputs(imageInputs.filter((_, i) => i !== index));
     setPreviewImages(previewImages.filter((_, i) => i !== index));
   };
@@ -81,7 +97,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const formData = new FormData();
       for (const key in productData) {
@@ -125,13 +141,13 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
       setIsSubmitting(false);
     }
   };
-  
+
   useEffect(() => {
     if (isOpen) {
       dispatch(getCategories());
       dispatch(getAllBrands());
     }
-    
+
     // Cleanup function to prevent memory leaks
     return () => {
       previewImages.forEach(url => {
@@ -139,7 +155,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
       });
     };
   }, [isOpen, dispatch]);
-  
+
   // Clean up preview URLs when component unmounts
   useEffect(() => {
     return () => {
@@ -148,20 +164,20 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
       });
     };
   }, []);
-  
+
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onRequestClose}
         >
-          <motion.div 
+          <motion.div
             className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -174,14 +190,14 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                 <Plus className="mr-2 h-6 w-6 text-blue-500" />
                 Thêm sản phẩm mới
               </h2>
-              <button 
+              <button
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 onClick={onRequestClose}
               >
                 <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-4">
@@ -200,7 +216,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Mô tả sản phẩm <span className="text-red-500">*</span>
@@ -215,7 +231,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                   </div>
-                  
+
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -235,7 +251,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Giá khuyến mãi (VNĐ)
@@ -254,7 +270,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -278,7 +294,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                         </select>
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Thương hiệu <span className="text-red-500">*</span>
@@ -302,7 +318,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Giới tính
@@ -320,7 +336,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                     </select>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                     <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Trạng thái sản phẩm</h3>
@@ -339,7 +355,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                         </div>
                         <span className="text-gray-700 dark:text-gray-300">Đang giảm giá</span>
                       </label>
-                      
+
                       <label className="flex items-center space-x-3 cursor-pointer">
                         <div className="relative">
                           <input
@@ -354,7 +370,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                         </div>
                         <span className="text-gray-700 dark:text-gray-300">Sản phẩm bán chạy</span>
                       </label>
-                      
+
                       <label className="flex items-center space-x-3 cursor-pointer">
                         <div className="relative">
                           <input
@@ -371,15 +387,15 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                       </label>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Hình ảnh sản phẩm <span className="text-red-500">*</span>
                     </h3>
                     <div className="space-y-3">
                       {imageInputs.map((input, index) => (
-                        <motion.div 
-                          key={index} 
+                        <motion.div
+                          key={index}
                           className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -395,7 +411,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                               <X className="h-4 w-4" />
                             </button>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="md:col-span-2">
                               <label className={`
@@ -409,12 +425,12 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                                   onChange={(e) => handleImageInputChange(index, e)}
                                   className="hidden"
                                 />
-                                
+
                                 {previewImages[index] ? (
                                   <div className="relative w-full h-full">
-                                    <img 
-                                      src={previewImages[index]} 
-                                      alt="Preview" 
+                                    <img
+                                      src={previewImages[index]}
+                                      alt="Preview"
                                       className="w-full h-full object-contain p-2"
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity">
@@ -429,20 +445,23 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                                 )}
                               </label>
                             </div>
-                            
-                            <div>
-                              <input
-                                type="text"
-                                value={input.color}
-                                onChange={(e) => handleColorChange(index, e)}
-                                placeholder="Màu sắc (VD: Đỏ, Xanh)"
-                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                              />
-                            </div>
+
+                            <select
+                              value={input.color}
+                              onChange={(e) => handleColorChange(index, e)}
+                              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            >
+                              <option value="">Chọn màu</option>
+                              {colorOptions.map((color) => (
+                                <option key={color.value} value={color.value} style={{ backgroundColor: color.hex, color: "#fff" }}>
+                                  {color.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </motion.div>
                       ))}
-                      
+
                       <button
                         type="button"
                         onClick={handleAddImageInput}
@@ -455,7 +474,7 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="pt-4 border-t dark:border-gray-700 mt-6 flex justify-end space-x-4">
                 <button
                   type="button"
@@ -470,8 +489,8 @@ const AddProductForm = ({ isOpen, onRequestClose }) => {
                   disabled={isSubmitting}
                   className={`
                     px-6 py-2.5 rounded-lg text-white 
-                    ${isSubmitting 
-                      ? 'bg-blue-400 cursor-not-allowed' 
+                    ${isSubmitting
+                      ? 'bg-blue-400 cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'}
                     transition-colors flex items-center
                   `}

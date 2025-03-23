@@ -103,7 +103,7 @@ const ChatContent = () => {
         };
 
         if (showChat) {
-            chatService.connect("ws://localhost:8080/ws", auth?.id);
+            chatService.connect("ws://192.168.1.17:8080/ws", auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
                 listenerAddedRef.current = true;

@@ -18,16 +18,12 @@ const createOrderFromCart = async (orderRequest) => {
     try {
         const response = await axios({
             method: 'POST',
-            url: `/api/v1/user/order`,
+            url: `/api/v1/user/order/create-cart`,
             data: orderRequest,
-            headers: {
-                'Authorization': `Bearer ${orderRequest.token}`
-            }
         });
         const { data } = response.data;
 
-    
-    showSuccessToast(response.data.message);
+        showSuccessToast(response.data.message);
         return data;
     } catch (error) {
         console.error("Error creating order from cart:", error);
@@ -35,4 +31,17 @@ const createOrderFromCart = async (orderRequest) => {
         throw error;
     }
 }
-export { fetchOrderMock };
+const fetchOrder = async () => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/user/order/history`,
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching product description:", error);
+        throw error;
+    }
+}
+export { fetchOrderMock , createOrderFromCart , fetchOrder };

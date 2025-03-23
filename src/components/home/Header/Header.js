@@ -317,7 +317,7 @@ const Header = () => {
                           <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Tài khoản của tôi
                           </Link>
-                          <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <Link to="/orderHistory" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Đơn hàng
                           </Link>
                           <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

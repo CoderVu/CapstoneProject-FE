@@ -12,6 +12,7 @@ const SpecialOffers = () => {
   const [productsOnSale, setProductsOnSale] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" or "slider"
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -122,37 +123,77 @@ const SpecialOffers = () => {
         <div className="absolute top-1/2 left-0 w-full border-t border-gray-200 -z-10"></div>
       </div>
 
-      {/* Sale badge top-right corner */}
-      <div className="relative">
-        <div className="absolute -top-3 right-3 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-full shadow-md z-10 animate-pulse">
-          SALE
-        </div>
-
-        {/* Product slider */}
-        <div className="px-1">
-          <Slider {...settings}>
-            {productsOnSale.map((product) => (
-              <div key={product.id} className="px-2 pb-4">
-                <div className="transform transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg rounded-lg">
-                  <Product
-                    id={product.id}
-                    img={product.mainImage?.path}
-                    secondaryImg={product.images[0]?.path}
-                    productName={product.productName}
-                    price={product.price}
-                    discountPrice="80"
-                    colors={product.variants?.map((variant) => variant.color) || []}
-                    badge={product.newProduct ? "New" : "Sale"}
-                    rating={product.rate?.rating}
-                    totalRate={product.rate?.totalRate}
-                    totalSold="100"
-                  />
-                </div>
-              </div>
-            ))}
-          </Slider>
+      {/* View mode toggle buttons */}
+      <div className="flex justify-center mb-8">
+        <div className="flex border border-gray-300 rounded overflow-hidden">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`px-3 py-1 flex items-center ${viewMode === "grid" ? "bg-red-500 text-white" : "bg-white text-gray-700"}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Grid
+          </button>
+          <button
+            onClick={() => setViewMode("slider")}
+            className={`px-3 py-1 flex items-center ${viewMode === "slider" ? "bg-red-500 text-white" : "bg-white text-gray-700"}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            Slider
+          </button>
         </div>
       </div>
+
+      {/* Grid View */}
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {productsOnSale.map((product) => (
+            <div key={product.id} className="transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+              <Product
+                id={product.id}
+                img={product.mainImage?.path}
+                secondaryImg={product.images[0]?.path}
+                productName={product.productName}
+                price={product.price}
+                discountPrice="80"
+                colors={product.variants?.map((variant) => variant.color) || []}
+                badge={product.newProduct ? "New" : "Sale"}
+                rating={product.rate?.rating}
+                totalRate={product.rate?.totalRate}
+                totalSold="100"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Slider View */}
+      {viewMode === "slider" && (
+        <Slider {...settings}>
+          {productsOnSale.map((product) => (
+            <div key={product.id} className="px-2 pb-4">
+              <div className="transform transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg rounded-lg">
+                <Product
+                  id={product.id}
+                  img={product.mainImage?.path}
+                  secondaryImg={product.images[0]?.path}
+                  productName={product.productName}
+                  price={product.price}
+                  discountPrice="80"
+                  colors={product.variants?.map((variant) => variant.color) || []}
+                  badge={product.newProduct ? "New" : "Sale"}
+                  rating={product.rate?.rating}
+                  totalRate={product.rate?.totalRate}
+                  totalSold="100"
+                />
+              </div>
+            </div>
+          ))}
+        </Slider>
+      )}
 
       {/* View all button with enhanced styling */}
       <div className="flex justify-center mt-10">

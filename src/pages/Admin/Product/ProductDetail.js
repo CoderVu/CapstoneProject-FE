@@ -66,7 +66,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
-        await dispatch(getProductDetail(id));
+        dispatch(getProductDetail(id));
         setCareInstructionError(false);
         setProductDescriptionError(false);
       } catch (error) {
@@ -292,23 +292,21 @@ const ProductDetail = () => {
                     ))}
                   </div>
 
-                  <div className="flex gap-2 p-4 pt-0">
+                  <div className="flex flex-wrap gap-2 p-4 pt-0">
                     <ActionButton
                       onClick={() => setModalState(prev => ({ ...prev, editDescription: true }))}
                       icon={Edit}
-                      label="Sửa mô tả"
+                      label="Sửa mô tả chi tiết"
                       bgColor="bg-amber-500"
                       hoverColor="hover:bg-amber-600"
                     />
-                    {productDescriptionError && (
-                      <ActionButton
-                        onClick={() => setModalState(prev => ({ ...prev, addDescription: true }))}
-                        icon={Plus}
-                        label="Thêm mô tả"
-                        bgColor="bg-green-500"
-                        hoverColor="hover:bg-green-600"
-                      />
-                    )}
+                    <ActionButton
+                      onClick={() => setModalState(prev => ({ ...prev, addDescription: true }))}
+                      icon={Plus}
+                      label="Thêm mô tả chi tiết"
+                      bgColor="bg-green-500"
+                      hoverColor="hover:bg-green-600"
+                    />
                   </div>
                 </motion.div>
               )}
@@ -485,15 +483,13 @@ const ProductDetail = () => {
                       hoverColor="hover:bg-indigo-600"
                     />
 
-                    {careInstructionError && (
-                      <ActionButton
-                        onClick={() => setModalState(prev => ({ ...prev, addCareInstruction: true }))}
-                        icon={Plus}
-                        label="Thêm hướng dẫn chăm sóc"
-                        bgColor="bg-green-500"
-                        hoverColor="hover:bg-green-600"
-                      />
-                    )}
+                    <ActionButton
+                      onClick={() => setModalState(prev => ({ ...prev, addCareInstruction: true }))}
+                      icon={Plus}
+                      label="Thêm hướng dẫn chăm sóc"
+                      bgColor="bg-green-500"
+                      hoverColor="hover:bg-green-600"
+                    />
                   </div>
 
                   {/* Error notifications */}

@@ -1,37 +1,128 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
+import { FaQrcode, FaArrowLeft, FaCheckCircle } from "react-icons/fa";
+import { createOrderFromCart } from "../../redux/service/orderService";
 
-const Payment = () => {
-  const [orderDetails] = useState({
-    orderId: "ORD" + Math.floor(Math.random() * 1000000),
-    amount: 1275000, // Amount in VND
-    items: [
-      { name: "Premium T-shirt", price: 450000, quantity: 2 },
-      { name: "Designer Jeans", price: 375000, quantity: 1 }
-    ]
+const PaymentGateway = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const cartState = location.state || {}; 
+
+  const [paymentStep, setPaymentStep] = useState(1); // 1: Select method, 2: Enter details, 3: QR Code, 4: Success
+  const [countdown, setCountdown] = useState(300); // 5 minutes countdown
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    deliveryAddress: "",
+    deliveryPhone: "",
+    orderInfo: "Payment for order",
+    paymentMethod: "ZALOPAY"
   });
 
-  const [paymentStep, setPaymentStep] = useState(1); // 1: select method, 2: QR shown, 3: success
-  const [countdown, setCountdown] = useState(300); // 5 minutes countdown
+  // Calculate total amount
+  const totalAmount = cartState.totalAmount || 0;
 
-  // Simulate payment confirmation
+
+  // Add shipping charge
+  let shippingCharge = 0;
+  if (totalAmount <= 200000) {
+    shippingCharge = 30000;
+  } else if (totalAmount <= 400000) {
+    shippingCharge = 25000;
+  } else if (totalAmount > 400000) {
+    shippingCharge = 20000;
+  }
+
+  const finalAmount = totalAmount + shippingCharge;
+
+  // Countdown timer for QR code
+  useEffect(() => {
+    let timer;
+    if (paymentStep === 3 && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (countdown === 0) {
+      // Payment timeout
+      setError("Hết thời gian thanh toán. Vui lòng thử lại.");
+      setPaymentStep(2);
+    }
+    return () => clearInterval(timer);
+  }, [paymentStep, countdown]);
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Create ZaloPay order
+  const handleCreateOrder = async () => {
+    if (!formData.deliveryAddress || !formData.deliveryPhone) {
+      setError("Vui lòng nhập đầy đủ thông tin giao hàng");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get cart IDs from the cart items
+      const cartIds = cartState.selectedItems || [];
+
+      // Prepare order request
+      const orderRequest = {
+        amount: finalAmount,
+        deliveryAddress: formData.deliveryAddress,
+        deliveryPhone: formData.deliveryPhone,
+        paymentMethod: formData.paymentMethod,
+        cartIds: cartIds,
+        orderInfo: formData.orderInfo,
+        lang: "vi",
+        extraData: "additional data"
+      };
+
+      // Call the API to create order
+      const orderResponse = await createOrderFromCart(orderRequest);
+
+      if (orderResponse && orderResponse.orderurl) {
+        window.location.href = orderResponse.orderurl;
+      } else {
+        throw new Error("Không nhận được thông tin thanh toán");
+      }
+    } catch (err) {
+      setError(err.message || "Đã xảy ra lỗi khi tạo đơn hàng");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Simulate payment confirmation (for demo purposes)
   const handleConfirmPayment = () => {
-    setPaymentStep(3);
+    setPaymentStep(4);
   };
 
   // Format currency in VND
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-      .format(amount)
-      .replace('₫', 'VND');
+    return new Intl.NumberFormat('vi-VN').format(amount) + " VNĐ";
   };
+
+  console.log("Cart State: ", cartState);
 
   return (
     <div className="max-w-container mx-auto px-4">
       <Breadcrumbs title="Thanh toán" />
 
       <div className="pb-10">
+        {/* Step 1: Select Payment Method */}
         {paymentStep === 1 && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Chọn phương thức thanh toán</h2>
@@ -79,7 +170,125 @@ const Payment = () => {
           </div>
         )}
 
+        {/* Step 2: Enter Delivery Details */}
         {paymentStep === 2 && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="text-center mb-6">
+              <img
+                src="https://brandlogos.net/wp-content/uploads/2022/05/zalopay-logo_brandlogos.net_fjcup.png"
+                alt="ZaloPay"
+                className="w-16 h-16 object-contain mx-auto"
+              />
+              <h2 className="text-2xl font-semibold mt-2 text-gray-800">Thông tin giao hàng & thanh toán</h2>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-500 p-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-medium text-lg mb-4">Thông tin giao hàng</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 mb-1">Địa chỉ giao hàng *</label>
+                    <input
+                      type="text"
+                      name="deliveryAddress"
+                      value={formData.deliveryAddress}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Nhập địa chỉ giao hàng"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 mb-1">Số điện thoại *</label>
+                    <input
+                      type="tel"
+                      name="deliveryPhone"
+                      value={formData.deliveryPhone}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Nhập số điện thoại"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 mb-1">Ghi chú đơn hàng (tuỳ chọn)</label>
+                    <textarea
+                      name="orderInfo"
+                      value={formData.orderInfo}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Ghi chú cho đơn hàng của bạn"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-lg mb-4">Tóm tắt đơn hàng</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Số lượng sản phẩm:</span>
+                      <span className="font-medium">{cartState.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tổng phụ:</span>
+                      <span className="font-medium">{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Phí vận chuyển:</span>
+                      <span className="font-medium">{formatCurrency(shippingCharge)}</span>
+                    </div>
+                    <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between">
+                      <span className="font-semibold">Tổng cộng:</span>
+                      <span className="font-bold text-blue-600">{formatCurrency(finalAmount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-2">Phương thức thanh toán</h4>
+                    <div className="bg-blue-50 border border-blue-100 rounded-md p-3 flex items-center">
+                      <img
+                        src="https://brandlogos.net/wp-content/uploads/2022/05/zalopay-logo_brandlogos.net_fjcup.png"
+                        alt="ZaloPay"
+                        className="w-10 h-10 object-contain mr-3"
+                      />
+                      <span>ZaloPay</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-between">
+              <button
+                onClick={() => setPaymentStep(1)}
+                className="px-4 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 flex items-center"
+              >
+                <FaArrowLeft className="mr-2" /> Quay lại
+              </button>
+
+              <button
+                onClick={handleCreateOrder}
+                disabled={loading}
+                className={`px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {loading ? "Đang xử lý..." : "Tiếp tục thanh toán"}
+                {!loading && <FaQrcode className="ml-2" />}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: QR Code Payment */}
+        {paymentStep === 3 && orderDetails && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="text-center mb-4">
               <img
@@ -100,17 +309,12 @@ const Payment = () => {
                       <span className="font-medium">{orderDetails.orderId}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Tổng tiền:</span>
-                      <span className="font-medium text-blue-600">{formatCurrency(orderDetails.amount)}</span>
+                      <span className="text-gray-600">Mã giao dịch:</span>
+                      <span className="font-medium">{orderDetails.apptransid}</span>
                     </div>
-                    <div className="border-t border-gray-200 my-2 pt-2">
-                      <p className="font-medium mb-2">Sản phẩm:</p>
-                      {orderDetails.items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-sm mb-1">
-                          <span>{item.name} x{item.quantity}</span>
-                          <span>{formatCurrency(item.price * item.quantity)}</span>
-                        </div>
-                      ))}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tổng tiền:</span>
+                      <span className="font-medium text-blue-600">{formatCurrency(finalAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -127,7 +331,10 @@ const Payment = () => {
 
                 <div className="mt-6 flex justify-between">
                   <button
-                    onClick={() => setPaymentStep(1)}
+                    onClick={() => {
+                      setPaymentStep(2);
+                      setCountdown(300);
+                    }}
                     className="px-4 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50"
                   >
                     Quay lại
@@ -144,13 +351,7 @@ const Payment = () => {
               </div>
 
               <div className="md:w-1/2 flex flex-col items-center">
-                <div className="border-4 border-green-500 rounded-lg p-2 bg-white">
-                  <img
-                    src="https://docs.zalopay.vn/images/qrcode/qrcode_merchant.png"
-                    alt="ZaloPay QR Code"
-                    className="w-64 h-64 object-contain mx-auto"
-                  />
-                </div>
+              
                 <div className="mt-4 text-center">
                   <p className="text-sm text-gray-500">
                     Thời gian quét mã QR để thanh toán còn
@@ -164,22 +365,31 @@ const Payment = () => {
           </div>
         )}
 
-        {paymentStep === 3 && (
+        {/* Step 4: Payment Success */}
+        {paymentStep === 4 && (
           <div className="bg-white p-8 rounded-lg shadow-md text-center">
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <FaCheckCircle className="h-12 w-12 text-green-600" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-800 mb-2">Thanh toán thành công!</h2>
             <p className="text-gray-600 mb-2">Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý.</p>
-            <p className="text-gray-600 mb-6">Mã đơn hàng: <span className="font-medium">{orderDetails.orderId}</span></p>
+            <p className="text-gray-600 mb-6">
+              Mã đơn hàng: <span className="font-medium">{orderDetails ? orderDetails.orderId : "N/A"}</span>
+            </p>
 
-            <Link to="/">
-              <button className="w-52 h-12 bg-primeColor text-white text-lg hover:bg-black duration-300 rounded">
-                Tiếp tục mua sắm
-              </button>
-            </Link>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link to="/orders">
+                <button className="w-full sm:w-52 h-12 bg-blue-600 text-white text-lg hover:bg-blue-700 duration-300 rounded">
+                  Xem đơn hàng
+                </button>
+              </Link>
+
+              <Link to="/">
+                <button className="w-full sm:w-52 h-12 bg-gray-200 text-gray-800 text-lg hover:bg-gray-300 duration-300 rounded">
+                  Tiếp tục mua sắm
+                </button>
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -187,4 +397,4 @@ const Payment = () => {
   );
 };
 
-export default Payment;
+export default PaymentGateway;

@@ -12,6 +12,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" or "slider"
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -137,13 +138,55 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
         </div>
       </div>
 
-      {/* Product slider with enhanced styling */}
-      <div className="px-1 relative">
-        {/* Gold corner decoration */}
-        <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-20 h-20 bg-yellow-400 transform rotate-45"></div>
+      {/* View mode toggle buttons */}
+      <div className="flex justify-center mb-8">
+        <div className="flex border border-gray-300 rounded overflow-hidden">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`px-3 py-1 flex items-center ${viewMode === "grid" ? "bg-yellow-400 text-white" : "bg-white text-gray-700"}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Grid
+          </button>
+          <button
+            onClick={() => setViewMode("slider")}
+            className={`px-3 py-1 flex items-center ${viewMode === "slider" ? "bg-yellow-400 text-white" : "bg-white text-gray-700"}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            Slider
+          </button>
         </div>
+      </div>
 
+      {/* Grid View */}
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {products.map((product) => (
+            <div key={product.id} className="transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+              <Product
+                id={product.id}
+                img={product.mainImage?.path}
+                secondaryImg={product.images[0]?.path}
+                productName={product.productName}
+                price={product.price}
+                discountPrice="80"
+                colors={product.variants?.map((variant) => variant.color) || []}
+                badge={product.bestSeller ? "Best Seller" : "Top"}
+                rating={product.rate?.rating}
+                totalRate={product.rate?.totalRate}
+                totalSold="100"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Slider View */}
+      {viewMode === "slider" && (
         <Slider {...settings}>
           {products.map((product) => (
             <div key={product.id} className="px-2 py-2">
@@ -170,7 +213,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
             </div>
           ))}
         </Slider>
-      </div>
+      )}
 
       {/* View all button */}
       <div className="flex justify-center mt-8">

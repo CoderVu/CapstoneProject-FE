@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, memo } from 'react';
 import { parseISO, format, differenceInMinutes, isToday, isYesterday } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { vi } from 'date-fns/locale';
 
-const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleTimestamp, messagesEndRef }) => {
+// Sử dụng memo để tránh re-render không cần thiết
+const ChatHistory = memo(({ messages, auth, getUserById, clickedMessageIndex, toggleTimestamp, messagesEndRef }) => {
     // Format message time for timestamps
-    const formatMessageTime = (time) => {
+    const formatMessageTime = useCallback((time) => {
         if (!time) return "Không xác định";
 
         try {
@@ -22,10 +23,10 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
             console.error("Error parsing date:", error);
             return "Không xác định";
         }
-    };
+    }, []);
 
     // Format date for day separators
-    const formatDateHeader = (time) => {
+    const formatDateHeader = useCallback((time) => {
         if (!time) return "";
 
         try {
@@ -41,10 +42,10 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
         } catch (error) {
             return "";
         }
-    };
+    }, []);
 
     // Check if we should show timestamp under message
-    const shouldShowTimestamp = (currentMessage, previousMessage) => {
+    const shouldShowTimestamp = useCallback((currentMessage, previousMessage) => {
         if (!previousMessage) return true;
         if (!currentMessage?.timestamp || !previousMessage?.timestamp) return false;
 
@@ -56,10 +57,10 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
         } catch (error) {
             return false;
         }
-    };
+    }, []);
 
     // Check if we should show a date separator between messages
-    const shouldShowDateSeparator = (currentMessage, previousMessage) => {
+    const shouldShowDateSeparator = useCallback((currentMessage, previousMessage) => {
         if (!previousMessage) return true;
         if (!currentMessage?.timestamp || !previousMessage?.timestamp) return false;
 
@@ -75,61 +76,66 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
         } catch (error) {
             return false;
         }
-    };
-
-    // Ensure messages is an array before using reduce
-    const validMessages = Array.isArray(messages) ? messages : [];
-
-    // Sort messages chronologically
-    const sortedMessages = [...validMessages].sort((a, b) =>
-        new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
-    );
-
-    // Group consecutive messages from the same sender
-    const groupedMessages = sortedMessages.reduce((groups, message, index) => {
-        if (!groups) groups = [];
-        const previousMessage = sortedMessages[index - 1];
-
-        // Check if we need to create a new day separator
-        if (shouldShowDateSeparator(message, previousMessage)) {
-            groups.push({
-                type: 'date',
-                date: message.timestamp,
-                id: `date-${message.timestamp || index}`
-            });
-        }
-
-        // Check if this message should start a new group
-        const shouldStartNewGroup =
-            index === 0 ||
-            message.sender !== previousMessage?.sender ||
-            !previousMessage?.timestamp || !message?.timestamp ||
-            differenceInMinutes(
-                parseISO(message.timestamp),
-                parseISO(previousMessage.timestamp)
-            ) > 10;
-
-        if (shouldStartNewGroup) {
-            groups.push({
-                type: 'message-group',
-                sender: message.sender,
-                messages: [message],
-                id: `group-${message.sender}-${message.timestamp || index}`
-            });
-        } else {
-            // Add to the last group
-            const lastGroup = groups[groups.length - 1];
-            if (lastGroup && lastGroup.type === 'message-group') {
-                lastGroup.messages.push(message);
-            }
-        }
-
-        return groups;
     }, []);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    // Ensure messages is an array before using reduce
+    const validMessages = Array.isArray(messages) ? messages : [];
+
+    // Group và sort messages - được memoize để tránh tính toán lại khi re-render
+    const { sortedMessages, groupedMessages } = React.useMemo(() => {
+        // Sort messages chronologically
+        const sorted = [...validMessages].sort((a, b) =>
+            new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
+        );
+
+        // Group consecutive messages from the same sender
+        const grouped = sorted.reduce((groups, message, index) => {
+            if (!groups) groups = [];
+            const previousMessage = sorted[index - 1];
+
+            // Check if we need to create a new day separator
+            if (shouldShowDateSeparator(message, previousMessage)) {
+                groups.push({
+                    type: 'date',
+                    date: message.timestamp,
+                    id: `date-${message.timestamp || index}`
+                });
+            }
+
+            // Check if this message should start a new group
+            const shouldStartNewGroup =
+                index === 0 ||
+                message.sender !== previousMessage?.sender ||
+                !previousMessage?.timestamp || !message?.timestamp ||
+                differenceInMinutes(
+                    parseISO(message.timestamp),
+                    parseISO(previousMessage.timestamp)
+                ) > 10;
+
+            if (shouldStartNewGroup) {
+                groups.push({
+                    type: 'message-group',
+                    sender: message.sender,
+                    messages: [message],
+                    id: `group-${message.sender}-${message.timestamp || index}`
+                });
+            } else {
+                // Add to the last group
+                const lastGroup = groups[groups.length - 1];
+                if (lastGroup && lastGroup.type === 'message-group') {
+                    lastGroup.messages.push(message);
+                }
+            }
+
+            return groups;
+        }, []);
+
+        return { sortedMessages: sorted, groupedMessages: grouped };
+    }, [validMessages, shouldShowDateSeparator]); // Chỉ tính toán lại khi messages thay đổi
 
     // Animations
     const messageVariants = {
@@ -221,6 +227,7 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
                                                                 src={msg.imageUrl}
                                                                 alt="Chat Image"
                                                                 className="max-w-full rounded-md"
+                                                                loading="lazy"
                                                                 onLoad={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}
                                                             />
                                                         </div>
@@ -269,6 +276,6 @@ const ChatHistory = ({ messages, auth, getUserById, clickedMessageIndex, toggleT
             <div ref={messagesEndRef} />
         </div>
     );
-};
+});
 
 export default ChatHistory;
