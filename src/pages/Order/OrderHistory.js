@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { fetchOrder } from "../../redux/service/orderService";
-import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock } from "react-icons/fa";
+import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock, FaFileInvoice } from "react-icons/fa";
+import PrintInvoice from "./PrintInvoice";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -44,9 +45,9 @@ const OrderHistory = () => {
 
   // Function to format date
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
+    const options = {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -93,7 +94,7 @@ const OrderHistory = () => {
       return (
         order.orderCode.toLowerCase().includes(searchLower) ||
         order.deliveryAddress.toLowerCase().includes(searchLower) ||
-        (order.orderDetails.some(item => 
+        (order.orderDetails.some(item =>
           item.productName && item.productName.toLowerCase().includes(searchLower)
         ))
       );
@@ -102,7 +103,7 @@ const OrderHistory = () => {
       // Sort by date
       const dateA = new Date(a.orderDate);
       const dateB = new Date(b.orderDate);
-      
+
       if (sortBy === "latest") {
         return dateB - dateA;
       } else {
@@ -120,7 +121,7 @@ const OrderHistory = () => {
       <div className="pb-20">
         <div className="w-full">
           <h1 className="text-2xl font-bold mb-4">Lịch sử đơn hàng của bạn</h1>
-          
+
           {/* Error message */}
           {error && (
             <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4">
@@ -140,7 +141,6 @@ const OrderHistory = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="border border-gray-300 rounded-md px-3 py-2 w-full md:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                 
                 </div>
 
                 <div className="flex-shrink-0">
@@ -157,7 +157,7 @@ const OrderHistory = () => {
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex items-center">
                 <label className="mr-2 text-gray-600">Sắp xếp:</label>
                 <select
@@ -183,8 +183,8 @@ const OrderHistory = () => {
               <FaShoppingBag className="mx-auto text-gray-300 text-5xl mb-4" />
               <h2 className="text-xl font-medium text-gray-600 mb-2">Không tìm thấy đơn hàng nào</h2>
               <p className="text-gray-500 mb-4">
-                {searchTerm 
-                  ? "Không có đơn hàng phù hợp với tìm kiếm của bạn." 
+                {searchTerm
+                  ? "Không có đơn hàng phù hợp với tìm kiếm của bạn."
                   : "Bạn chưa có đơn hàng nào. Hãy mua sắm ngay!"}
               </p>
               <Link to="/shop">
@@ -197,7 +197,7 @@ const OrderHistory = () => {
             // Order list
             <div className="space-y-4">
               {filteredAndSortedOrders.map((order) => (
-                <motion.div 
+                <motion.div
                   key={order.orderCode}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -221,7 +221,7 @@ const OrderHistory = () => {
                           <span>{formatDate(order.orderDate)}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-3">
                         <span className="font-medium text-blue-700">{formatPrice(order.totalAmount)}</span>
                         <button
@@ -233,7 +233,7 @@ const OrderHistory = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Order details (expanded) */}
                   {expandedOrder === order.orderCode && (
                     <div className="p-4">
@@ -256,7 +256,7 @@ const OrderHistory = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Order status */}
                         <div>
                           <h4 className="font-medium text-gray-700 mb-3">Trạng thái đơn hàng</h4>
@@ -267,19 +267,19 @@ const OrderHistory = () => {
                               <span className={order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Vận chuyển</span>
                               <span className={order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Giao hàng</span>
                             </div>
-                            
+
                             {/* Progress bar */}
                             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 relative">
-                              <div 
-                                className="bg-blue-600 h-2.5 rounded-full" 
-                                style={{ 
-                                  width: order.status === "PENDING" ? "25%" : 
-                                         order.status === "PROCESSING" ? "50%" : 
-                                         order.status === "SHIPPED" ? "75%" : 
-                                         order.status === "DELIVERED" ? "100%" : "0%" 
+                              <div
+                                className="bg-blue-600 h-2.5 rounded-full"
+                                style={{
+                                  width: order.status === "PENDING" ? "25%" :
+                                         order.status === "PROCESSING" ? "50%" :
+                                         order.status === "SHIPPED" ? "75%" :
+                                         order.status === "DELIVERED" ? "100%" : "0%"
                                 }}
                               ></div>
-                              
+
                               {/* Status dots */}
                               <div className="absolute -top-1 left-0 w-4 h-4 rounded-full bg-blue-600"></div>
                               <div className={`absolute -top-1 left-1/3 transform -translate-x-1/2 w-4 h-4 rounded-full ${order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
@@ -287,7 +287,7 @@ const OrderHistory = () => {
                               <div className={`absolute -top-1 right-0 w-4 h-4 rounded-full ${order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
                             </div>
                           </div>
-                          
+
                           <div className="mt-4">
                             <FaTruck className={`inline-block mr-2 ${order.status === "SHIPPED" ? "text-blue-600" : "text-gray-400"}`} />
                             {order.status === "SHIPPED" ? (
@@ -300,11 +300,11 @@ const OrderHistory = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Products list */}
                       <div className="mt-6">
                         <h4 className="font-medium text-gray-700 mb-3">Sản phẩm đã đặt</h4>
-                        
+
                         {order.orderDetails.length === 0 ? (
                           <p className="text-gray-500 italic">Không có thông tin chi tiết sản phẩm</p>
                         ) : (
@@ -313,13 +313,13 @@ const OrderHistory = () => {
                               <div key={index} className="py-3 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                 {/* Product image */}
                                 <div className="w-16 h-16 flex-shrink-0">
-                                  <img 
-                                    src={product.imgUrl} 
-                                    alt={product.productName} 
+                                  <img
+                                    src={product.imgUrl}
+                                    alt={product.productName}
                                     className="w-full h-full object-cover rounded"
                                   />
                                 </div>
-                                
+
                                 {/* Product info */}
                                 <div className="flex-grow">
                                   <h5 className="font-medium text-gray-800">{product.productName}</h5>
@@ -329,7 +329,7 @@ const OrderHistory = () => {
                                     <span className="text-sm text-gray-600">Số lượng: {product.quantity}</span>
                                   </div>
                                 </div>
-                                
+
                                 {/* Product price */}
                                 <div className="font-medium text-blue-700">
                                   {formatPrice(product.totalPrice)}
@@ -339,7 +339,7 @@ const OrderHistory = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Total amount */}
                       <div className="mt-6 border-t border-gray-100 pt-4">
                         <div className="flex justify-between items-center">
@@ -347,15 +347,25 @@ const OrderHistory = () => {
                           <span className="text-xl font-bold text-blue-700">{formatPrice(order.totalAmount)}</span>
                         </div>
                       </div>
-                      
+
                       {/* Action buttons */}
-                      <div className="mt-6 flex justify-end gap-3">
+                      <div className="mt-6 flex flex-wrap justify-end gap-3">
                         {order.status === "PENDING" && (
                           <button className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors">
                             Hủy đơn hàng
                           </button>
                         )}
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+
+                        {/* Using PrintInvoice component for printing and PDF download */}
+                        <PrintInvoice
+                          order={order}
+                          formatDate={formatDate}
+                          formatPrice={formatPrice}
+                          getStatusInfo={getStatusInfo}
+                        />
+
+                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                          <FaFileInvoice className="text-sm" />
                           Liên hệ hỗ trợ
                         </button>
                       </div>

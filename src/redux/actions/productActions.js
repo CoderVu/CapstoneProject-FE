@@ -31,12 +31,14 @@ export const getProductDetail = (productId, page = 0, size = 30) => async (dispa
       fetchProductDetail(productId),
       fetchProductDescription(productId).catch((error) => {
         if (error.response && error.response.status === 404) {
-          return null; // Handle 404 error for product description
+          console.log("error0", error);
+          return null; // Handle 404 error for description
         }
         throw error;
       }),
       fetchProductCareInstructions(productId).catch((error) => {
         if (error.response && error.response.status === 404) {
+          console.log("error1", error);
           return null; // Handle 404 error for care instructions
         }
         throw error;

@@ -4,13 +4,14 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { FaQrcode, FaArrowLeft, FaCheckCircle } from "react-icons/fa";
 import { createOrderFromCart } from "../../redux/service/orderService";
+import AddressSelector from "./AddressSelector";
 
 const PaymentGateway = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const cartState = location.state || {}; 
+  const cartState = location.state || {};
 
   const [paymentStep, setPaymentStep] = useState(1); // 1: Select method, 2: Enter details, 3: QR Code, 4: Success
   const [countdown, setCountdown] = useState(300); // 5 minutes countdown
@@ -26,7 +27,6 @@ const PaymentGateway = () => {
 
   // Calculate total amount
   const totalAmount = cartState.totalAmount || 0;
-
 
   // Add shipping charge
   let shippingCharge = 0;
@@ -64,6 +64,14 @@ const PaymentGateway = () => {
     });
   };
 
+  // Handle address change from Address Selector
+  const handleAddressChange = (fullAddress) => {
+    setFormData({
+      ...formData,
+      deliveryAddress: fullAddress
+    });
+  };
+
   // Create ZaloPay order
   const handleCreateOrder = async () => {
     if (!formData.deliveryAddress || !formData.deliveryPhone) {
@@ -96,7 +104,13 @@ const PaymentGateway = () => {
       if (orderResponse && orderResponse.orderurl) {
         window.location.href = orderResponse.orderurl;
       } else {
-        throw new Error("Không nhận được thông tin thanh toán");
+        // Demo: move to next step instead of redirecting
+        setOrderDetails({
+          orderId: "DEMO" + Math.floor(100000 + Math.random() * 900000),
+          apptransid: "T" + Date.now(),
+          amount: finalAmount
+        });
+        setPaymentStep(3);
       }
     } catch (err) {
       setError(err.message || "Đã xảy ra lỗi khi tạo đơn hàng");
@@ -194,15 +208,8 @@ const PaymentGateway = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-gray-700 mb-1">Địa chỉ giao hàng *</label>
-                    <input
-                      type="text"
-                      name="deliveryAddress"
-                      value={formData.deliveryAddress}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="Nhập địa chỉ giao hàng"
-                      required
-                    />
+                    {/* Replaced input with AddressSelector component */}
+                    <AddressSelector onAddressChange={handleAddressChange} />
                   </div>
                   <div>
                     <label className="block text-gray-700 mb-1">Số điện thoại *</label>
@@ -351,7 +358,15 @@ const PaymentGateway = () => {
               </div>
 
               <div className="md:w-1/2 flex flex-col items-center">
-              
+                {/* QR Code placeholder */}
+                <div className="w-64 h-64 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DEMO:${orderDetails.orderId}:${finalAmount}`}
+                    alt="QR Code for payment"
+                    className="w-48 h-48"
+                  />
+                </div>
+
                 <div className="mt-4 text-center">
                   <p className="text-sm text-gray-500">
                     Thời gian quét mã QR để thanh toán còn

@@ -39,8 +39,10 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   const product = useSelector((state) => state.productDetail.productDetail);
   const productDescription = useSelector((state) => state.productDescription.productDescription);
-  const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
+  console.log("productDescription", productDescription);
 
+  const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
+  console.log("productCareInstructions", productCareInstructions);
   const [variantList, setVariantList] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [careInstructionError, setCareInstructionError] = useState(false);
@@ -85,6 +87,15 @@ const ProductDetail = () => {
       setVariantList(product.variants);
     }
   }, [product]);
+
+  // Update error states based on productDescription and productCareInstructions
+  useEffect(() => {
+    setProductDescriptionError(productDescription === null);
+  }, [productDescription]);
+
+  useEffect(() => {
+    setCareInstructionError(productCareInstructions === null);
+  }, [productCareInstructions]);
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -293,20 +304,23 @@ const ProductDetail = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-2 p-4 pt-0">
-                    <ActionButton
-                      onClick={() => setModalState(prev => ({ ...prev, editDescription: true }))}
-                      icon={Edit}
-                      label="Sửa mô tả chi tiết"
-                      bgColor="bg-amber-500"
-                      hoverColor="hover:bg-amber-600"
-                    />
-                    <ActionButton
-                      onClick={() => setModalState(prev => ({ ...prev, addDescription: true }))}
-                      icon={Plus}
-                      label="Thêm mô tả chi tiết"
-                      bgColor="bg-green-500"
-                      hoverColor="hover:bg-green-600"
-                    />
+                    {productDescription !== null ? (
+                      <ActionButton
+                        onClick={() => setModalState(prev => ({ ...prev, editDescription: true }))}
+                        icon={Edit}
+                        label="Sửa mô tả chi tiết"
+                        bgColor="bg-amber-500"
+                        hoverColor="hover:bg-amber-600"
+                      />
+                    ) : (
+                      <ActionButton
+                        onClick={() => setModalState(prev => ({ ...prev, addDescription: true }))}
+                        icon={Plus}
+                        label="Thêm mô tả chi tiết"
+                        bgColor="bg-green-500"
+                        hoverColor="hover:bg-green-600"
+                      />
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -475,21 +489,23 @@ const ProductDetail = () => {
                   className="p-4"
                 >
                   <div className="space-y-2">
-                    <ActionButton
-                      onClick={() => setModalState(prev => ({ ...prev, editCareInstruction: true }))}
-                      icon={Edit}
-                      label="Cập nhật hướng dẫn chăm sóc"
-                      bgColor="bg-indigo-500"
-                      hoverColor="hover:bg-indigo-600"
-                    />
-
-                    <ActionButton
-                      onClick={() => setModalState(prev => ({ ...prev, addCareInstruction: true }))}
-                      icon={Plus}
-                      label="Thêm hướng dẫn chăm sóc"
-                      bgColor="bg-green-500"
-                      hoverColor="hover:bg-green-600"
-                    />
+                    {productCareInstructions !== null ? (
+                      <ActionButton
+                        onClick={() => setModalState(prev => ({ ...prev, editCareInstruction: true }))}
+                        icon={Edit}
+                        label="Cập nhật hướng dẫn chăm sóc"
+                        bgColor="bg-indigo-500"
+                        hoverColor="hover:bg-indigo-600"
+                      />
+                    ) : (
+                      <ActionButton
+                        onClick={() => setModalState(prev => ({ ...prev, addCareInstruction: true }))}
+                        icon={Plus}
+                        label="Thêm hướng dẫn chăm sóc"
+                        bgColor="bg-green-500"
+                        hoverColor="hover:bg-green-600"
+                      />
+                    )}
                   </div>
 
                   {/* Error notifications */}
@@ -560,10 +576,37 @@ const ProductDetail = () => {
         const updatedVariants = variantList.map((v) => (v.id === updatedVariant.id ? updatedVariant : v));
         setVariantList(updatedVariants);
       }} />
-      <ModalEditProductDesciption isOpen={modalState.editDescription} onRequestClose={() => handleCloseModal("editDescription")} productId={product.id} productDescription={productDescription} />
-      <ModalAddProductDescription isOpen={modalState.addDescription} onRequestClose={() => handleCloseModal("addDescription")} product={product} />
-      <ModalAddCareInstruction isOpen={modalState.addCareInstruction} onRequestClose={() => handleCloseModal("addCareInstruction")} product={product} />
-      <ModalEditProductCareInstruction isOpen={modalState.editCareInstruction} onRequestClose={() => handleCloseModal("editCareInstruction")} productId={product.id} productCareInstructions={productCareInstructions} />
+
+      {/* Conditionally render modals based on whether data exists */}
+      {productDescription !== null ? (
+        <ModalEditProductDesciption
+          isOpen={modalState.editDescription}
+          onRequestClose={() => handleCloseModal("editDescription")}
+          productId={product.id}
+          productDescription={productDescription}
+        />
+      ) : (
+        <ModalAddProductDescription
+          isOpen={modalState.addDescription}
+          onRequestClose={() => handleCloseModal("addDescription")}
+          product={product}
+        />
+      )}
+
+      {productCareInstructions !== null ? (
+        <ModalEditProductCareInstruction
+          isOpen={modalState.editCareInstruction}
+          onRequestClose={() => handleCloseModal("editCareInstruction")}
+          productId={product.id}
+          productCareInstructions={productCareInstructions}
+        />
+      ) : (
+        <ModalAddCareInstruction
+          isOpen={modalState.addCareInstruction}
+          onRequestClose={() => handleCloseModal("addCareInstruction")}
+          product={product}
+        />
+      )}
     </div>
   );
 };

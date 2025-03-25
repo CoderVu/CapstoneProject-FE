@@ -25,6 +25,7 @@ const ProductBanner = ({ products = [], itemsPerPageFromBanner, loading }) => {
               <Product
                 key={product.id}
                 id={product.id}
+                type={product.type}
                 img={product.mainImage?.path}
                 secondaryImg={product.images[0]?.path}
                 productName={product.productName}

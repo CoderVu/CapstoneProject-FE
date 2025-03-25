@@ -39,7 +39,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (id) {
-      dispatch(getProductDetail(id, page, size)); 
+      dispatch(getProductDetail(id, page, size));
       dispatch(getRating(id, 0, size));
       postViewedProduct(id); // Post the viewed product ID when the component mounts
     }
@@ -102,17 +102,45 @@ const ProductDetails = () => {
   };
 
   const settings = {
-    
     infinite: true,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 1,
     nextArrow: <button className="slick-next ">&gt;</button>,
     prevArrow: <button className="slick-prev">&lt;</button>,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1
+        }
+      }
+    ]
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="w-full h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
+  </div>;
+
+  if (error) return <div className="w-full h-screen flex items-center justify-center text-red-500">
+    <p>Đã xảy ra lỗi: {error}</p>
+  </div>;
 
   return (
     <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
@@ -168,18 +196,21 @@ const ProductDetails = () => {
             <ProductInfo productInfo={productDetail} onImageClick={handleImageClick} />
           </div>
         </div>
+
         {/* ProductTabs */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Thông tin sản phẩm</h2>
           <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
-        
+
         {/* Sản phẩm liên quan */}
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Sản phẩm tương tự</h2>
           <ProductRelated />
         </div>
 
         <div className="w-full bg-white p-4 rounded-lg shadow-md mt-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Lịch sử đánh giá</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Đánh giá sản phẩm</h2>
           <div className="flex items-center mb-4">
             <div className="text-4xl font-bold text-gray-900">{ratingSummary.averageRating || 0}/5</div>
             <div className="ml-2">
@@ -211,40 +242,56 @@ const ProductDetails = () => {
 
           {/* Danh sách đánh giá */}
           {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <div key={review.id} className="mb-4 border-b border-gray-200 pb-4">
-                <div className="flex items-center mb-2">
-                  <img
-                    className="w-10 h-10 rounded-full object-cover mr-2"
-                    src={review.user?.avatar || "https://via.placeholder.com/40"}
-                    alt={review.user?.fullName || "User Avatar"}
-                  />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{review.user?.fullName || "Anonymous"}</p>
-                    <div className="flex items-center">
-                      {Array.from({ length: 5 }).map((_, index) =>
-                        index < review.rate ? (
-                          <FaStar key={index} className="text-yellow-500 text-sm" />
-                        ) : (
-                          <FaRegStar key={index} className="text-gray-300 text-sm" />
-                        )
-                      )}
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Nhận xét từ khách hàng</h3>
+              {reviews.map((review) => (
+                <div key={review.id} className="mb-4 border-b border-gray-200 pb-4">
+                  <div className="flex items-center mb-2">
+                    <img
+                      className="w-10 h-10 rounded-full object-cover mr-2"
+                      src={review.user?.avatar || "https://via.placeholder.com/40"}
+                      alt={review.user?.fullName || "User Avatar"}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{review.user?.fullName || "Anonymous"}</p>
+                      <div className="flex items-center">
+                        {Array.from({ length: 5 }).map((_, index) =>
+                          index < review.rate ? (
+                            <FaStar key={index} className="text-yellow-500 text-sm" />
+                          ) : (
+                            <FaRegStar key={index} className="text-gray-300 text-sm" />
+                          )
+                        )}
+                        <span className="ml-2 text-sm text-gray-600">{review.rate} sao</span>
+                      </div>
                     </div>
-                    <span className="ml-2 text-sm text-gray-600">{review.rate} sao</span>
                   </div>
+                  <p className="text-gray-700">{review.comment}</p>
+                  {review.imageRatings && review.imageRatings.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      {review.imageRatings.map((image, index) => (
+                        <img key={index} className="w-20 h-20 object-cover rounded" src={image} alt={`Review ${index}`} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-700">{review.comment}</p>
-                {review.imageRatings && review.imageRatings.length > 0 && (
-                  <div className="flex gap-2 mt-2">
-                    {review.imageRatings.map((image, index) => (
-                      <img key={index} className="w-20 h-20 object-cover rounded" src={image} alt={`Review ${index}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
+              ))}
+
+              {hasMore && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={handleLoadMore}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  >
+                    Xem thêm đánh giá
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <p className="text-gray-600">Chưa có đánh giá nào.</p>
+            <div className="p-4 text-center text-gray-500 border border-gray-200 rounded-lg mt-4">
+              <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+            </div>
           )}
         </div>
       </div>
