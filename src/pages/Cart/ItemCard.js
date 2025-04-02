@@ -27,9 +27,8 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        className={`w-full grid grid-cols-1 lg:grid-cols-5 mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 ${
-          isHovered ? "border-blue-200 dark:border-blue-700" : ""
-        } ${isSelected ? "border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : ""} transition-all duration-300`}
+        className={`w-full grid grid-cols-1 lg:grid-cols-5 mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 ${isHovered ? "border-blue-200 dark:border-blue-700" : ""
+          } ${isSelected ? "border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : ""} transition-all duration-300`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -43,7 +42,13 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
                 onChange={() => onSelectItem(item.id || item.productId)}
                 className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out mr-3"
               />
-              <img className="w-16 h-16 object-cover rounded-md border border-gray-200 dark:border-gray-600" src={item.image} alt={item.productName} />
+              <div className="w-32 h-32 flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-700 shadow-md">
+                <img
+                  className="w-full h-full object-contain p-2"
+                  src={item.image}
+                  alt={item.productName}
+                />
+              </div>
             </div>
             <h1 className="font-medium text-gray-800 dark:text-gray-200">{item.productName}</h1>
           </div>
@@ -74,11 +79,13 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
             </button>
           </div>
           <div className="relative group">
-            <img
-              className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-600 transition-all duration-300 group-hover:shadow-md"
-              src={item.image}
-              alt={item.productName}
-            />
+            <div className="w-40 h-40 bg-white dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg transition-all duration-300">
+              <img
+                className="w-full h-full object-contain p-2"
+                src={item.image}
+                alt={item.productName}
+              />
+            </div>
             {item.discount && (
               <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md rounded-tr-md">
                 -{item.discount}%

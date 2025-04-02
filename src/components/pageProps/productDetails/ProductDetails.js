@@ -11,8 +11,10 @@ import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
 import { postViewedProduct } from "../../../redux/service/productService";
 import ProductRelated from "./ProductRelated";
+import ProductReviewSection from "./ProductReviewSection";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { tr } from "date-fns/locale";
 
 // Add custom CSS for animations
 const styles = `
@@ -74,53 +76,30 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (rating) {
-      const fetchUserDetails = async (review) => {
-        try {
-          const userResponse = await fetch(`http://192.168.1.28:8080/api/v1/public/users/${review.userId}`);
-          const userData = await userResponse.json();
-          if (userData.statusCode === 200) {
-            return { ...review, user: userData.data };
-          }
-        } catch (error) {
-          console.error("Failed to fetch user details:", error);
-        }
-        return review;
-      };
+      // Process rating data without fetching user details
+      const totalReviews = rating.length;
+      const starCounts = [0, 0, 0, 0, 0];
+      let totalRating = 0;
 
-      const fetchAllUserDetails = async () => {
-        const reviewsWithUserDetails = await Promise.all(rating.map(fetchUserDetails));
-        setReviews(reviewsWithUserDetails);
-
-        setHasMore(reviewsWithUserDetails.length === size);
-
-        // Tính toán tỷ lệ sao
-        const totalReviews = reviewsWithUserDetails.length;
-        const starCounts = [0, 0, 0, 0, 0];
-        let totalRating = 0;
-
-        reviewsWithUserDetails.forEach((review) => {
+      rating.forEach((review) => {
+        if (review.rate >= 1 && review.rate <= 5) { // Ensure the rate is within valid range
           starCounts[review.rate - 1]++;
           totalRating += review.rate;
-        });
+        }
+      });
 
-        const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
+      const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
 
-        setRatingSummary({
-          totalReviews,
-          averageRating: averageRating.toFixed(1),
-          starCounts,
-        });
-      };
+      setReviews(rating); // Directly set the reviews from the rating data
+      setHasMore(rating.length === size);
 
-      fetchAllUserDetails();
+      setRatingSummary({
+        totalReviews,
+        averageRating: averageRating.toFixed(1),
+        starCounts,
+      });
     }
   }, [rating, size]);
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    dispatch(getRating(id, nextPage, size));
-  };
 
   const handleImageClick = (imagePath) => {
     setSlideDirection(selectedImage ? "left" : "right");
@@ -212,8 +191,8 @@ const ProductDetails = () => {
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 1,
-    nextArrow: <button className="slick-next ">&gt;</button>,
-    prevArrow: <button className="slick-prev">&lt;</button>,
+    nextArrow: <button className="slick-next bg-white shadow-md rounded-full w-8 h-8 flex items-center justify-center absolute z-10">&gt;</button>,
+    prevArrow: <button className="slick-prev bg-white shadow-md rounded-full w-8 h-8 flex items-center justify-center absolute z-10">&lt;</button>,
     responsive: [
       {
         breakpoint: 1024,
@@ -281,8 +260,8 @@ const ProductDetails = () => {
                       className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300 z-10"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/>
-                        <path d="M10.3 15.29a1 1 0 001.4 1.42l4-4a1 1 0 000-1.42l-4-4a1 1 0 00-1.4 1.42L13.58 12l-3.3 3.29z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" />
+                        <path d="M10.3 15.29a1 1 0 001.4 1.42l4-4a1 1 0 000-1.42l-4-4a1 1 0 00-1.4 1.42L13.58 12l-3.3 3.29z" />
                       </svg>
                     </button>
                   </div>
@@ -377,15 +356,17 @@ const ProductDetails = () => {
                   productDetail?.images.map((image, index) => (
                     <div
                       key={index}
-                      className={`thumbnail ${selectedImage === image.path ? "border-2 border-blue-500" : "border border-gray-300"} rounded-lg cursor-pointer`}
+                      className={`thumbnail ${selectedImage === image.path ? "border-2 border-blue-500" : "border border-gray-300"} rounded-lg cursor-pointer p-1 mx-1`}
                       onClick={() => handleImageClick(image.path)}
                     >
-                      <img
-                        src={image.path}
-                        alt={`Product image ${index + 1}`}
-                        className="w-20 h-30 object-cover rounded-lg m"
-                        onClick={() => postViewedProduct(productDetail.id)} // Post the viewed product ID when the thumbnail is clicked
-                      />
+                      <div className="aspect-square w-full overflow-hidden rounded-lg">
+                        <img
+                          src={image.path}
+                          alt={`Product image ${index + 1}`}
+                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                          onClick={() => postViewedProduct(productDetail.id)}
+                        />
+                      </div>
                     </div>
                   ))}
               </Slider>
@@ -498,11 +479,10 @@ const ProductDetails = () => {
                 <button
                   onClick={findSimilarByUploadedImage}
                   disabled={!uploadedImage}
-                  className={`px-6 py-2 rounded-lg text-white flex items-center ${
-                    uploadedImage
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg'
-                      : 'bg-gray-600 cursor-not-allowed'
-                  } transition-all duration-300`}
+                  className={`px-6 py-2 rounded-lg text-white flex items-center ${uploadedImage
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg'
+                    : 'bg-gray-600 cursor-not-allowed'
+                    } transition-all duration-300`}
                 >
                   {uploadedImage && (
                     <span className="w-4 h-4 mr-2 rounded-full bg-white bg-opacity-30 flex items-center justify-center">
@@ -516,28 +496,27 @@ const ProductDetails = () => {
           </div>
         )}
 
-        {/* AI Similar Products Results - Redesigned with AI Focus */}
         {showSimilarProducts && (
-          <div className="w-full bg-gradient-to-r from-gray-900 to-blue-900 text-white p-6 rounded-xl shadow-xl mt-6 transition-all duration-300 ease-in-out border border-blue-500 border-opacity-20">
-            <div className="flex justify-between items-center mb-6 border-b border-blue-500 border-opacity-30 pb-4">
+          <div className="w-full bg-white text-black p-6 rounded-xl shadow-xl mt-6 transition-all duration-300 ease-in-out border border-gray-300">
+            <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-4">
               <div className="flex items-center">
-                <div className="bg-blue-600 p-3 rounded-lg mr-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-gray-200 p-3 rounded-lg mr-4">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-purple-300">AI Vision Results</h2>
-                  <p className="text-blue-300 text-sm">Powered by deep learning image processing</p>
+                  <h2 className="text-2xl font-bold text-gray-800">AI Vision Results</h2>
+                  <p className="text-gray-500 text-sm">Powered by deep learning image processing</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <div className="flex items-center bg-blue-800 bg-opacity-50 px-3 py-2 rounded-lg">
-                  <span className="text-sm text-blue-200 mr-2">Similarity Threshold:</span>
+                <div className="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
+                  <span className="text-sm text-gray-600 mr-2">Similarity Threshold:</span>
                   <select
                     value={similarityThreshold}
                     onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
-                    className="bg-blue-900 border border-blue-600 rounded-md px-3 py-1 text-sm text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-gray-200 border border-gray-400 rounded-md px-3 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
                   >
                     <option value="1">All Products</option>
                     <option value="0.5">Medium Match</option>
@@ -547,7 +526,7 @@ const ProductDetails = () => {
                 </div>
                 <button
                   onClick={() => setShowSimilarProducts(false)}
-                  className="text-blue-200 hover:text-white bg-blue-800 bg-opacity-40 hover:bg-opacity-60 px-3 py-2 rounded-lg transition-colors flex items-center"
+                  className="text-gray-600 hover:text-black bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors flex items-center"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -557,109 +536,61 @@ const ProductDetails = () => {
               </div>
             </div>
 
+            {/* Hiển thị kết quả tương tự */}
             {loadingSimilar ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="relative w-20 h-20">
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-300 border-opacity-25"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-b-purple-500 animate-spin" style={{ animationDelay: '0.2s', animationDuration: '1.5s' }}></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-gray-300 border-opacity-50"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-gray-500 animate-spin"></div>
                 </div>
-                <div className="mt-6 space-y-2 text-center">
-                  <h3 className="text-xl font-medium text-blue-100">AI Image Analysis In Progress</h3>
-                  <p className="text-blue-300 text-sm">Analyzing visual features and processing similarity metrics</p>
-                  <div className="flex justify-center space-x-1 mt-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0s' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-300 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
+                <div className="mt-6 text-center">
+                  <h3 className="text-xl font-medium text-gray-800">AI Image Analysis In Progress</h3>
+                  <p className="text-gray-500 text-sm">Analyzing visual features and processing similarity metrics</p>
                 </div>
               </div>
             ) : filteredSimilarProducts.length > 0 ? (
-              <div className="space-y-6">
-                <div className="bg-blue-900 bg-opacity-50 p-4 rounded-lg border-l-4 border-blue-400">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-2 4a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {filteredSimilarProducts.map((product, index) => (
+                  <div key={index} className="bg-white border border-gray-300 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                    <img
+                      src={product.url}
+                      alt={`Similar product ${index + 1}`}
+                      className="w-full h-56 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="text-gray-800 font-medium text-center">Similarity Score</h3>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="bg-gray-500 h-2.5 rounded-full"
+                          style={{ width: `${(1 - product.similarity) * 100}%` }}
+                        />
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-blue-100">
-                        <span className="font-semibold">AI Analysis Complete:</span> Found {filteredSimilarProducts.length} visually similar products based on deep learning image recognition
-                      </p>
-                      <p className="text-blue-300 text-sm mt-1">
-                        Similarity is calculated using neural networks trained on millions of product images
-                      </p>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-xs text-gray-500">Match</span>
+                        <span className="text-sm font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
+                      </div>
+
+                      <button className="w-full mt-2 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all duration-300">
+                        View Product
+                      </button>
                     </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {filteredSimilarProducts.map((product, index) => (
-                    <div key={index} className="bg-gradient-to-b from-blue-800 to-blue-900 border border-blue-700 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-blue-900/40 transition-all duration-300 group">
-                      <div className="relative overflow-hidden">
-                        <img
-                          src={product.url}
-                          alt={`Similar product ${index + 1}`}
-                          className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-blue-900 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                          <div className="p-3 w-full">
-                            <span className="text-white text-sm font-medium">{product.filename.substring(0, 25)}{product.filename.length > 25 ? '...' : ''}</span>
-                          </div>
-                        </div>
-
-                        {/* AI Match Badge */}
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
-                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                          </svg>
-                          AI Match
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="mb-2">
-                          <div className="text-center mb-1">
-                            <span className="text-blue-100 font-medium">Similarity Score</span>
-                          </div>
-                          <div className="w-full bg-blue-800 rounded-full h-2.5 overflow-hidden">
-                            <div
-                              className="bg-gradient-to-r from-blue-400 to-purple-500 h-2.5 rounded-full relative"
-                              style={{ width: `${(1 - product.similarity) * 100}%` }}
-                            >
-                              <div className="absolute top-0 left-0 w-full h-full bg-blue-200 opacity-30 animate-pulse"></div>
-                            </div>
-                          </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <span className="text-xs text-blue-300">Match</span>
-                            <span className="text-sm font-semibold text-blue-100">{((1 - product.similarity) * 100).toFixed(0)}%</span>
-                          </div>
-                        </div>
-
-                        <button className="w-full mt-2 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-lg text-sm text-white font-medium transition-all duration-300 transform group-hover:translate-y-[-2px]">
-                          View Product
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                ))}
               </div>
             ) : (
-              <div className="text-center py-16 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-700">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-800 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <div className="text-center py-16 bg-gray-100 rounded-lg border border-gray-300">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-200 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium text-blue-100 mb-2">No Visual Matches Found</h3>
-                <p className="text-blue-300 max-w-md mx-auto">
+                <h3 className="text-xl font-medium text-gray-800 mb-2">No Visual Matches Found</h3>
+                <p className="text-gray-500 max-w-md mx-auto">
                   Our AI couldn't find products matching your selected similarity threshold. Try lowering the threshold or using a different image.
                 </p>
                 <button
                   onClick={() => setSimilarityThreshold(1)}
-                  className="mt-6 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                  className="mt-6 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
                 >
                   Show All Results
                 </button>
@@ -667,6 +598,7 @@ const ProductDetails = () => {
             )}
           </div>
         )}
+
 
         {/* ProductTabs - with updated styling */}
         <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-8">
@@ -698,8 +630,7 @@ const ProductDetails = () => {
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Đánh giá sản phẩm</h2>
-
+           
             {/* AI Powered Badge */}
             {ratingSummary.totalReviews > 0 && (
               <div className="ml-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
@@ -757,9 +688,8 @@ const ProductDetails = () => {
                     <div className="w-full mx-2">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full ${
-                            star > 3 ? 'bg-green-500' : star > 2 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
+                          className={`h-2 rounded-full ${star > 3 ? 'bg-green-500' : star > 2 ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}
                           style={{ width: `${ratingSummary.totalReviews > 0 ? (ratingSummary.starCounts[star - 1] / ratingSummary.totalReviews) * 100 : 0}%` }}
                         ></div>
                       </div>
@@ -795,98 +725,17 @@ const ProductDetails = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              
             </div>
           </div>
+          
+          <ProductReviewSection productId={productDetail.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
 
-          {/* Danh sách đánh giá */}
-          {reviews.length > 0 ? (
-            <div>
-              <div className="flex items-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
-                </svg>
-                <h3 className="text-lg font-semibold text-gray-800">Nhận xét từ khách hàng</h3>
-              </div>
-
-              <div className="space-y-6">
-                {reviews.map((review) => (
-                  <div key={review.id} className="bg-white rounded-lg shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                    <div className="flex items-start">
-                      <img
-                        className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-blue-100"
-                        src={review.user?.avatar || "https://via.placeholder.com/40"}
-                        alt={review.user?.fullName || "User Avatar"}
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold text-gray-900">{review.user?.fullName || "Anonymous"}</p>
-                            <div className="flex items-center mt-1">
-                              {Array.from({ length: 5 }).map((_, index) =>
-                                index < review.rate ? (
-                                  <FaStar key={index} className="text-yellow-400 text-sm" />
-                                ) : (
-                                  <FaRegStar key={index} className="text-gray-300 text-sm" />
-                                )
-                              )}
-                              <span className="ml-2 text-sm text-gray-600">{review.rate} sao</span>
-                            </div>
-                          </div>
-
-                          {/* AI Sentiment Analysis Badge */}
-                          <div className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            review.rate >= 4 ? 'bg-green-100 text-green-800' :
-                            review.rate >= 3 ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {review.rate >= 4 ? 'Tích cực' : review.rate >= 3 ? 'Trung tính' : 'Tiêu cực'}
-                          </div>
-                        </div>
-
-                        <p className="text-gray-700 mt-3">{review.comment}</p>
-
-                        {review.imageRatings && review.imageRatings.length > 0 && (
-                          <div className="flex gap-2 mt-3 flex-wrap">
-                            {review.imageRatings.map((image, index) => (
-                              <div key={index} className="relative group">
-                                <img className="w-20 h-20 object-cover rounded-lg border border-gray-200" src={image} alt={`Review ${index}`} />
-                                <div className="absolute inset-0 bg-blue-900 bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg"></div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {hasMore && (
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={handleLoadMore}
-                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Xem thêm đánh giá
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-8 text-center text-gray-500 border border-gray-200 rounded-lg bg-gray-50">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              <p className="text-lg font-medium mb-2">Chưa có đánh giá nào cho sản phẩm này</p>
-              <p className="text-gray-400">Hãy là người đầu tiên chia sẻ trải nghiệm của bạn</p>
-            </div>
-          )}
         </div>
+       
       </div>
     </div>
+
   );
 };
 

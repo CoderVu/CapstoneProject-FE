@@ -61,7 +61,6 @@ const Sidebar = () => {
   const menuItems = [
     { path: '/admin/dashboard', name: 'Tổng quan', icon: Home },
     { path: '/admin/products', name: 'Sản phẩm', icon: Package },
-    { path: '/admin/add-products', name: 'Thêm sản phẩm', icon: PlusCircle },
     { path: '/admin/categories', name: 'Danh mục', icon: Tags },
     { path: '/admin/orders', name: 'Đơn hàng', icon: ShoppingCart },
     { path: '/admin/promotions', name: 'Khuyến mãi', icon: Gift },

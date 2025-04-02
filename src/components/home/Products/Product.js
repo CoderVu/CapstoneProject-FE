@@ -69,6 +69,9 @@ const Product = (props) => {
       ? Math.round(((props.price - props.discountPrice) / props.price) * 100)
       : null;
 
+  // Get unique colors for display
+  const uniqueColors = props.colors ? [...new Set(props.colors)] : [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -166,20 +169,21 @@ const Product = (props) => {
           {props.productName}
         </h2>
 
-        {/* Colors */}
-        {props.colors && props.colors.length > 0 && (
-          <div className="flex items-center gap-1 mt-1">
-            {[...new Set(props.colors)].slice(0, 4).map((color, index) => (
-              <span
-                key={index}
-                className="inline-block w-3 h-3 rounded-full border border-gray-300 dark:border-gray-600"
-                style={{ backgroundColor: color }}
-                title={color}
-              ></span>
+        {/* Colors - Showing exactly 3 colors with +n more if needed */}
+        {uniqueColors.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-1">
+            {uniqueColors.slice(0, 3).map((color, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <span
+                  className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800"
+                  style={{ backgroundColor: color }}
+                  title={color}
+                ></span>
+              </div>
             ))}
-            {new Set(props.colors).size > 4 && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                +{new Set(props.colors).size - 4}
+            {uniqueColors.length > 3 && (
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 ml-0.5">
+                +{uniqueColors.length - 3}
               </span>
             )}
           </div>
@@ -214,16 +218,6 @@ const Product = (props) => {
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Đã bán: {props.totalSold}
             </span>
-
-            {/* Progress bar if item is hot selling (optional) */}
-            {props.totalSold > 50 && (
-              <div className="w-1/2 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                <div
-                  className="bg-yellow-400 h-1.5 rounded-full"
-                  style={{ width: `${Math.min(props.totalSold / 2, 100)}%` }}
-                />
-              </div>
-            )}
           </div>
         )}
       </div>

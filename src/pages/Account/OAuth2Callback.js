@@ -28,7 +28,7 @@ const OAuth2Callback = () => {
                     const isAdmin = role?.name === "ROLE_ADMIN";
                     console.log("Is admin:", isAdmin);
                     if (isAdmin) {
-                        navigate("/admin/home");
+                        navigate("/admin/dashboard");
                     } else {
                         navigate("/");
                     }

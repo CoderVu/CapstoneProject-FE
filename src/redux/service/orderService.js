@@ -44,4 +44,19 @@ const fetchOrder = async () => {
         throw error;
     }
 }
-export { fetchOrderMock , createOrderFromCart , fetchOrder };
+const fetchAllOrder = async (page, size) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/admin/order/get-all`,
+            params: { page, size }
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error fetching product description:", error);
+        throw error;
+    }
+}
+
+export { fetchOrderMock, createOrderFromCart, fetchOrder, fetchAllOrder };

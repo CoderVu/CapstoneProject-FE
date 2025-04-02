@@ -12,34 +12,39 @@ const fetchAllCategories = async () => {
         console.error("Error fetching categories:", error);
         throw error;
     }
-}
+};
+
 const addCategory = async (categoryData) => {
     try {
-        const response = await axios({
-            method: 'POST',
-            url: '/api/v1/admin/categories/add',
-            data: categoryData,
+        const response = await axios.post('/api/v1/admin/categories/add', categoryData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
         });
-        const { data } = response.data;
-        return data;
-    } catch (error) {
+
+        return response.data;
+    }
+    catch (error) {
         console.error("Error adding category:", error);
         throw error;
     }
-}
-const updateCategory = async (categoryId) => {
+};
+
+
+const updateCategory = async (categoryId, categoryData) => {
     try {
-        const response = await axios({
-            method: 'PUT',
-            url: `/api/v1/admin/categories/update/${categoryId}`,
+        const response = await axios.put(`/api/v1/admin/categories/update/${categoryId}`, categoryData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
         });
-        const { data } = response.data;
-        return data;
+        return response.data; 
     } catch (error) {
         console.error("Error updating category:", error);
         throw error;
     }
-}
+};
+
 const deleteCategory = async (categoryId) => {
     try {
         const response = await axios({
@@ -52,5 +57,6 @@ const deleteCategory = async (categoryId) => {
         console.error("Error deleting category:", error);
         throw error;
     }
-}
-export { fetchAllCategories, addCategory, updateCategory,deleteCategory};
+};
+
+export { fetchAllCategories, addCategory, updateCategory, deleteCategory };

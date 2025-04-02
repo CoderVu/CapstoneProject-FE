@@ -14,5 +14,31 @@ const fetchAllSizes = async () => {
         throw error;
     }
 }
+const addSize = async (sizeData) => {
+    try {
+        const response = await axios.post('/api/v1/admin/sizes/add', sizeData, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error adding size:", error);
+        throw error;
+    }
+}
+const updateSize = async (sizeId, sizeData) => {
+    try {
+        const response = await axios.put(`/api/v1/admin/sizes/update/${sizeId}`, sizeData, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.data; 
+    } catch (error) {
+        console.error("Error updating size:", error);
+        throw error;
+    }
+};
 
-export { fetchAllSizes };
+export { fetchAllSizes , addSize, updateSize };
