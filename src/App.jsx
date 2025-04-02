@@ -34,6 +34,7 @@ import ProductTable from "./pages/Admin/Product/ProductTable";
 import { ChatProvider } from "./components/context/showChat";
 import ChatButton from "./components/chat/ChatButton";
 import OrderHistory from "./pages/Order/OrderHistory";
+import OrderList from "./pages/Admin/Order/OrderList";
 
 const Layout = () => {
   return (
@@ -79,7 +80,7 @@ const router = createBrowserRouter(
           <Route path="edit-products/:id" element={<ModalEditProduct />} />
           {/* Các trang admin khác */}
           <Route path="add-products" element={<div className="text-2xl font-bold">Thêm Sản Phẩm Mới</div>} />
-          <Route path="orders" element={<div className="text-2xl font-bold">Quản Lý Đơn Hàng</div>} />
+          <Route path="orders" element={<OrderList />} />
           <Route path="promotions" element={<div className="text-2xl font-bold">Quản Lý Khuyến Mãi</div>} />
           <Route path="customers" element={<div className="text-2xl font-bold">Quản Lý Khách Hàng</div>} />
           <Route path="reports" element={<div className="text-2xl font-bold">Báo Cáo & Thống Kê</div>} />
