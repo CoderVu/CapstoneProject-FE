@@ -74,8 +74,6 @@ const Favorites = () => {
       setFavoriteProducts((prevProducts) =>
         prevProducts.filter((product) => product.id !== productId)
       );
-
-      showSuccessToast("Xóa sản phẩm khỏi danh sách yêu thích thành công");
     } catch (error) {
       console.error("Error removing favorite:", error);
       showErrorToast("Có lỗi khi xóa sản phẩm khỏi danh sách yêu thích");

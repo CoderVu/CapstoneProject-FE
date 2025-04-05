@@ -39,6 +39,56 @@ const fetchUserData = async (token) => {
         throw error;
     }
 };
+const fetchAddress = async(token) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/user/address`,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+    }
+}
+
+const updateAddress = async (address, token) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/user/address`,
+            data: address, 
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating address:", error);
+        throw error;
+    }
+};
+const deleteAddress = async (addressId, token) => {
+    try {
+        const response = await axios({
+            method: 'DELETE',
+            url: `/api/v1/user/address/${addressId}`, 
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data; 
+    } catch (error) {
+        console.error("Error deleting address:", error);
+        throw error; 
+    }
+};
+
+
+
 const logoutUserService = () => {
     try {
         localStorage.removeItem('token');
@@ -54,4 +104,7 @@ export {
     loginUserService,
     fetchUserData,
     logoutUserService,
+    fetchAddress,
+    updateAddress,
+    deleteAddress,
 };
