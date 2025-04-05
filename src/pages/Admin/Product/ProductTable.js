@@ -139,6 +139,16 @@ const ProductTable = () => {
         sortable: true,
       },
       {
+        Header: "Số lượng",
+        accessor: "quantity",
+        Cell: ({ value }) => (
+          <span className={`font-medium ${value > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {value > 0 ? `${value} sản phẩm` : "Hết hàng"}
+          </span>
+        ),
+        sortable: true,
+      },
+      {
         Header: "Hành động",
         accessor: "id",
         Cell: ({ row }) => (

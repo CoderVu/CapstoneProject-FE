@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 
 const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
   const dispatch = useDispatch();
+
+  console.log("ItemCard", item);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -18,6 +20,12 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+  // Check if the item is unavailable
+  const isUnavailable = item.statusColor === "UNAVAILABLE" || item.statusSize === "UNAVAILABLE" ;
+
+
+  console.log("isUnavailable", isUnavailable);
+
 
   return (
     <div>
@@ -27,8 +35,13 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        className={`w-full grid grid-cols-1 lg:grid-cols-5 mb-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 ${isHovered ? "border-blue-200 dark:border-blue-700" : ""
-          } ${isSelected ? "border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : ""} transition-all duration-300`}
+        className={`w-full grid grid-cols-1 lg:grid-cols-5 mb-3 rounded-lg shadow-sm overflow-hidden border transition-all duration-300
+  ${isHovered ? "border-blue-200 dark:border-blue-700" : ""}
+  ${isSelected ? "border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : ""}
+  ${isUnavailable
+    ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 opacity-60 text-gray-400 dark:text-gray-500"
+    : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-200"
+  }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -40,6 +53,7 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => onSelectItem(item.id || item.productId)}
+                disabled={isUnavailable}
                 className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out mr-3"
               />
               <div className="w-32 h-32 flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-700 shadow-md">
@@ -68,6 +82,7 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
               type="checkbox"
               checked={isSelected}
               onChange={() => onSelectItem(item.id || item.productId)}
+              disabled={isUnavailable}
               className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
             />
             <button
@@ -90,6 +105,12 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
               <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md rounded-tr-md">
                 -{item.discount}%
               </span>
+            )}
+                 {/* Display "Hết hàng" message if item is unavailable */}
+                 {isUnavailable && (
+              <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+                Hết hàng
+              </div>
             )}
           </div>
           <div className="space-y-1.5">
@@ -135,7 +156,7 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
               onClick={() => setIsModalOpen(true)}
               className="p-1.5 text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-medium rounded-md transition-colors duration-300 shadow-sm"
             >
-              Sửa
+              Cập nhật
             </button>
           </div>
         </div>

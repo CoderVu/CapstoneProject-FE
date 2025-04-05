@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaStar, FaRegStar, FaShoppingCart, FaEye, FaHeart, FaRegHeart } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { motion } from "framer-motion";
+import { addFavorite, removeFavorite } from "../../../redux/service/userService";
 
 // Reusable rating stars component
 const RatingStars = ({ rating, size = "sm", showCount = true, totalRate }) => {
@@ -41,7 +42,12 @@ const Product = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(props.isFavorite || false);
+
+  // Update favorite state when props change
+  useEffect(() => {
+    setIsFavorite(props.isFavorite || false);
+  }, [props.isFavorite]);
 
   const handleProductDetails = () => {
     navigate(`/product/${props.id}`, {
@@ -51,10 +57,38 @@ const Product = (props) => {
     });
   };
 
-  const toggleFavorite = (e) => {
+  const toggleFavorite = async (e) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    // Add logic to handle favorites in Redux if needed
+
+    try {
+      if (isFavorite) {
+        // If already in favorites, remove it
+        await removeFavorite(props.id);
+        // Call the onRemoveFavorite callback if provided
+        if (props.onRemoveFavorite) {
+          props.onRemoveFavorite(props.id);
+        }
+        setIsFavorite(false);
+      } else {
+        // If not in favorites, add it
+        try {
+          await addFavorite(props.id);
+          setIsFavorite(true);
+        } catch (error) {
+          // Check for 409 Conflict error (already in favorites)
+          if (error.response && error.response.status === 409) {
+            console.log("Product already in favorites");
+            // Update the UI state to show as favorited
+            setIsFavorite(true);
+          } else {
+            throw error; // Re-throw other errors
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling favorite status:", error);
+      // Don't change the UI state on error
+    }
   };
 
   const handleAddToCart = (e) => {
@@ -117,10 +151,10 @@ const Product = (props) => {
           )}
         </div>
 
-        {/* Favorite Button */}
+        {/* Favorite Button - Always visible with opacity transition */}
         <button
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 z-20 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          className="absolute top-3 right-3 z-20 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-sm transition-all duration-300 hover:bg-white dark:hover:bg-gray-700 opacity-70 group-hover:opacity-100"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           {isFavorite ? (

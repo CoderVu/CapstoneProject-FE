@@ -23,7 +23,7 @@ const createOrderFromCart = async (orderRequest) => {
         });
         const { data } = response.data;
 
-        showSuccessToast(response.data.message);
+        // showSuccessToast(response.data.message);
         return data;
     } catch (error) {
         console.error("Error creating order from cart:", error);

@@ -29,20 +29,20 @@ const Categories = () => {
     const [deleteType, setDeleteType] = useState(null); // 'category', 'size', or 'color'
     const [successMessage, setSuccessMessage] = useState({ show: false, message: "" });
     const [activeSection, setActiveSection] = useState("category"); // 'category', 'size', or 'color'
-    
+
     // Category states
     const [newCategory, setNewCategory] = useState({ name: "", description: "", image: null });
     const [editCategory, setEditCategory] = useState({ id: null, name: "", description: "", image: null });
     const [previewImage, setPreviewImage] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
-    
+
     // Size states
     const [newSize, setNewSize] = useState({ name: "" });
     const [editSize, setEditSize] = useState({ id: null, name: "" });
     const [currentSizePage, setCurrentSizePage] = useState(1);
     const [sizesPerPage, setSizesPerPage] = useState(5);
-    
+
     // Color states
     const [newColor, setNewColor] = useState({ color: "", colorCode: "#000000" });
     const [editColor, setEditColor] = useState({ id: null, color: "", colorCode: "" });
@@ -57,7 +57,7 @@ const Categories = () => {
             category.name.toLowerCase().includes((searchTerm || "").toLowerCase())
         )
         : [];
-    
+
     // Filtered sizes based on search - Với đầy đủ kiểm tra null
     const filteredSizes = Array.isArray(sizes)
         ? sizes.filter(size =>
@@ -66,16 +66,16 @@ const Categories = () => {
             size.name.toLowerCase().includes((searchTerm || "").toLowerCase())
         )
         : [];
-        
-    // Filtered colors based on search - Với đầy đủ kiểm tra null
+
+    // Filtered colors based on search and status
     const filteredColors = Array.isArray(colors)
         ? colors.filter(color =>
             color &&
+            color.status !== "UNAVAILABLE" && // Exclude colors with status "UNAVAILABLE"
             typeof color.color === 'string' &&
             color.color.toLowerCase().includes((searchTerm || "").toLowerCase())
         )
         : [];
-    
     // Load data on mount
     useEffect(() => {
         loadCategories();
@@ -88,31 +88,31 @@ const Categories = () => {
         setTotalPages(Math.ceil(filteredCategories.length / itemsPerPage));
         setCurrentPage(prev => (prev > Math.ceil(filteredCategories.length / itemsPerPage) ? 1 : prev));
     }, [filteredCategories, itemsPerPage]);
-    
+
     // Calculate pagination for sizes
     useEffect(() => {
         setTotalSizePages(Math.ceil(filteredSizes.length / sizesPerPage));
         setCurrentSizePage(prev => (prev > Math.ceil(filteredSizes.length / sizesPerPage) ? 1 : prev));
     }, [filteredSizes, sizesPerPage]);
-    
+
     // Calculate pagination for colors
     useEffect(() => {
         setTotalColorPages(Math.ceil(filteredColors.length / colorsPerPage));
         setCurrentColorPage(prev => (prev > Math.ceil(filteredColors.length / colorsPerPage) ? 1 : prev));
     }, [filteredColors, colorsPerPage]);
-    
+
     // Calculate current items for categories
     const [totalPages, setTotalPages] = useState(1);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentCategories = filteredCategories.slice(indexOfFirstItem, indexOfLastItem);
-    
+
     // Calculate current items for sizes
     const [totalSizePages, setTotalSizePages] = useState(1);
     const indexOfLastSize = currentSizePage * sizesPerPage;
     const indexOfFirstSize = indexOfLastSize - sizesPerPage;
     const currentSizes = filteredSizes.slice(indexOfFirstSize, indexOfLastSize);
-    
+
     // Calculate current items for colors
     const [totalColorPages, setTotalColorPages] = useState(1);
     const indexOfLastColor = currentColorPage * colorsPerPage;
@@ -138,7 +138,7 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     // Load sizes with loading state
     const loadSizes = async () => {
         setIsLoading(true);
@@ -150,7 +150,7 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     // Load colors with loading state
     const loadColors = async () => {
         setIsLoading(true);
@@ -167,18 +167,18 @@ const Categories = () => {
     const handleAddCategory = async (e) => {
         e.preventDefault();
         if (!newCategory?.name?.trim() || !newCategory?.description?.trim()) return;
-    
+
         const formData = new FormData();
         formData.append("name", newCategory.name.trim());
         formData.append("description", newCategory.description.trim());
-    
+
         if (newCategory.image) {
             formData.append("image", newCategory.image);
         } else {
             console.error("No image selected");
             return;
         }
-    
+
         setIsLoading(true);
         try {
             await addCategory(formData);
@@ -192,11 +192,11 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleUpdateCategory = async (e) => {
         e.preventDefault();
         if (!editCategory?.name?.trim() || !editCategory?.description?.trim()) return;
-    
+
         const formData = new FormData();
         formData.append("name", editCategory.name.trim());
         formData.append("description", editCategory.description.trim());
@@ -255,12 +255,12 @@ const Categories = () => {
         setEditCategory({ id: null, name: "", description: "", image: null });
         setPreviewImage(null);
     };
-    
+
     // Size functions
     const handleAddSize = async (e) => {
         e.preventDefault();
         if (!newSize?.name?.trim()) return;
-    
+
         setIsLoading(true);
         try {
             await addSize({ name: newSize.name.trim() });
@@ -273,11 +273,11 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleUpdateSize = async (e) => {
         e.preventDefault();
         if (!editSize?.name?.trim()) return;
-    
+
         setIsLoading(true);
         try {
             await updateSize(editSize.id, { name: editSize.name.trim() });
@@ -290,7 +290,7 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleDeleteSize = async (sizeId) => {
         setIsLoading(true);
         try {
@@ -305,26 +305,26 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     // Cancel edit mode for sizes
     const cancelSizeEdit = () => {
         setEditSize({ id: null, name: "" });
     };
-    
+
     // Color functions
     const handleAddColor = async (e) => {
         e.preventDefault();
         if (!newColor?.colorCode?.trim()) return;
-    
+
         // Automatically set the color name using color-namer
         const colorName = namer(newColor.colorCode).ntc[0].name; // Use the 'ntc' palette for naming
         setNewColor({ ...newColor, color: colorName });
-    
+
         setIsLoading(true);
         try {
-            await addColor({ 
-                color: colorName, 
-                colorCode: newColor.colorCode.trim() 
+            await addColor({
+                color: colorName,
+                colorCode: newColor.colorCode.trim()
             });
             setNewColor({ color: "", colorCode: "#000000" });
             await loadColors();
@@ -335,15 +335,15 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleUpdateColor = async (e) => {
         e.preventDefault();
         if (!editColor?.colorCode?.trim()) return;
-    
+
         // Automatically set the color name using color-namer
         const colorName = namer(editColor.colorCode).ntc[0].name; // Use the 'ntc' palette for naming
         setEditColor({ ...editColor, color: colorName });
-    
+
         setIsLoading(true);
         try {
             await updateColor(editColor.id, {
@@ -373,39 +373,39 @@ const Categories = () => {
             setIsLoading(false);
         }
     };
-    
+
     // Cancel edit mode for colors
     const cancelColorEdit = () => {
         setEditColor({ id: null, color: "", colorCode: "" });
     };
-    
+
     // Handle pagination for categories
     const handleItemsPerPageChange = (e) => {
         const value = parseInt(e.target.value);
         setItemsPerPage(value);
         setCurrentPage(1); // Reset to first page when changing items per page
     };
-    
+
     // Handle pagination for sizes
     const handleSizesPerPageChange = (e) => {
         const value = parseInt(e.target.value);
         setSizesPerPage(value);
         setCurrentSizePage(1); // Reset to first page when changing items per page
     };
-    
+
     // Handle pagination for colors
     const handleColorsPerPageChange = (e) => {
         const value = parseInt(e.target.value);
         setColorsPerPage(value);
         setCurrentColorPage(1); // Reset to first page when changing items per page
     };
-    
+
     // Handle item delete confirmation
     const showDeleteConfirm = (id, type) => {
         setConfirmDelete(id);
         setDeleteType(type);
     };
-    
+
     // Handle delete based on type
     const handleDelete = () => {
         if (deleteType === 'category') {
@@ -708,7 +708,7 @@ const Categories = () => {
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
-                                
+
                                 {/* Pagination Controls */}
                                 {filteredCategories.length > 0 && (
                                     <div className="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between">
@@ -766,22 +766,21 @@ const Categories = () => {
                                                         <span className="sr-only">Trang trước</span>
                                                         <ChevronLeft className="h-5 w-5" />
                                                     </button>
-                                                    
+
                                                     {/* Page numbers */}
                                                     {[...Array(totalPages)].map((_, index) => (
                                                         <button
                                                             key={index}
                                                             onClick={() => setCurrentPage(index + 1)}
-                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                                                currentPage === index + 1
+                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === index + 1
                                                                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                                                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {index + 1}
                                                         </button>
                                                     ))}
-                                                    
+
                                                     <button
                                                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                                         disabled={currentPage === totalPages}
@@ -973,7 +972,7 @@ const Categories = () => {
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
-                                
+
                                 {/* Pagination Controls for Sizes */}
                                 {filteredSizes.length > 0 && (
                                     <div className="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between">
@@ -1031,22 +1030,21 @@ const Categories = () => {
                                                         <span className="sr-only">Trang trước</span>
                                                         <ChevronLeft className="h-5 w-5" />
                                                     </button>
-                                                    
+
                                                     {/* Page numbers */}
                                                     {[...Array(totalSizePages)].map((_, index) => (
                                                         <button
                                                             key={index}
                                                             onClick={() => setCurrentSizePage(index + 1)}
-                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                                                currentSizePage === index + 1
+                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentSizePage === index + 1
                                                                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                                                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {index + 1}
                                                         </button>
                                                     ))}
-                                                    
+
                                                     <button
                                                         onClick={() => setCurrentSizePage(prev => Math.min(prev + 1, totalSizePages))}
                                                         disabled={currentSizePage === totalSizePages}
@@ -1107,30 +1105,30 @@ const Categories = () => {
                                 />
                             </div>
                             <div className="flex-grow relative flex items-center gap-2">
-    <input
-        type="color"
-        value={newColor.colorCode}
-        onChange={(e) => {
-            const colorCode = e.target.value;
-            const colorName = namer(colorCode).ntc[0].name; // Automatically name the color
-            setNewColor({ color: colorName, colorCode });
-        }}
-        className="w-10 h-10 border-0 p-0 rounded cursor-pointer"
-        disabled={isLoading}
-    />
-    <input
-        type="text"
-        value={newColor.colorCode}
-        onChange={(e) => {
-            const colorCode = e.target.value;
-            const colorName = namer(colorCode).ntc[0].name; // Automatically name the color
-            setNewColor({ color: colorName, colorCode });
-        }}
-        placeholder="#000000"
-        className="w-full p-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        disabled={isLoading}
-    />
-</div>
+                                <input
+                                    type="color"
+                                    value={newColor.colorCode}
+                                    onChange={(e) => {
+                                        const colorCode = e.target.value;
+                                        const colorName = namer(colorCode).ntc[0].name; // Automatically name the color
+                                        setNewColor({ color: colorName, colorCode });
+                                    }}
+                                    className="w-10 h-10 border-0 p-0 rounded cursor-pointer"
+                                    disabled={isLoading}
+                                />
+                                <input
+                                    type="text"
+                                    value={newColor.colorCode}
+                                    onChange={(e) => {
+                                        const colorCode = e.target.value;
+                                        const colorName = namer(colorCode).ntc[0].name; // Automatically name the color
+                                        setNewColor({ color: colorName, colorCode });
+                                    }}
+                                    placeholder="#000000"
+                                    className="w-full p-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    disabled={isLoading}
+                                />
+                            </div>
                             <button
                                 type="submit"
                                 className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -1267,8 +1265,8 @@ const Categories = () => {
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3">
-                                                        <span 
-                                                            className="inline-block w-8 h-8 rounded-full border border-gray-200" 
+                                                        <span
+                                                            className="inline-block w-8 h-8 rounded-full border border-gray-200"
                                                             style={{ backgroundColor: color.colorCode }}
                                                         ></span>
                                                     </td>
@@ -1295,7 +1293,7 @@ const Categories = () => {
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
-                                
+
                                 {/* Pagination Controls for Colors */}
                                 {filteredColors.length > 0 && (
                                     <div className="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between">
@@ -1353,22 +1351,21 @@ const Categories = () => {
                                                         <span className="sr-only">Trang trước</span>
                                                         <ChevronLeft className="h-5 w-5" />
                                                     </button>
-                                                    
+
                                                     {/* Page numbers */}
                                                     {[...Array(totalColorPages)].map((_, index) => (
                                                         <button
                                                             key={index}
                                                             onClick={() => setCurrentColorPage(index + 1)}
-                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                                                currentColorPage === index + 1
+                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentColorPage === index + 1
                                                                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                                                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {index + 1}
                                                         </button>
                                                     ))}
-                                                    
+
                                                     <button
                                                         onClick={() => setCurrentColorPage(prev => Math.min(prev + 1, totalColorPages))}
                                                         disabled={currentColorPage === totalColorPages}
@@ -1433,8 +1430,8 @@ const Categories = () => {
                                 <div className="ml-4">
                                     <h3 className="text-lg font-medium text-gray-900">Xác nhận xóa</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Bạn có chắc chắn muốn xóa 
-                                        {deleteType === 'category' ? ' danh mục' : deleteType === 'size' ? ' kích thước' : ' màu sắc'} 
+                                        Bạn có chắc chắn muốn xóa
+                                        {deleteType === 'category' ? ' danh mục' : deleteType === 'size' ? ' kích thước' : ' màu sắc'}
                                         này? Hành động này không thể hoàn tác.
                                     </p>
                                 </div>

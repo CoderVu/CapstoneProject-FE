@@ -35,6 +35,7 @@ import { ChatProvider } from "./components/context/showChat";
 import ChatButton from "./components/chat/ChatButton";
 import OrderHistory from "./pages/Order/OrderHistory";
 import OrderList from "./pages/Admin/Order/OrderList";
+import Favorites from "./pages/Favorate/Favorites";
 
 const Layout = () => {
   return (
@@ -60,6 +61,7 @@ const router = createBrowserRouter(
         <Route path="/offer" element={<Offer />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/favorite" element={<Favorites />} />
         <Route path="/paymentgateway" element={<Payment />} />
         <Route path="/orderHistory" element= {<OrderHistory />} />
         <Route path="/profile" element={<UserProfile />} />

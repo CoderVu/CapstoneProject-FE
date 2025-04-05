@@ -58,6 +58,25 @@ export const getProductDetail = (productId, page = 0, size = 30) => async (dispa
     dispatch({ type: types.FETCH_PRODUCT_DETAIL_ERROR, payload: error.message });
   }
 };
+export const getProductDetailID = (productId, page = 0, size = 30) => async (dispatch) => {
+  dispatch({ type: types.FETCH_PRODUCT_DETAIL_REQUEST });
+  try {
+    const [productDetail] = await Promise.all([
+      fetchProductDetail(productId),
+     
+    ]);
+    dispatch({
+      type: types.FETCH_PRODUCT_DETAILID_SUCCESS,
+      payload: {
+        productDetail,
+      
+      },
+    });
+  } catch (error) {
+    dispatch({ type: types.FETCH_PRODUCT_DETAIL_ERROR, payload: error.message });
+  }
+};
+
 
 // Action to filter products 
 export const filterProduct = (filter) => async (dispatch) => {

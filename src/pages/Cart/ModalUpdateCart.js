@@ -4,7 +4,7 @@ import { getProductDetail } from "../../redux/actions/productActions";
 import { updateCartItem } from "../../redux/actions/cartActions";
 import { motion } from "framer-motion";
 
-const ALL_SIZES = ["S", "M", "L", "XL", "XXL"];
+
 
 const ModalUpdateCart = ({ productId, item, onClose }) => {
     const dispatch = useDispatch();
@@ -17,7 +17,13 @@ const ModalUpdateCart = ({ productId, item, onClose }) => {
     useEffect(() => {
         dispatch(getProductDetail(productId));
     }, [dispatch, productId]);
-
+    const ALL_SIZES = [
+        ...new Set(
+            productDetail?.variants
+                ?.filter((variant) => variant.status === "AVAILABLE") // Lọc chỉ các kích cỡ có trạng thái "AVAILABLE"
+                .map((variant) => variant.sizeName) // Lấy danh sách kích cỡ
+        ),
+    ];
     const availableColors = [
         ...new Set(
             productDetail?.variants?.map((variant) => variant.color) || []
