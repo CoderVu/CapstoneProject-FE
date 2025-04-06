@@ -4,212 +4,263 @@ import { useDispatch } from "react-redux";
 import { removeCartItem } from "../../redux/actions/cartActions";
 import ModalUpdateCart from "./ModalUpdateCart";
 import { motion } from "framer-motion";
+import { FaRegCheckSquare, FaRegSquare, FaPen, FaExclamationCircle, FaHeart } from "react-icons/fa";
 
 const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
   const dispatch = useDispatch();
-
-  console.log("ItemCard", item);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  // Check if the item is unavailable
+  const isUnavailable = item.statusColor === "UNAVAILABLE" || item.statusSize === "UNAVAILABLE" || item.statusQuantity === "UNAVAILABLE";
+
   const handleDelete = () => {
-    dispatch(removeCartItem(item.id));
+    dispatch(removeCartItem(item.id || item.productId));
   };
 
   // Format price with commas
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-  // Check if the item is unavailable
-  const isUnavailable = item.statusColor === "UNAVAILABLE" || item.statusSize === "UNAVAILABLE" ;
-
-
-  console.log("isUnavailable", isUnavailable);
-
 
   return (
-    <div>
-      {/* Product Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
-        className={`w-full grid grid-cols-1 lg:grid-cols-5 mb-3 rounded-lg shadow-sm overflow-hidden border transition-all duration-300
-  ${isHovered ? "border-blue-200 dark:border-blue-700" : ""}
-  ${isSelected ? "border-blue-500 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : ""}
-  ${isUnavailable
-    ? "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 opacity-60 text-gray-400 dark:text-gray-500"
-    : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-200"
-  }`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Product Info - Mobile View */}
-        <div className="p-4 flex lg:hidden items-center justify-between border-b border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => onSelectItem(item.id || item.productId)}
-                disabled={isUnavailable}
-                className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out mr-3"
-              />
-              <div className="w-32 h-32 flex-shrink-0 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-700 shadow-md">
-                <img
-                  className="w-full h-full object-contain p-2"
-                  src={item.image}
-                  alt={item.productName}
-                />
-              </div>
-            </div>
-            <h1 className="font-medium text-gray-800 dark:text-gray-200">{item.productName}</h1>
-          </div>
-          <button
-            onClick={handleDelete}
-            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-300"
-            aria-label="Remove item"
-          >
-            <ImCross size={12} />
-          </button>
-        </div>
-
-        {/* Product Column */}
-        <div className="hidden lg:flex col-span-1 items-center gap-4 p-4">
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => onSelectItem(item.id || item.productId)}
-              disabled={isUnavailable}
-              className="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
-            />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+      className={`bg-white rounded-lg shadow-sm overflow-hidden border transition-all duration-200 ${
+        isHovered ? "border-blue-200" : isSelected ? "border-blue-500 ring-1 ring-blue-200" : "border-gray-100"
+      } ${isUnavailable ? "opacity-70" : ""}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="p-3">
+        {/* Desktop View */}
+        <div className="hidden md:flex items-center">
+          {/* Checkbox */}
+          <div className="flex-shrink-0 mr-3">
             <button
-              onClick={handleDelete}
-              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-300"
-              aria-label="Remove item"
+              onClick={() => !isUnavailable && onSelectItem(item.id || item.productId)}
+              className={`flex items-center justify-center ${isUnavailable ? "cursor-not-allowed" : "cursor-pointer"}`}
+              disabled={isUnavailable}
             >
-              <ImCross size={12} />
+              {isSelected ? (
+                <FaRegCheckSquare className="text-xl text-blue-500" />
+              ) : (
+                <FaRegSquare className="text-xl text-gray-300" />
+              )}
             </button>
           </div>
-          <div className="relative group">
-            <div className="w-40 h-40 bg-white dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg transition-all duration-300">
+
+          {/* Product Image */}
+          <div className="relative flex-shrink-0 mr-4">
+            <div className="w-20 h-20 bg-gray-50 rounded-md overflow-hidden border border-gray-100">
               <img
-                className="w-full h-full object-contain p-2"
+                className="w-full h-full object-contain p-1"
                 src={item.image}
                 alt={item.productName}
               />
             </div>
-            {item.discount && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md rounded-tr-md">
+
+            {/* Sale Tag */}
+            {item.discount && !isUnavailable && (
+              <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-bl-md">
                 -{item.discount}%
-              </span>
+              </div>
             )}
-                 {/* Display "Hết hàng" message if item is unavailable */}
-                 {isUnavailable && (
-              <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-                Hết hàng
+
+            {/* Unavailable Tag */}
+            {isUnavailable && (
+              <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40 flex items-center justify-center">
+                <span className="text-white text-xs font-medium px-2 py-1 bg-red-500 rounded-sm inline-flex items-center">
+                  <FaExclamationCircle className="mr-1" size={10} />
+                  Hết hàng
+                </span>
               </div>
             )}
           </div>
-          <div className="space-y-1.5">
-            <h1 className="font-medium text-gray-800 dark:text-gray-200">{item.productName}</h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+
+          {/* Product Info */}
+          <div className="flex-1">
+            <h3 className="font-medium text-gray-800 line-clamp-1">{item.productName}</h3>
+
+            <div className="flex items-center gap-4 mt-1.5 text-sm text-gray-500">
               {item.color && (
-                <div className="flex items-center gap-1.5">
-                  <span>Màu:</span>
-                  <span
-                    className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
-                    style={{ backgroundColor: item.color }}
-                  ></span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">Màu:</span>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full border border-gray-300"
+                      style={{ backgroundColor: item.color }}
+                    ></span>
+                    <span className="text-xs">{item.color}</span>
+                  </div>
                 </div>
               )}
+
               {item.size && (
-                <div className="flex items-center gap-1.5">
-                  <span>Size:</span>
-                  <span className="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600 font-medium">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">Size:</span>
+                  <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 leading-none">
                     {item.size}
                   </span>
                 </div>
               )}
             </div>
-          </div>
-        </div>
 
-        <div className="hidden lg:flex col-span-1 items-center justify-center">
-          {/* Empty column to match the header */}
-        </div>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <span className="text-red-500 font-medium">₫{formatPrice(item.totalPrice)}</span>
+                {item.originalPrice && item.originalPrice > item.totalPrice && (
+                  <span className="text-gray-400 text-xs line-through">₫{formatPrice(item.originalPrice)}</span>
+                )}
+              </div>
 
-        {/* Price Column */}
-        <div className="hidden lg:flex items-center justify-center p-4">
-          <span className="font-medium text-gray-800 dark:text-gray-200">{formatPrice(item.totalPrice)} VNĐ</span>
-        </div>
-
-        {/* Quantity Column */}
-        <div className="hidden lg:flex items-center justify-center p-4">
-          <div className="flex items-center space-x-2">
-            <span className="flex items-center justify-center w-10 h-8 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 font-medium text-gray-800 dark:text-gray-200">
-              {item.quantity}
-            </span>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="p-1.5 text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-medium rounded-md transition-colors duration-300 shadow-sm"
-            >
-              Cập nhật
-            </button>
-          </div>
-        </div>
-
-        {/* Subtotal Column */}
-        <div className="hidden lg:flex items-center justify-center p-4">
-          <span className="font-bold text-gray-900 dark:text-gray-100">{formatPrice(item.totalPrice * item.quantity)} VNĐ</span>
-        </div>
-
-        {/* Mobile View Details */}
-        <div className="p-4 lg:hidden">
-          <div className="grid grid-cols-2 gap-3 text-sm border-t border-gray-100 dark:border-gray-700 pt-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-500 dark:text-gray-400">Màu:</span>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
-                  style={{ backgroundColor: item.color }}
-                ></span>
-                <span className="text-gray-800 dark:text-gray-200 text-xs">{item.color}</span>
+              <div className="flex items-center text-sm">
+                <span className="text-gray-500 mr-2">SL: {item.quantity}</span>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-blue-500 hover:text-blue-600 p-1 hover:bg-blue-50 rounded-full transition-colors"
+                >
+                  <FaPen size={14} />
+                </button>
               </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-500 dark:text-gray-400">Size:</span>
-              <span className="inline-flex bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-600 text-xs font-medium text-gray-800 dark:text-gray-200">
-                {item.size}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-500 dark:text-gray-400">Giá:</span>
-              <span className="font-medium text-gray-800 dark:text-gray-200">{formatPrice(item.totalPrice)} VNĐ</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-500 dark:text-gray-400">Số lượng:</span>
-              <span className="inline-flex items-center justify-center w-8 h-6 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 font-medium text-xs text-gray-800 dark:text-gray-200">
-                {item.quantity}
-              </span>
-            </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
-            <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Tổng phụ:</span>
-              <div className="font-bold text-gray-900 dark:text-gray-100">{formatPrice(item.totalPrice * item.quantity)} VNĐ</div>
-            </div>
-            <button
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 ml-4">
+            {/* <button
               onClick={() => setIsModalOpen(true)}
-              className="py-2 px-4 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-300 shadow-sm"
+              className="text-gray-500 hover:text-blue-500 transition-colors"
+              title="Chỉnh sửa"
             >
-              Chỉnh sửa
+              <FaPen size={14} />
+            </button> */}
+            <button
+              onClick={handleDelete}
+              className="text-gray-500 hover:text-red-500 transition-colors"
+              title="Xóa"
+            >
+              <ImCross size={14} />
             </button>
+            {/* <button className="text-gray-500 hover:text-red-500 transition-colors" title="Yêu thích">
+              <FaHeart size={14} />
+            </button> */}
           </div>
         </div>
-      </motion.div>
+
+        {/* Mobile View */}
+        <div className="md:hidden">
+          {/* Header with checkbox and product name */}
+          <div className="flex items-center mb-3">
+            <button
+              onClick={() => !isUnavailable && onSelectItem(item.id || item.productId)}
+              className={`flex-shrink-0 mr-2 ${isUnavailable ? "cursor-not-allowed" : "cursor-pointer"}`}
+              disabled={isUnavailable}
+            >
+              {isSelected ? (
+                <FaRegCheckSquare className="text-lg text-blue-500" />
+              ) : (
+                <FaRegSquare className="text-lg text-gray-300" />
+              )}
+            </button>
+            <h3 className="font-medium text-gray-800 text-sm line-clamp-1 flex-1">{item.productName}</h3>
+            <button
+              onClick={handleDelete}
+              className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <ImCross size={12} />
+            </button>
+          </div>
+
+          {/* Content with image and info */}
+          <div className="flex items-start">
+            {/* Product Image */}
+            <div className="relative flex-shrink-0 mr-3">
+              <div className="w-20 h-20 bg-gray-50 rounded-md overflow-hidden border border-gray-100">
+                <img
+                  className="w-full h-full object-contain p-1"
+                  src={item.image}
+                  alt={item.productName}
+                />
+              </div>
+
+              {/* Sale Tag */}
+              {item.discount && !isUnavailable && (
+                <div className="absolute top-0 right-0 bg-red-500 text-white text-2xs font-medium px-1 py-0.5 rounded-bl-md">
+                  -{item.discount}%
+                </div>
+              )}
+
+              {/* Unavailable Tag */}
+              {isUnavailable && (
+                <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-40 flex items-center justify-center">
+                  <span className="text-white text-2xs font-medium px-1.5 py-0.5 bg-red-500 rounded-sm inline-flex items-center">
+                    Hết hàng
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Product Details */}
+            <div className="flex-1">
+              <div className="flex items-center flex-wrap gap-2 mb-1.5 mt-1">
+                {item.color && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <span>Màu:</span>
+                    <div className="inline-flex items-center gap-1">
+                      <span
+                        className="inline-block w-3 h-3 rounded-full border border-gray-300"
+                        style={{ backgroundColor: item.color }}
+                      ></span>
+                    </div>
+                  </div>
+                )}
+
+                {item.size && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <span>Size:</span>
+                    <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 leading-none">
+                      {item.size}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="text-red-500 font-medium">₫{formatPrice(item.totalPrice)}</div>
+                  {item.originalPrice && item.originalPrice > item.totalPrice && (
+                    <div className="text-gray-400 text-xs line-through">₫{formatPrice(item.originalPrice)}</div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 text-xs">SL: {item.quantity}</span>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-blue-500 p-1 bg-blue-50 rounded-full"
+                  >
+                    <FaPen size={12} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Promotion Info (Optional) */}
+      {!isUnavailable && item.promotion && (
+        <div className="bg-orange-50 py-2 px-3 text-xs text-orange-600 border-t border-orange-100">
+          <div className="flex items-start">
+            <span className="inline-block bg-orange-100 text-orange-600 p-0.5 rounded text-xs mr-1.5">Ưu đãi</span>
+            <span>{item.promotion}</span>
+          </div>
+        </div>
+      )}
 
       {/* Update Modal */}
       {isModalOpen && (
@@ -220,7 +271,7 @@ const ItemCard = ({ item, isFirstItem, onSelectItem, isSelected }) => {
           onClose={() => setIsModalOpen(false)}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 

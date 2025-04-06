@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
 import {
   FaCamera, FaUser, FaMapMarkerAlt, FaSignOutAlt, FaLock,
   FaEdit, FaSave, FaShieldAlt, FaHistory, FaEnvelope,
@@ -9,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { fetchUserInfo } from '../../redux/actions/authActions';
 import AddressManagement from './AddressManagement';
+import { updateUserInfo } from '../../redux/service/userService';
 
 const UserProfile = () => {
   const dispatch = useDispatch();
@@ -16,17 +16,18 @@ const UserProfile = () => {
   const [avatar, setAvatar] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [editMode, setEditMode] = useState({
-    name: false,
-    phone: false,
+    fullName: false,
   });
   const [profileData, setProfileData] = useState({
     fullName: '',
     phoneNumber: '',
-    notes: ''
+    notes: '',
+    avatar: null,
+
   });
   const [token, setToken] = useState(null);
 
-  const profile = auth || {};
+  const profile = React.useMemo(() => auth || {}, [auth]);
 
   // Fetch user info on mount and get token
   useEffect(() => {
@@ -43,7 +44,8 @@ const UserProfile = () => {
       setProfileData({
         fullName: profile.fullName || '',
         phoneNumber: profile.phoneNumber || '',
-        notes: profile.notes || ''
+        notes: profile.notes || '',
+        avatar: profile.avatar || null,
       });
 
       if (profile.avatar) {
@@ -52,48 +54,80 @@ const UserProfile = () => {
     }
   }, [profile]);
 
+
   // Handle avatar change
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Lưu file để gửi lên server
+      setProfileData(prev => ({
+        ...prev,
+        avatar: file
+      }));
+
+      // Hiển thị preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatar(reader.result);
-    
-        toast.success("Ảnh đại diện đã được cập nhật");
       };
       reader.readAsDataURL(file);
     }
   };
 
+
   // Toggle edit mode for a field
   const toggleEditMode = (field) => {
     setEditMode(prev => ({
       ...prev,
-      [field]: !prev[field]
+      [field]: !prev[field],
     }));
   };
-
   // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Save profile changes
-  const handleSaveProfile = () => {
-    // Dispatch action to save profile data
-    // dispatch(updateUserInfo(profileData));
-    setEditMode({
-      name: false,
-      phone: false
-    });
-    toast.success("Thông tin tài khoản đã được cập nhật");
-  };
+  const handleSaveProfile = async () => {
+    try {
+      // Tạo FormData để gửi lên server
+      const formData = new FormData();
+      formData.append('fullName', profileData.fullName);
+      formData.append('phoneNumber', profileData.phoneNumber);
 
+      // Thêm file avatar nếu có
+      if (profileData.avatar) {
+        formData.append('avatar', profileData.avatar);
+      }
+
+      // Gọi API cập nhật thông tin người dùng
+      const response = await updateUserInfo(formData);
+
+      // Cập nhật state nếu thành công
+      if (response) {
+        // Reset avatar sau khi upload thành công
+        setProfileData(prev => ({
+          ...prev,
+          avatar: null
+        }));
+
+        // Refresh user data
+        dispatch(fetchUserInfo(token));
+
+
+      }
+      // Reset edit mode for all fields
+      setEditMode({
+        fullName: false,
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -254,7 +288,7 @@ const UserProfile = () => {
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                      {editMode.name ? (
+                      {editMode.fullName ? (
                         <div className="flex items-center">
                           <input
                             type="text"
@@ -265,7 +299,7 @@ const UserProfile = () => {
                             placeholder="Nhập họ và tên"
                           />
                           <button
-                            onClick={() => toggleEditMode('name')}
+                            onClick={() => toggleEditMode('fullName')}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-r-lg border-y border-r border-gray-300"
                           >
                             <FaTimes />
@@ -277,7 +311,7 @@ const UserProfile = () => {
                             {profile.fullName || 'Chưa cập nhật'}
                           </span>
                           <button
-                            onClick={() => toggleEditMode('name')}
+                            onClick={() => toggleEditMode('fullName')}
                             className="ml-auto text-gray-400 hover:text-blue-500 cursor-pointer"
                           >
                             <FaEdit />
@@ -306,28 +340,19 @@ const UserProfile = () => {
                             type="tel"
                             name="phoneNumber"
                             value={profileData.phoneNumber}
-                            onChange={handleInputChange}
+
                             className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Nhập số điện thoại"
                           />
-                          <button
-                            onClick={() => toggleEditMode('phone')}
-                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-r-lg border-y border-r border-gray-300"
-                          >
-                            <FaTimes />
-                          </button>
+
                         </div>
                       ) : (
                         <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
                           <span className="text-gray-900">
                             {profile.phoneNumber || 'Chưa cập nhật'}
                           </span>
-                          <button
-                            onClick={() => toggleEditMode('phone')}
-                            className="ml-auto text-gray-400 hover:text-blue-500 cursor-pointer"
-                          >
-                            <FaEdit />
-                          </button>
+
+
                         </div>
                       )}
                     </div>
@@ -542,8 +567,8 @@ const UserProfile = () => {
                       <div>
                         <p className="font-medium text-gray-800">
                           {navigator.userAgent.includes('Chrome') ? 'Chrome' :
-                           navigator.userAgent.includes('Firefox') ? 'Firefox' :
-                           navigator.userAgent.includes('Safari') ? 'Safari' : 'Web Browser'}
+                            navigator.userAgent.includes('Firefox') ? 'Firefox' :
+                              navigator.userAgent.includes('Safari') ? 'Safari' : 'Web Browser'}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
                           {navigator.platform} • {new Date().toLocaleDateString()} ({new Date().toLocaleTimeString()})

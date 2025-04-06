@@ -1,7 +1,7 @@
 import axios from "../setup/axios"; 
 import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
 
-const fetchAllUser = async () => {
+export const fetchAllUser = async () => {
     try {
         const response = await axios({
             method: 'GET',
@@ -14,6 +14,7 @@ const fetchAllUser = async () => {
         throw error;
     }
 }
+
 // Get user's favorites
 export const getFavorite = async () => {
     try {
@@ -77,12 +78,24 @@ export const removeFavorite = async (productId) => {
         throw error;
     }
 }
-export {
 
-    fetchAllUser,
- 
- 
-    
-};
-
+// Update user info
+export const updateUserInfo = async (userInfo) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/user/info`,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            data: userInfo
+        });
+        showSuccessToast(response.data.message);
+        return response.data.data;
+    } catch (error) {
+        showErrorToast(error.response.data.message || "Failed to update user info");
+        console.error("Error updating user info:", error);
+        throw error;
+    }
+}
 

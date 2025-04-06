@@ -134,7 +134,7 @@ const ChatContent = () => {
         };
 
         if (showChat) {
-            chatService.connect("ws://localhost:8080/ws", auth?.id);
+            chatService.connect("ws://192.168.1.39:8080/ws", auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
                 listenerAddedRef.current = true;
@@ -385,42 +385,42 @@ const ChatContent = () => {
 
     return (
         <div className="fixed bottom-4 right-4 w-full md:w-4/5 lg:w-3/5 h-[600px] max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-2xl flex overflow-hidden" style={{ maxWidth: '1200px', zIndex: 1000 }}>
-            {/* User List Panel */}
+            {   /* User List Panel */}
             <AnimatePresence>
-                {(showUserList || !isMobileView) && (
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={containerVariants}
-                        className={`${isMobileView ? 'w-full' : 'w-1/3'} h-full border-r border-gray-200 dark:border-gray-700 flex flex-col`}
-                    >
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                                    <FaUserCircle className="text-blue-500 dark:text-blue-400 text-xl" />
-                                </div>
-                                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Tin nhắn</h2>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                                    aria-label="Settings"
-                                >
-                                    <IoMdSettings className="text-lg" />
-                                </button>
-                                <button
-                                    onClick={() => setShowChat(false)}
-                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                                    aria-label="Close"
-                                >
-                                    <FaTimes />
-                                </button>
-                            </div>
-                        </div>
-                        <UserList {...userListProps} />
-                    </motion.div>
-                )}
+            {(showUserList || !isMobileView) && (
+    <motion.div
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={containerVariants}
+        className={`${isMobileView ? 'w-full translate-x-3' : 'w-1/3'} h-full border-r border-gray-200 dark:border-gray-700 flex flex-col`}
+    >
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                    <FaUserCircle className="text-blue-500 dark:text-blue-400 text-xl" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Tin nhắn</h2>
+            </div>
+            <div className="flex items-center gap-2">
+                <button
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    aria-label="Settings"
+                >
+                    <IoMdSettings className="text-lg" />
+                </button>
+                <button
+                    onClick={() => setShowChat(false)}
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    aria-label="Close"
+                >
+                    <FaTimes />
+                </button>
+            </div>
+        </div>
+        <UserList {...userListProps} />
+    </motion.div>
+)}
             </AnimatePresence>
 
             {/* Chat Area */}

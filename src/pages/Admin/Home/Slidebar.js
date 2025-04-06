@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   Home,
   Package,
@@ -15,19 +16,20 @@ import {
   Sun,
   Send,
   MessageCircle,
-  PlusCircle
 } from "lucide-react";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+  const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
+  const auth = useSelector((state) => state.auth.auth);
 
   // Check for system/saved dark mode preference on mount
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedDarkMode || (!localStorage.getItem('darkMode') && prefersDarkMode)) {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
@@ -80,7 +82,7 @@ const Sidebar = () => {
     activeBg: "bg-gray-100",
     iconColor: "text-gray-500",
     activeIconColor: "text-blue-600",
-    mainContent: "bg-white" 
+    mainContent: "bg-white"
   };
 
   const darkModeClasses = {
@@ -123,7 +125,7 @@ const Sidebar = () => {
                 className="h-8 mr-3"
                 alt="Logo"
               />
-              <span className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Việt Shop</span>
+              <span className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Shop</span>
             </a>
           </div>
 
@@ -141,12 +143,25 @@ const Sidebar = () => {
               )}
             </button>
             <div className="flex items-center space-x-2">
-              <img
-                className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 transition-all duration-200"
-                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                alt="Người dùng"
-              />
-              <span className={`hidden md:inline text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Admin</span>
+              {isLoggedIn && auth?.avatar ? (
+                <img
+                  className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 transition-all duration-200"
+                  src={auth.avatar} // Dynamically load the user's avatar
+                  alt="User Avatar"
+                />
+              ) : (
+                <img
+                  className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 transition-all duration-200"
+                  src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" // Default avatar
+                  alt="Default Avatar"
+                />
+              )}
+              <span
+                className={`hidden md:inline text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}
+              >
+                {isLoggedIn ? auth?.fullName || 'Admin' : 'Guest'}
+              </span>
             </div>
           </div>
         </div>
@@ -165,9 +180,8 @@ const Sidebar = () => {
 
         {/* Sidebar */}
         <aside
-          className={`fixed top-0 left-0 z-40 w-64 h-full pt-20 ${theme.sidebar} border-r transition-all duration-300 ease-in-out ${
-            isOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0 sm:w-20'
-          }`}
+          className={`fixed top-0 left-0 z-40 w-64 h-full pt-20 ${theme.sidebar} border-r transition-all duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0 sm:w-20'
+            }`}
         >
           <div className="h-full px-3 pb-4 overflow-y-auto">
             <ul className="space-y-2 font-medium">
@@ -185,11 +199,10 @@ const Sidebar = () => {
                         transition-all duration-200
                       `}
                     >
-                      <IconComponent className={`w-5 h-5 transition duration-75 ${
-                        isActive
+                      <IconComponent className={`w-5 h-5 transition duration-75 ${isActive
                           ? theme.activeIconColor
                           : theme.iconColor
-                      }`} />
+                        }`} />
                       <span className={`ml-3 ${!isOpen ? 'sm:hidden' : ''}`}>{item.name}</span>
                     </NavLink>
                   </li>
@@ -201,9 +214,8 @@ const Sidebar = () => {
 
         {/* Main Content */}
         <main
-          className={`w-full transition-all duration-300 ease-in-out ${
-            isOpen ? 'sm:ml-64' : 'sm:ml-20'
-          } p-4 pt-20`}
+          className={`w-full transition-all duration-300 ease-in-out ${isOpen ? 'sm:ml-64' : 'sm:ml-20'
+            } p-4 pt-20`}
         >
           <div className={`p-4 ${theme.mainContent} rounded-lg shadow-sm min-h-[calc(100vh-6rem)]`}>
             <Outlet />
