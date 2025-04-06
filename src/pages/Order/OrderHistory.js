@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { fetchOrder } from "../../redux/service/orderService";
-import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock, FaFileInvoice } from "react-icons/fa";
+import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock, FaFileInvoice, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PrintInvoice from "./PrintInvoice";
 
 const OrderHistory = () => {
@@ -14,6 +14,11 @@ const OrderHistory = () => {
   const [filterStatus, setFilterStatus] = useState("ALL"); // "ALL", "PENDING", "PROCESSING", etc.
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [ordersPerPage, setOrdersPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Fetch the order history when component mounts
   useEffect(() => {
@@ -116,6 +121,70 @@ const OrderHistory = () => {
   // Get unique statuses for the filter
   const uniqueStatuses = ["ALL", ...new Set(orders.map(order => order.status))];
 
+  // Calculate pagination values
+  useEffect(() => {
+    if (filteredAndSortedOrders.length > 0) {
+      setTotalPages(Math.ceil(filteredAndSortedOrders.length / ordersPerPage));
+
+      // If current page is out of range after filtering, reset to page 1
+      if (currentPage > Math.ceil(filteredAndSortedOrders.length / ordersPerPage)) {
+        setCurrentPage(1);
+      }
+    } else {
+      setTotalPages(1);
+    }
+  }, [filteredAndSortedOrders.length, ordersPerPage, currentPage]);
+
+  // Get current orders
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredAndSortedOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  // Change page handler
+  const paginate = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      // Scroll to top of the order list
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+  };
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+
+  if (totalPages <= 5) {
+    // If total pages is 5 or less, show all page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+  } else {
+    // Otherwise, show pagination with ellipsis
+    if (currentPage <= 3) {
+      // Show first 4 pages and ellipsis for last pages
+      for (let i = 1; i <= 4; i++) {
+        pageNumbers.push(i);
+      }
+      pageNumbers.push('...');
+      pageNumbers.push(totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      // Show first page, ellipsis, and last 4 pages
+      pageNumbers.push(1);
+      pageNumbers.push('...');
+      for (let i = totalPages - 3; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Show first page, ellipsis, current page and surrounding pages, another ellipsis, and last page
+      pageNumbers.push(1);
+      pageNumbers.push('...');
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        pageNumbers.push(i);
+      }
+      pageNumbers.push('...');
+      pageNumbers.push(totalPages);
+    }
+  }
+
   return (
     <div className="max-w-container mx-auto px-4">
       <Breadcrumbs title="Lịch sử đơn hàng" />
@@ -134,13 +203,16 @@ const OrderHistory = () => {
           {/* Filters and controls */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Tìm kiếm mã đơn hàng hoặc sản phẩm"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1); // Reset to first page on search
+                    }}
                     className="border border-gray-300 rounded-md px-3 py-2 w-full md:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -148,7 +220,10 @@ const OrderHistory = () => {
                 <div className="flex-shrink-0">
                   <select
                     value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
+                    onChange={(e) => {
+                      setFilterStatus(e.target.value);
+                      setCurrentPage(1); // Reset to first page on filter change
+                    }}
                     className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {uniqueStatuses.map(status => (
@@ -160,16 +235,37 @@ const OrderHistory = () => {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <label className="mr-2 text-gray-600">Sắp xếp:</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="latest">Mới nhất</option>
-                  <option value="oldest">Cũ nhất</option>
-                </select>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center">
+                  <label className="mr-2 text-gray-600">Sắp xếp:</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      setCurrentPage(1); // Reset to first page on sort change
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="latest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center">
+                  <label className="mr-2 text-gray-600">Hiển thị:</label>
+                  <select
+                    value={ordersPerPage}
+                    onChange={(e) => {
+                      setOrdersPerPage(Number(e.target.value));
+                      setCurrentPage(1); // Reset to first page when changing items per page
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={5}>5 đơn hàng</option>
+                    <option value={10}>10 đơn hàng</option>
+                    <option value={15}>15 đơn hàng</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -196,186 +292,263 @@ const OrderHistory = () => {
               </Link>
             </div>
           ) : (
-            // Order list
-            <div className="space-y-4">
-              {filteredAndSortedOrders.map((order) => (
-                <motion.div
-                  key={order.orderCode}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden"
-                >
-                  {/* Order header */}
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-800">
-                            Đơn hàng #{order.orderCode}
-                          </h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusInfo(order.status).color}`}>
-                            {getStatusInfo(order.status).text}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                          <FaCalendarAlt className="h-3 w-3" />
-                          <span>{formatDate(order.orderDate)}</span>
-                        </div>
-                      </div>
+            <>
+              {/* Order count summary */}
+              <div className="mb-4 text-sm text-gray-600">
+                Hiển thị {Math.min(indexOfFirstOrder + 1, filteredAndSortedOrders.length)} - {Math.min(indexOfLastOrder, filteredAndSortedOrders.length)} của {filteredAndSortedOrders.length} đơn hàng
+              </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-blue-700">{formatPrice(order.totalAmount)}</span>
-                        <button
-                          onClick={() => toggleOrderExpand(order.orderCode)}
-                          className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          {expandedOrder === order.orderCode ? "Ẩn chi tiết" : "Xem chi tiết"}
-                        </button>
+              {/* Order list */}
+              <div className="space-y-4">
+                {currentOrders.map((order) => (
+                  <motion.div
+                    key={order.orderCode}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white rounded-lg shadow-sm overflow-hidden"
+                  >
+                    {/* Order header */}
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-800">
+                              Đơn hàng #{order.orderCode}
+                            </h3>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusInfo(order.status).color}`}>
+                              {getStatusInfo(order.status).text}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                            <FaCalendarAlt className="h-3 w-3" />
+                            <span>{formatDate(order.orderDate)}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-blue-700">{formatPrice(order.totalAmount)}</span>
+                          <button
+                            onClick={() => toggleOrderExpand(order.orderCode)}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            {expandedOrder === order.orderCode ? "Ẩn chi tiết" : "Xem chi tiết"}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Order details (expanded) */}
-                  {expandedOrder === order.orderCode && (
-                    <div className="p-4">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Customer info */}
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-3">Thông tin giao hàng</h4>
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-2">
-                              <FaMapMarkerAlt className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-gray-600">{order.deliveryAddress}</span>
+                    {/* Order details (expanded) */}
+                    {expandedOrder === order.orderCode && (
+                      <div className="p-4">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Customer info */}
+                          <div>
+                            <h4 className="font-medium text-gray-700 mb-3">Thông tin giao hàng</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-start gap-2">
+                                <FaMapMarkerAlt className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-gray-600">{order.deliveryAddress}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FaPhoneAlt className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-600">{order.deliveryPhone}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FaRegClock className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-600">Đặt hàng lúc: {formatDate(order.orderDate)}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <FaPhoneAlt className="h-4 w-4 text-gray-500" />
-                              <span className="text-gray-600">{order.deliveryPhone}</span>
+                          </div>
+
+                          {/* Order status */}
+                          <div>
+                            <h4 className="font-medium text-gray-700 mb-3">Trạng thái đơn hàng</h4>
+                            <div className="relative">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={order.status === "PENDING" || order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Đặt hàng</span>
+                                <span className={order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Xác nhận</span>
+                                <span className={order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Vận chuyển</span>
+                                <span className={order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Giao hàng</span>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 relative">
+                                <div
+                                  className="bg-blue-600 h-2.5 rounded-full"
+                                  style={{
+                                    width: order.status === "PENDING" ? "25%" :
+                                           order.status === "PROCESSING" ? "50%" :
+                                           order.status === "SHIPPED" ? "75%" :
+                                           order.status === "DELIVERED" ? "100%" : "0%"
+                                  }}
+                                ></div>
+
+                                {/* Status dots */}
+                                <div className="absolute -top-1 left-0 w-4 h-4 rounded-full bg-blue-600"></div>
+                                <div className={`absolute -top-1 left-1/3 transform -translate-x-1/2 w-4 h-4 rounded-full ${order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
+                                <div className={`absolute -top-1 left-2/3 transform -translate-x-1/2 w-4 h-4 rounded-full ${order.status === "SHIPPED" || order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
+                                <div className={`absolute -top-1 right-0 w-4 h-4 rounded-full ${order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <FaRegClock className="h-4 w-4 text-gray-500" />
-                              <span className="text-gray-600">Đặt hàng lúc: {formatDate(order.orderDate)}</span>
+
+                            <div className="mt-4">
+                              <FaTruck className={`inline-block mr-2 ${order.status === "SHIPPED" ? "text-blue-600" : "text-gray-400"}`} />
+                              {order.status === "SHIPPED" ? (
+                                <span className="text-blue-600">Đơn hàng đang được giao đến bạn</span>
+                              ) : order.status === "DELIVERED" ? (
+                                <span className="text-green-600">Đơn hàng đã được giao thành công</span>
+                              ) : (
+                                <span className="text-gray-500">Đơn hàng chưa được vận chuyển</span>
+                              )}
                             </div>
                           </div>
                         </div>
 
-                        {/* Order status */}
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-3">Trạng thái đơn hàng</h4>
-                          <div className="relative">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className={order.status === "PENDING" || order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Đặt hàng</span>
-                              <span className={order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Xác nhận</span>
-                              <span className={order.status === "SHIPPED" || order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Vận chuyển</span>
-                              <span className={order.status === "DELIVERED" ? "text-blue-600 font-medium" : "text-gray-500"}>Giao hàng</span>
-                            </div>
+                        {/* Products list */}
+                        <div className="mt-6">
+                          <h4 className="font-medium text-gray-700 mb-3">Sản phẩm đã đặt</h4>
 
-                            {/* Progress bar */}
-                            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 relative">
-                              <div
-                                className="bg-blue-600 h-2.5 rounded-full"
-                                style={{
-                                  width: order.status === "PENDING" ? "25%" :
-                                         order.status === "PROCESSING" ? "50%" :
-                                         order.status === "SHIPPED" ? "75%" :
-                                         order.status === "DELIVERED" ? "100%" : "0%"
-                                }}
-                              ></div>
+                          {order.orderDetails.length === 0 ? (
+                            <p className="text-gray-500 italic">Không có thông tin chi tiết sản phẩm</p>
+                          ) : (
+                            <div className="divide-y divide-gray-100">
+                              {order.orderDetails.map((product, index) => (
+                                <div key={index} className="py-3 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                  {/* Product image */}
+                                  <div className="w-16 h-16 flex-shrink-0">
+                                    <img
+                                      src={product.imgUrl}
+                                      alt={product.productName}
+                                      className="w-full h-full object-cover rounded"
+                                    />
+                                  </div>
 
-                              {/* Status dots */}
-                              <div className="absolute -top-1 left-0 w-4 h-4 rounded-full bg-blue-600"></div>
-                              <div className={`absolute -top-1 left-1/3 transform -translate-x-1/2 w-4 h-4 rounded-full ${order.status === "PROCESSING" || order.status === "SHIPPED" || order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
-                              <div className={`absolute -top-1 left-2/3 transform -translate-x-1/2 w-4 h-4 rounded-full ${order.status === "SHIPPED" || order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
-                              <div className={`absolute -top-1 right-0 w-4 h-4 rounded-full ${order.status === "DELIVERED" ? "bg-blue-600" : "bg-gray-300"}`}></div>
-                            </div>
-                          </div>
+                                  {/* Product info */}
+                                  <div className="flex-grow">
+                                    <h5 className="font-medium text-gray-800">{product.productName}</h5>
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                                      <span className="text-sm text-gray-600">Size: {product.size}</span>
+                                      <span className="text-sm text-gray-600">Màu: {product.color}</span>
+                                      <span className="text-sm text-gray-600">Số lượng: {product.quantity}</span>
+                                    </div>
+                                  </div>
 
-                          <div className="mt-4">
-                            <FaTruck className={`inline-block mr-2 ${order.status === "SHIPPED" ? "text-blue-600" : "text-gray-400"}`} />
-                            {order.status === "SHIPPED" ? (
-                              <span className="text-blue-600">Đơn hàng đang được giao đến bạn</span>
-                            ) : order.status === "DELIVERED" ? (
-                              <span className="text-green-600">Đơn hàng đã được giao thành công</span>
-                            ) : (
-                              <span className="text-gray-500">Đơn hàng chưa được vận chuyển</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Products list */}
-                      <div className="mt-6">
-                        <h4 className="font-medium text-gray-700 mb-3">Sản phẩm đã đặt</h4>
-
-                        {order.orderDetails.length === 0 ? (
-                          <p className="text-gray-500 italic">Không có thông tin chi tiết sản phẩm</p>
-                        ) : (
-                          <div className="divide-y divide-gray-100">
-                            {order.orderDetails.map((product, index) => (
-                              <div key={index} className="py-3 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                {/* Product image */}
-                                <div className="w-16 h-16 flex-shrink-0">
-                                  <img
-                                    src={product.imgUrl}
-                                    alt={product.productName}
-                                    className="w-full h-full object-cover rounded"
-                                  />
-                                </div>
-
-                                {/* Product info */}
-                                <div className="flex-grow">
-                                  <h5 className="font-medium text-gray-800">{product.productName}</h5>
-                                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                                    <span className="text-sm text-gray-600">Size: {product.size}</span>
-                                    <span className="text-sm text-gray-600">Màu: {product.color}</span>
-                                    <span className="text-sm text-gray-600">Số lượng: {product.quantity}</span>
+                                  {/* Product price */}
+                                  <div className="font-medium text-blue-700">
+                                    {formatPrice(product.totalPrice)}
                                   </div>
                                 </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
 
-                                {/* Product price */}
-                                <div className="font-medium text-blue-700">
-                                  {formatPrice(product.totalPrice)}
-                                </div>
-                              </div>
-                            ))}
+                        {/* Total amount */}
+                        <div className="mt-6 border-t border-gray-100 pt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Tổng tiền:</span>
+                            <span className="text-xl font-bold text-blue-700">{formatPrice(order.totalAmount)}</span>
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      {/* Total amount */}
-                      <div className="mt-6 border-t border-gray-100 pt-4">
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">Tổng tiền:</span>
-                          <span className="text-xl font-bold text-blue-700">{formatPrice(order.totalAmount)}</span>
+                        {/* Action buttons */}
+                        <div className="mt-6 flex flex-wrap justify-end gap-3">
+                          {order.status === "PENDING" && (
+                            <button className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors">
+                              Hủy đơn hàng
+                            </button>
+                          )}
+
+                          {/* Using PrintInvoice component for printing and PDF download */}
+                          <PrintInvoice
+                            order={order}
+                            formatDate={formatDate}
+                            formatPrice={formatPrice}
+                            getStatusInfo={getStatusInfo}
+                          />
+
+                          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            <FaFileInvoice className="text-sm" />
+                            Liên hệ hỗ trợ
+                          </button>
                         </div>
                       </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
 
-                      {/* Action buttons */}
-                      <div className="mt-6 flex flex-wrap justify-end gap-3">
-                        {order.status === "PENDING" && (
-                          <button className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors">
-                            Hủy đơn hàng
-                          </button>
-                        )}
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center px-3 py-2 rounded-l-md border ${
+                        currentPage === 1
+                          ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Trang trước</span>
+                      <FaChevronLeft className="h-3 w-3" />
+                    </button>
 
-                        {/* Using PrintInvoice component for printing and PDF download */}
-                        <PrintInvoice
-                          order={order}
-                          formatDate={formatDate}
-                          formatPrice={formatPrice}
-                          getStatusInfo={getStatusInfo}
-                        />
+                    {pageNumbers.map((number, index) => (
+                      <button
+                        key={index}
+                        onClick={() => number !== '...' ? paginate(number) : null}
+                        className={`relative inline-flex items-center px-4 py-2 border ${
+                          number === currentPage
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                            : number === '...'
+                              ? 'border-gray-300 bg-white text-gray-700'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
 
-                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                          <FaFileInvoice className="text-sm" />
-                          Liên hệ hỗ trợ
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                    <button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center px-3 py-2 rounded-r-md border ${
+                        currentPage === totalPages
+                          ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="sr-only">Trang sau</span>
+                      <FaChevronRight className="h-3 w-3" />
+                    </button>
+                  </nav>
+                </div>
+              )}
+
+              {/* Jump to page (for large number of pages) */}
+              {totalPages > 5 && (
+                <div className="mt-4 flex justify-center items-center space-x-2">
+                  <span className="text-sm text-gray-600">Đi đến trang:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={totalPages}
+                    value={currentPage}
+                    onChange={(e) => {
+                      const page = parseInt(e.target.value);
+                      if (page && page >= 1 && page <= totalPages) {
+                        paginate(page);
+                      }
+                    }}
+                    className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-600">/ {totalPages}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

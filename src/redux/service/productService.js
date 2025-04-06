@@ -367,7 +367,26 @@ const getColorsByProductId = async (productId) => {
         throw error;
     }
 }
-    
+const getProductsByImgUrls = async (imgUrls) => {
+    try {
+        // Construct the query parameters
+        const params = new URLSearchParams();
+        imgUrls.forEach((url) => params.append("imgUrls", url)); 
+
+        // Send the GET request with the constructed query string
+        const response = await axios.get(
+            `/api/v1/public/products/images?${params.toString()}`,
+        );
+
+        // Extract and return the data
+        const { data } = response.data;
+        console.log("Fetched products by image URLs:", data);
+        return data;
+    } catch (error) {
+        console.error("Error fetching products by image URLs:", error);
+        throw error;
+    }
+};
 export {
     fetchAllProducts,
     fetchProductDetail,
@@ -389,4 +408,5 @@ export {
     addProductCareInstructions,
     updateProductCareInstructions,
     getColorsByProductId,
+    getProductsByImgUrls,
 };

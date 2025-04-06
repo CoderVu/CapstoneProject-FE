@@ -12,9 +12,11 @@ import ProductTabs from "./ProductTabs";
 import { postViewedProduct } from "../../../redux/service/productService";
 import ProductRelated from "./ProductRelated";
 import ProductReviewSection from "./ProductReviewSection";
+import AISimilarProducts from "./AISimilarProducts"; // Import the new component
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { tr } from "date-fns/locale";
+import { getProductsByImgUrls } from "../../../redux/service/productService";
+import { toast } from "react-toastify"; // Add toast for notifications
 
 // Add custom CSS for animations
 const styles = `
@@ -35,6 +37,7 @@ const styles = `
     animation: scan 2s linear infinite;
   }
 `;
+
 const ProductDetails = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -65,126 +68,8 @@ const ProductDetails = () => {
   const [uploadPreview, setUploadPreview] = useState(null);
   const fileInputRef = useRef(null);
   const [showAiPanel, setShowAiPanel] = useState(false);
-  useEffect(() => {
-    if (id) {
-      dispatch(getProductDetail(id, page, size));
-      dispatch(getRating(id, 0, size));
-      postViewedProduct(id); // Post the viewed product ID when the component mounts
-    }
-    setPrevLocation(location.pathname);
-  }, [dispatch, id, location, page, size]);
-
-  useEffect(() => {
-    if (rating) {
-      // Process rating data without fetching user details
-      const totalReviews = rating.length;
-      const starCounts = [0, 0, 0, 0, 0];
-      let totalRating = 0;
-
-      rating.forEach((review) => {
-        if (review.rate >= 1 && review.rate <= 5) { // Ensure the rate is within valid range
-          starCounts[review.rate - 1]++;
-          totalRating += review.rate;
-        }
-      });
-
-      const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
-
-      setReviews(rating); // Directly set the reviews from the rating data
-      setHasMore(rating.length === size);
-
-      setRatingSummary({
-        totalReviews,
-        averageRating: averageRating.toFixed(1),
-        starCounts,
-      });
-    }
-  }, [rating, size]);
-
-  const handleImageClick = (imagePath) => {
-    setSlideDirection(selectedImage ? "left" : "right");
-    setSelectedImage(imagePath);
-  };
-
-  const findSimilarProducts = async (imageUrl) => {
-    try {
-      setLoadingSimilar(true);
-      setShowSimilarProducts(true);
-
-      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: imageUrl }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      setSimilarProducts(data.similar_images || []);
-    } catch (error) {
-      console.error('Error finding similar products:', error);
-    } finally {
-      setLoadingSimilar(false);
-    }
-  };
-
-  const handleUploadImage = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Preview the image
-    const reader = new FileReader();
-    reader.onload = () => {
-      setUploadPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-    setUploadedImage(file);
-  };
-
-  const findSimilarByUploadedImage = async () => {
-    if (!uploadedImage) return;
-
-    try {
-      setLoadingSimilar(true);
-      setShowSimilarProducts(true);
-      setShowUploadModal(false);
-
-      const formData = new FormData();
-      formData.append('file', uploadedImage);
-
-      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      setSimilarProducts(data.similar_images || []);
-    } catch (error) {
-      console.error('Error finding similar products by upload:', error);
-    } finally {
-      setLoadingSimilar(false);
-    }
-  };
-
-  const openUploadModal = () => {
-    setShowUploadModal(true);
-    setUploadPreview(null);
-    setUploadedImage(null);
-  };
-
-  const closeUploadModal = () => {
-    setShowUploadModal(false);
-    setUploadPreview(null);
-    setUploadedImage(null);
-  };
+  const [productResults, setProductResults] = useState([]); // Add state for actual product data
+  const [errorMessage, setErrorMessage] = useState(""); // Add error message state
 
   const settings = {
     infinite: true,
@@ -217,19 +102,204 @@ const ProductDetails = () => {
       }
     ]
   };
+  const handleImageClick = (imagePath) => {
+    setSlideDirection(selectedImage ? "left" : "right");
+    setSelectedImage(imagePath);
+  };
+   const openUploadModal = () => {
+    setShowUploadModal(true);
+    setUploadPreview(null);
+    setUploadedImage(null);
+  }; 
+  const handleUploadImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  if (loading) return <div className="w-full h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
-  </div>;
+    // Preview the image
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+    setUploadedImage(file);
+  };
 
-  if (error) return <div className="w-full h-screen flex items-center justify-center text-red-500">
-    <p>Đã xảy ra lỗi: {error}</p>
-  </div>;
+  const closeUploadModal = () => {
+    setShowUploadModal(false);
+    setUploadPreview(null);
+    setUploadedImage(null);
+  }
+
+  const findSimilarProducts = async (imageUrl) => {
+    if (!imageUrl) {
+      toast.error("No image selected for AI visual search");
+      return;
+    }
+
+    try {
+      setLoadingSimilar(true);
+      setShowSimilarProducts(true);
+      setErrorMessage("");
+
+      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: imageUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.similar_images || data.similar_images.length === 0) {
+        setErrorMessage("No similar products found");
+        setSimilarProducts([]);
+        setProductResults([]);
+        return;
+      }
+
+      setSimilarProducts(data.similar_images);
+
+      // Get image URLs from similar products
+      const similarImageUrls = data.similar_images.map((item) => item.filename);
+
+      // Fetch actual product data
+      try {
+        const resultProducts = await getProductsByImgUrls(similarImageUrls);
+
+        if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
+          // Map similarity scores to product data
+          const productsWithSimilarity = resultProducts.response.map((product) => {
+            // Find the corresponding similarity score
+            const similarityData = data.similar_images.find(img =>
+              product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
+            );
+
+            return {
+              ...product,
+              similarity: similarityData ? similarityData.similarity : 1 // Default to 1 (lowest similarity) if not found
+            };
+          });
+
+          // Sort by similarity (lowest similarity value means highest match)
+          const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
+
+          setProductResults(sortedProducts);
+          toast.success(`Found ${sortedProducts.length} visually similar products`);
+        } else {
+          setErrorMessage("No product data found for similar images");
+          setProductResults([]);
+        }
+      } catch (error) {
+        console.error("Error fetching product data:", error);
+        setErrorMessage("Error loading product details");
+        setProductResults([]);
+      }
+    } catch (error) {
+      console.error('Error finding similar products:', error);
+      setErrorMessage(error.message || "Error processing image for similar products");
+      setSimilarProducts([]);
+      setProductResults([]);
+      toast.error("Failed to find similar products. Please try again.");
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
+
+  const findSimilarByUploadedImage = async () => {
+    if (!uploadedImage) {
+      toast.error("Please select an image first");
+      return;
+    }
+
+    try {
+      setLoadingSimilar(true);
+      setShowSimilarProducts(true);
+      setShowUploadModal(false);
+      setErrorMessage("");
+
+      const formData = new FormData();
+      formData.append('file', uploadedImage);
+
+      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.similar_images || data.similar_images.length === 0) {
+        setErrorMessage("No similar products found for your image");
+        setSimilarProducts([]);
+        setProductResults([]);
+        return;
+      }
+
+      setSimilarProducts(data.similar_images);
+
+      // Get image URLs from similar products
+      const similarImageUrls = data.similar_images.map((item) => item.filename);
+
+      // Fetch actual product data
+      try {
+        const resultProducts = await getProductsByImgUrls(similarImageUrls);
+
+        if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
+          // Map similarity scores to product data
+          const productsWithSimilarity = resultProducts.response.map((product) => {
+            // Find the corresponding similarity score
+            const similarityData = data.similar_images.find(img =>
+              product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
+            );
+
+            return {
+              ...product,
+              similarity: similarityData ? similarityData.similarity : 1 // Default to 1 (lowest similarity) if not found
+            };
+          });
+
+          // Sort by similarity (lowest similarity value means highest match)
+          const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
+
+          setProductResults(sortedProducts);
+          toast.success(`Found ${sortedProducts.length} visually similar products`);
+        } else {
+          setErrorMessage("No product data found for similar images");
+          setProductResults([]);
+        }
+      } catch (error) {
+        console.error("Error fetching product data:", error);
+        setErrorMessage("Error loading product details");
+        setProductResults([]);
+      }
+    } catch (error) {
+      console.error('Error finding similar products by upload:', error);
+      setErrorMessage(error.message || "Error processing uploaded image");
+      setSimilarProducts([]);
+      setProductResults([]);
+      toast.error("Failed to find similar products. Please try a different image.");
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
 
   // Filter products based on similarity threshold
-  const filteredSimilarProducts = similarProducts.filter(product => product.similarity <= similarityThreshold);
+  const filteredSimilarProducts = similarProducts.filter(product =>
+    product.similarity <= similarityThreshold
+  );
 
+  // Filter product results based on similarity threshold
+  const filteredProductResults = productResults.filter(product =>
+    product.similarity <= similarityThreshold
+  );
 
   return (
     <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
@@ -357,7 +427,7 @@ const ProductDetails = () => {
                     <div
                       key={index}
                       className={`thumbnail ${selectedImage === image.path ? "border-2 border-blue-500" : "border border-gray-300"} rounded-lg cursor-pointer p-1 mx-1`}
-                      onClick={() => handleImageClick(image.path)}
+                      onClick={() => (image.path)}
                     >
                       <div className="aspect-square w-full overflow-hidden rounded-lg">
                         <img
@@ -496,109 +566,17 @@ const ProductDetails = () => {
           </div>
         )}
 
-        {showSimilarProducts && (
-          <div className="w-full bg-white text-black p-6 rounded-xl shadow-xl mt-6 transition-all duration-300 ease-in-out border border-gray-300">
-            <div className="flex justify-between items-center mb-6 border-b border-gray-300 pb-4">
-              <div className="flex items-center">
-                <div className="bg-gray-200 p-3 rounded-lg mr-4">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">AI Vision Results</h2>
-                  <p className="text-gray-500 text-sm">Powered by deep learning image processing</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
-                  <span className="text-sm text-gray-600 mr-2">Similarity Threshold:</span>
-                  <select
-                    value={similarityThreshold}
-                    onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
-                    className="bg-gray-200 border border-gray-400 rounded-md px-3 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  >
-                    <option value="1">All Products</option>
-                    <option value="0.5">Medium Match</option>
-                    <option value="0.3">High Match</option>
-                    <option value="0.1">Perfect Match</option>
-                  </select>
-                </div>
-                <button
-                  onClick={() => setShowSimilarProducts(false)}
-                  className="text-gray-600 hover:text-black bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg transition-colors flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Close
-                </button>
-              </div>
-            </div>
-
-            {/* Hiển thị kết quả tương tự */}
-            {loadingSimilar ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="relative w-20 h-20">
-                  <div className="absolute inset-0 rounded-full border-4 border-gray-300 border-opacity-50"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-gray-500 animate-spin"></div>
-                </div>
-                <div className="mt-6 text-center">
-                  <h3 className="text-xl font-medium text-gray-800">AI Image Analysis In Progress</h3>
-                  <p className="text-gray-500 text-sm">Analyzing visual features and processing similarity metrics</p>
-                </div>
-              </div>
-            ) : filteredSimilarProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {filteredSimilarProducts.map((product, index) => (
-                  <div key={index} className="bg-white border border-gray-300 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
-                    <img
-                      src={product.url}
-                      alt={`Similar product ${index + 1}`}
-                      className="w-full h-56 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="text-gray-800 font-medium text-center">Similarity Score</h3>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div
-                          className="bg-gray-500 h-2.5 rounded-full"
-                          style={{ width: `${(1 - product.similarity) * 100}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs text-gray-500">Match</span>
-                        <span className="text-sm font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
-                      </div>
-
-                      <button className="w-full mt-2 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all duration-300">
-                        View Product
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16 bg-gray-100 rounded-lg border border-gray-300">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-200 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                  </svg>
-                </div>
-                <h3 className="text-xl font-medium text-gray-800 mb-2">No Visual Matches Found</h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Our AI couldn't find products matching your selected similarity threshold. Try lowering the threshold or using a different image.
-                </p>
-                <button
-                  onClick={() => setSimilarityThreshold(1)}
-                  className="mt-6 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                >
-                  Show All Results
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
+        {/* Replace the similar products section with the AISimilarProducts component */}
+        <AISimilarProducts
+          showSimilarProducts={showSimilarProducts}
+          setShowSimilarProducts={setShowSimilarProducts}
+          loadingSimilar={loadingSimilar}
+          filteredSimilarProducts={filteredSimilarProducts}
+          similarityThreshold={similarityThreshold}
+          setSimilarityThreshold={setSimilarityThreshold}
+          productResults={productResults} // Pass all product results
+          errorMessage={errorMessage}
+        />
 
         {/* ProductTabs - with updated styling */}
         <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-8">
@@ -630,7 +608,7 @@ const ProductDetails = () => {
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
             </div>
-           
+
             {/* AI Powered Badge */}
             {ratingSummary.totalReviews > 0 && (
               <div className="ml-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
@@ -725,14 +703,13 @@ const ProductDetails = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              
             </div>
           </div>
-          
+
           <ProductReviewSection productId={productDetail.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
 
         </div>
-       
+
       </div>
     </div>
 

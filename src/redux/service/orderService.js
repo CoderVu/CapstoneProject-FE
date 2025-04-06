@@ -63,5 +63,24 @@ const fetchAllOrder = async (page, size) => {
         throw error;
     }
 }
+const updateOrderStatus = async (orderId, status) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/admin/order/update-status`,
+            params: { orderId , status }
+           
+        
+        });
+        console.log("param", orderId, status)
+        const { data } = response.data;
+        showSuccessToast(response.data.message || "Order status updated successfully");
+        return data;
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        showErrorToast(error.response.data.message || "Failed to update order status");
+        throw error;
+    }
+}
 
-export { fetchOrderMock, createOrderFromCart, fetchOrder, fetchAllOrder };
+export { fetchOrderMock, createOrderFromCart, fetchOrder, fetchAllOrder , updateOrderStatus };

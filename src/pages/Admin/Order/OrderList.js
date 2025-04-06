@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrders } from "../../../redux/actions/orderAction";
+import { updateOrderStatus } from "../../../redux/service/orderService";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -8,7 +9,10 @@ import {
   ChevronUp,
   Filter,
   Package,
-  RefreshCw
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+  X
 } from "lucide-react";
 import Pagination from "./Pagination";
 
@@ -27,6 +31,17 @@ const OrderList = () => {
   const dispatch = useDispatch();
   const { orders = [], totalPages = 0, totalElements = 0, loading, error } = useSelector((state) => state.order);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+  // Order status management
+  const [statusDialog, setStatusDialog] = useState({
+    isOpen: false,
+    orderId: null,
+    currentStatus: null,
+    newStatus: null,
+    isUpdating: false,
+    error: null,
+    success: false
+  });
 
   // Tìm kiếm và lọc
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +70,79 @@ const OrderList = () => {
       total: totalElements
     });
   }, [dispatch, currentPage, itemsPerPage]);
+
+  // Open dialog to update order status
+  const openStatusDialog = (order) => {
+    setStatusDialog({
+      isOpen: true,
+      orderId: order.orderCode,
+      currentStatus: order.status,
+      newStatus: order.status,
+      isUpdating: false,
+      error: null,
+      success: false
+    });
+  };
+
+  // Close status update dialog
+  const closeStatusDialog = () => {
+    setStatusDialog({
+      isOpen: false,
+      orderId: null,
+      currentStatus: null,
+      newStatus: null,
+      isUpdating: false,
+      error: null,
+      success: false
+    });
+  };
+
+  // Handle status selection in dialog
+  const handleStatusChange = (status) => {
+    setStatusDialog(prev => ({
+      ...prev,
+      newStatus: status,
+      error: null
+    }));
+  };
+
+  // Handle updating the order status
+  const handleUpdateStatus = async () => {
+    try {
+      if (statusDialog.currentStatus === statusDialog.newStatus) {
+        setStatusDialog(prev => ({
+          ...prev,
+          error: "Vui lòng chọn trạng thái khác với trạng thái hiện tại"
+        }));
+        return;
+      }
+
+      setStatusDialog(prev => ({ ...prev, isUpdating: true, error: null }));
+
+      await updateOrderStatus(statusDialog.orderId, statusDialog.newStatus);
+
+      setStatusDialog(prev => ({
+        ...prev,
+        isUpdating: false,
+        success: true,
+        error: null
+      }));
+
+      // Refresh the order list after 1 second to show success message
+      setTimeout(() => {
+        loadOrders();
+        closeStatusDialog();
+      }, 1500);
+
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      setStatusDialog(prev => ({
+        ...prev,
+        isUpdating: false,
+        error: "Đã xảy ra lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại sau."
+      }));
+    }
+  };
 
   // Load orders từ API chỉ sử dụng phân trang
   const loadOrders = async () => {
@@ -141,13 +229,13 @@ const OrderList = () => {
   const currentPageOrders = isServerSideFilter ? orders : filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
   // Xử lý khi thay đổi giá trị tìm kiếm
-  const handleSearch = (e) => {
+  const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(0); // Reset về trang đầu tiên khi tìm kiếm thay đổi
   };
 
   // Xử lý khi thay đổi trạng thái lọc
-  const handleStatusChange = (e) => {
+  const handleStatusFilterChange = (e) => {
     setStatusFilter(e.target.value);
     setCurrentPage(0); // Reset về trang đầu tiên khi trạng thái thay đổi
   };
@@ -231,6 +319,96 @@ const OrderList = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Status Update Dialog */}
+      {statusDialog.isOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <Package className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Cập nhật trạng thái đơn hàng
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Đơn hàng: <span className="font-medium">#{statusDialog.orderId}</span>
+                      </p>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Trạng thái hiện tại: <span className="font-medium">{ORDER_STATUS[statusDialog.currentStatus]?.text || 'Không xác định'}</span>
+                      </p>
+
+                      {statusDialog.error && (
+                        <div className="mb-4 p-2 bg-red-50 text-red-700 text-sm rounded-md border border-red-200 flex items-start">
+                          <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                          <span>{statusDialog.error}</span>
+                        </div>
+                      )}
+
+                      {statusDialog.success && (
+                        <div className="mb-4 p-2 bg-green-50 text-green-700 text-sm rounded-md border border-green-200 flex items-start">
+                          <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                          <span>Cập nhật trạng thái thành công!</span>
+                        </div>
+                      )}
+
+                      <div className="mt-4">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                          Chọn trạng thái mới
+                        </label>
+                        <select
+                          id="status"
+                          value={statusDialog.newStatus}
+                          onChange={(e) => handleStatusChange(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          disabled={statusDialog.isUpdating || statusDialog.success}
+                        >
+                          {Object.entries(ORDER_STATUS).map(([key, { text }]) => (
+                            key !== "DEFAULT" && (
+                              <option key={key} value={key}>
+                                {text}
+                              </option>
+                            )
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleUpdateStatus}
+                  disabled={statusDialog.isUpdating || statusDialog.success}
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2
+                    ${statusDialog.isUpdating || statusDialog.success
+                      ? 'bg-blue-300 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'}
+                    text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm`}
+                >
+                  {statusDialog.isUpdating ? 'Đang xử lý...' : (statusDialog.success ? 'Đã cập nhật' : 'Cập nhật')}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeStatusDialog}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  {statusDialog.success ? 'Đóng' : 'Hủy'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="p-5 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-800 flex items-center">
@@ -249,19 +427,6 @@ const OrderList = () => {
             <RefreshCw className={`h-4 w-4 ${loading || isRefreshing ? 'animate-spin' : ''}`} />
             <span>Làm mới</span>
           </button>
-
-          <div className="flex items-center ml-2">
-            <label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isServerSideFilter}
-                onChange={toggleFilterMode}
-                className="sr-only peer"
-              />
-              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              <span className="ms-2 text-sm font-medium text-gray-700"></span>
-            </label>
-          </div>
         </div>
       </div>
 
@@ -275,7 +440,7 @@ const OrderList = () => {
             <input
               type="text"
               value={searchTerm}
-              onChange={handleSearch}
+              onChange={handleSearchChange}
               placeholder="Tìm kiếm theo mã đơn, tên khách hàng..."
               className="pl-10 p-2.5 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -284,7 +449,7 @@ const OrderList = () => {
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={statusFilter}
-              onChange={handleStatusChange}
+              onChange={handleStatusFilterChange}
               className="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">Tất cả trạng thái</option>
@@ -423,23 +588,34 @@ const OrderList = () => {
                       </div>
                     </div>
 
-                    {/* Toggle Details Button */}
-                    <button
-                      onClick={() => toggleOrderDetails(order.orderCode)}
-                      className="mt-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      {expandedOrderId === order.orderCode ? (
-                        <>
-                          <ChevronUp className="h-4 w-4 mr-1" />
-                          <span>Ẩn chi tiết</span>
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4 mr-1" />
-                          <span>Xem chi tiết</span>
-                        </>
-                      )}
-                    </button>
+                    {/* Action Buttons */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => toggleOrderDetails(order.orderCode)}
+                        className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        {expandedOrderId === order.orderCode ? (
+                          <>
+                            <ChevronUp className="h-4 w-4 mr-1" />
+                            <span>Ẩn chi tiết</span>
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-1" />
+                            <span>Xem chi tiết</span>
+                          </>
+                        )}
+                      </button>
+
+                      <span className="text-gray-300 mx-1">|</span>
+
+                      <button
+                        onClick={() => openStatusDialog(order)}
+                        className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors"
+                      >
+                        <span>Cập nhật trạng thái</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Order Details */}
@@ -533,18 +709,10 @@ const OrderList = () => {
                                         <p>Đơn giá: {new Intl.NumberFormat("vi-VN", {
                                           style: "currency",
                                           currency: "VND"
-                                        }).format(detail.price)}</p>
+                                        }).format(detail.totalPrice)}</p>
                                         <p>Kích thước: {detail.size || "N/A"}</p>
                                         <p>Màu sắc: {detail.color || "N/A"}</p>
                                       </div>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <p className="font-medium text-blue-600">
-                                        {new Intl.NumberFormat("vi-VN", {
-                                          style: "currency",
-                                          currency: "VND"
-                                        }).format(detail.totalPrice)}
-                                      </p>
                                     </div>
                                   </div>
                                 ))}
