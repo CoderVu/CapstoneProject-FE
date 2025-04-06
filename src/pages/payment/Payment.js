@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
-import { FaQrcode, FaArrowLeft, FaCheckCircle, FaPlus, FaCreditCard, FaMapMarkerAlt, FaPhone, FaShoppingCart } from "react-icons/fa";
+import { FaQrcode, FaArrowLeft, FaCheckCircle, FaPlus, FaCreditCard, FaMapMarkerAlt, FaPhone, FaShoppingCart, FaMoneyBill } from "react-icons/fa";
 import { createOrderFromCart } from "../../redux/service/orderService";
 import AddressSelector from "./AddressSelector";
 import { fetchAddress } from "../../redux/service/authService";
@@ -22,11 +22,11 @@ const PaymentGateway = () => {
     deliveryAddress: "",
     deliveryPhone: "",
     orderInfo: "Payment for order",
-    paymentMethod: "ZALOPAY",
+    paymentMethod: "ZALOPAY", // Default to ZaloPay
   });
 
   // Calculate total amount
-  const totalAmount = cartState.selectedTotal || 0;
+  const totalAmount = cartState.finalAmount || 0;
 
   // Get cart items
   const cartItems = cartState.selectedItems || [];
@@ -88,20 +88,20 @@ const PaymentGateway = () => {
     setIsCreatingNewAddress(false);
   };
 
-  // Create ZaloPay order
+  // Create order and handle payment
   const handleCreateOrder = async () => {
     if (!formData.deliveryAddress || !formData.deliveryPhone) {
       setError("Vui lòng nhập đầy đủ thông tin giao hàng");
       return;
     }
-
+  
     try {
       setLoading(true);
       setError(null);
-
+  
       // Get cart IDs from the cart items
       const cartIds = cartState.selectedItems || [];
-
+  
       // Prepare order request
       const orderRequest = {
         amount: totalAmount,
@@ -113,11 +113,23 @@ const PaymentGateway = () => {
         lang: "vi",
         extraData: "additional data",
       };
-
-      // Call the API to create order
+  
+      // Call the API to create the order
       const orderResponse = await createOrderFromCart(orderRequest);
-
-      if (orderResponse && orderResponse.orderurl) {
+  
+      if (formData.paymentMethod === "CASH") {
+        // Handle success for "CASH" payment
+        setOrderDetails({
+          orderId: orderResponse?.orderId || "COD" + Math.floor(100000 + Math.random() * 900000),
+          apptransid: "C" + Date.now(),
+          amount: totalAmount,
+          orderInfo: formData.orderInfo,
+        });
+  
+        // Skip to success page
+        setPaymentStep(4);
+      } else if (orderResponse && orderResponse.orderurl) {
+        // Redirect to payment gateway for ZaloPay
         window.location.href = orderResponse.orderurl;
       } else {
         // Demo: move to next step instead of redirecting
@@ -207,8 +219,11 @@ const PaymentGateway = () => {
             <div className="grid grid-cols-1 gap-4">
               {/* ZaloPay Option */}
               <div
-                onClick={() => setPaymentStep(2)}
-                className="border border-gray-200 rounded-lg p-5 flex items-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition duration-200"
+                onClick={() => {
+                  setFormData({...formData, paymentMethod: "ZALOPAY"});
+                  setPaymentStep(2);
+                }}
+                className={`border rounded-lg p-5 flex items-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition duration-200 ${formData.paymentMethod === "ZALOPAY" ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
               >
                 <div className="flex-shrink-0 mr-4">
                   <img
@@ -225,7 +240,31 @@ const PaymentGateway = () => {
                 </div>
                 <div className="ml-4">
                   <div className="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className={`w-3 h-3 ${formData.paymentMethod === "ZALOPAY" ? "bg-blue-500" : "bg-white"} rounded-full`}></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cash on Delivery Option */}
+              <div
+                onClick={() => {
+                  setFormData({...formData, paymentMethod: "CASH"});
+                  setPaymentStep(2);
+                }}
+                className={`border rounded-lg p-5 flex items-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition duration-200 ${formData.paymentMethod === "CASH" ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
+              >
+                <div className="flex-shrink-0 mr-4 bg-green-100 p-3 rounded-lg">
+                  <FaMoneyBill className="w-10 h-10 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-lg">Thanh toán khi nhận hàng (COD)</h3>
+                  <p className="text-gray-600 text-sm">
+                    Thanh toán bằng tiền mặt khi đơn hàng được giao đến
+                  </p>
+                </div>
+                <div className="ml-4">
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                    <div className={`w-3 h-3 ${formData.paymentMethod === "CASH" ? "bg-blue-500" : "bg-white"} rounded-full`}></div>
                   </div>
                 </div>
               </div>
@@ -266,13 +305,19 @@ const PaymentGateway = () => {
         {paymentStep === 2 && (
           <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto">
             <div className="flex items-center justify-center mb-6">
-              <img
-                src="https://brandlogos.net/wp-content/uploads/2022/05/zalopay-logo_brandlogos.net_fjcup.png"
-                alt="ZaloPay"
-                className="w-12 h-12 object-contain"
-              />
-              <h2 className="text-2xl font-semibold ml-3 text-gray-800">
-                Thông tin giao hàng & thanh toán
+              {formData.paymentMethod === "ZALOPAY" ? (
+                <img
+                  src="https://brandlogos.net/wp-content/uploads/2022/05/zalopay-logo_brandlogos.net_fjcup.png"
+                  alt="ZaloPay"
+                  className="w-12 h-12 object-contain mr-3"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <FaMoneyBill className="text-green-600 text-2xl" />
+                </div>
+              )}
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Thông tin giao hàng {formData.paymentMethod === "CASH" ? "& thanh toán COD" : ""}
               </h2>
             </div>
 
@@ -380,6 +425,14 @@ const PaymentGateway = () => {
                   <span>Tổng thanh toán:</span>
                   <span className="text-blue-700">{formatCurrency(totalAmount)}</span>
                 </div>
+                {formData.paymentMethod === "CASH" && (
+                  <div className="mt-3 bg-green-50 p-3 rounded border border-green-200 text-green-700 text-sm">
+                    <p className="flex items-center">
+                      <FaMoneyBill className="mr-2" />
+                      Bạn sẽ thanh toán <span className="font-semibold mx-1">{formatCurrency(totalAmount)}</span> khi nhận hàng
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -398,15 +451,63 @@ const PaymentGateway = () => {
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "Đang xử lý..." : "Tiếp tục thanh toán"}
-                {!loading && <FaQrcode className="ml-2" />}
+                {loading ? "Đang xử lý..." : formData.paymentMethod === "CASH" ? "Đặt hàng ngay" : "Tiếp tục thanh toán"}
+                {!loading && formData.paymentMethod === "ZALOPAY" && <FaQrcode className="ml-2" />}
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: QR Code Payment */}
-        {paymentStep === 3 && orderDetails && (
+        {/* Step 4: Success */}
+        {paymentStep === 4 && (
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
+              <FaCheckCircle className="text-green-500 text-3xl" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              {formData.paymentMethod === "CASH" ? "Đặt hàng thành công!" : "Thanh toán thành công!"}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đang được xử lý.
+            </p>
+
+            <div className="bg-gray-50 p-5 rounded-lg mb-6 text-left">
+              <h3 className="font-medium mb-3 text-gray-800">Thông tin đơn hàng</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-gray-600">
+                  <span>Mã đơn hàng:</span>
+                  <span className="font-medium">{orderDetails?.orderId}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Phương thức thanh toán:</span>
+                  <span className="font-medium">{formData.paymentMethod === "CASH" ? "Thanh toán khi nhận hàng (COD)" : "ZaloPay"}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Tổng thanh toán:</span>
+                  <span className="font-medium">{formatCurrency(totalAmount)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Link
+                to="/order-history"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150"
+              >
+                Xem đơn hàng
+              </Link>
+              <Link
+                to="/"
+                className="px-6 py-2.5 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition duration-150"
+              >
+                Tiếp tục mua sắm
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: QR Code Payment - Only for ZaloPay */}
+        {paymentStep === 3 && orderDetails && formData.paymentMethod === "ZALOPAY" && (
           <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto">
             <div className="text-center mb-6">
               <img
@@ -440,7 +541,7 @@ const PaymentGateway = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-gray-600">
                       <span>Mã đơn hàng:</span>
-                      <span className="font-medium">{orderDetails.orderId}</span>
+                      <span className="font-medium">{orderDetails?.orderId}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Mã giao dịch:</span>
@@ -474,54 +575,6 @@ const PaymentGateway = () => {
                   <FaCheckCircle className="mr-2" /> Giả lập thanh toán thành công
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Success */}
-        {paymentStep === 4 && (
-          <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
-              <FaCheckCircle className="text-green-500 text-3xl" />
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-              Thanh toán thành công!
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đang được xử lý.
-            </p>
-
-            <div className="bg-gray-50 p-5 rounded-lg mb-6 text-left">
-              <h3 className="font-medium mb-3 text-gray-800">Thông tin đơn hàng</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>Mã đơn hàng:</span>
-                  <span className="font-medium">{orderDetails?.orderId}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Phương thức thanh toán:</span>
-                  <span className="font-medium">ZaloPay</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tổng thanh toán:</span>
-                  <span className="font-medium">{formatCurrency(totalAmount)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center space-x-4">
-              <Link
-                to="/order-history"
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150"
-              >
-                Xem đơn hàng
-              </Link>
-              <Link
-                to="/"
-                className="px-6 py-2.5 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition duration-150"
-              >
-                Tiếp tục mua sắm
-              </Link>
             </div>
           </div>
         )}

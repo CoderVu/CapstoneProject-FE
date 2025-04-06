@@ -36,6 +36,7 @@ import ChatButton from "./components/chat/ChatButton";
 import OrderHistory from "./pages/Order/OrderHistory";
 import OrderList from "./pages/Admin/Order/OrderList";
 import Favorites from "./pages/Favorate/Favorites";
+import DiscountCode from "./pages/Admin/Discount/DiscountCode";
 
 const Layout = () => {
   return (
@@ -62,7 +63,7 @@ const router = createBrowserRouter(
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/favorite" element={<Favorites />} />
-        <Route path="/paymentgateway" element={<Payment />} />
+        <Route path="/proceed-to-checkout" element={<Payment />} />
         <Route path="/orderHistory" element= {<OrderHistory />} />
         <Route path="/profile" element={<UserProfile />} />
       </Route>
@@ -83,7 +84,7 @@ const router = createBrowserRouter(
           {/* Các trang admin khác */}
           <Route path="add-products" element={<div className="text-2xl font-bold">Thêm Sản Phẩm Mới</div>} />
           <Route path="orders" element={<OrderList />} />
-          <Route path="promotions" element={<div className="text-2xl font-bold">Quản Lý Khuyến Mãi</div>} />
+          <Route path="promotions" element={<DiscountCode />} />
           <Route path="customers" element={<div className="text-2xl font-bold">Quản Lý Khách Hàng</div>} />
           <Route path="reports" element={<div className="text-2xl font-bold">Báo Cáo & Thống Kê</div>} />
           <Route path="messages" element={<div className="text-2xl font-bold">Tin Nhắn</div>} />

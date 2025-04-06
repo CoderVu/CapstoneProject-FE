@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineMenuAlt4 } from "react-icons/hi";
-import { FaSearch, FaUser, FaShoppingCart, FaHeart, FaTimes } from "react-icons/fa";
+import { FaSearch, FaUser, FaShoppingCart, FaHeart, FaTimes, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { logo } from "../../../assets/images";
 import Image from "../../designLayouts/Image";
 import { navBarList } from "../../../constants";
@@ -27,6 +27,7 @@ const Header = () => {
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const [shopNavPosition, setShopNavPosition] = useState(null);
+  const [expandedSection, setExpandedSection] = useState(null);
 
   // Refs for click-outside detection
   const location = useLocation();
@@ -118,6 +119,7 @@ const Header = () => {
     dispatch(logoutUser());
     navigate("/");
     setShowUserMenu(false);
+    setShowMenu(false);
   };
 
   // Handle category selection
@@ -125,6 +127,11 @@ const Header = () => {
     navigate("/shop", { state: { category } });
     setShowModal(false);
     setShowMenu(false);
+  };
+
+  // Toggle mobile menu section
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
   };
 
   // Animation variants
@@ -153,6 +160,15 @@ const Header = () => {
         stiffness: 400,
         damping: 30
       }
+    }
+  };
+
+  const accordionVariants = {
+    hidden: { height: 0, opacity: 0, overflow: "hidden" },
+    visible: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3 }
     }
   };
 
@@ -346,18 +362,18 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - IMPROVED WITH TEXT */}
             <button
-              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="lg:hidden flex items-center space-x-1 py-2 px-3 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-all"
               onClick={() => setShowMenu(!showMenu)}
             >
-              {showMenu ? <FaTimes className="w-5 h-5" /> : <HiOutlineMenuAlt4 className="w-5 h-5" />}
+              <span className="text-sm font-medium">{showMenu ? "Đóng" : "Menu"}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - ENHANCED WITH LUXURY STYLING */}
       <AnimatePresence>
         {showMenu && window.innerWidth < 1024 && (
           <motion.div
@@ -366,110 +382,216 @@ const Header = () => {
             animate="open"
             exit="closed"
             variants={menuVariants}
-            className="fixed top-20 right-0 bottom-0 w-[300px] bg-white shadow-lg z-40 overflow-y-auto"
+            className="fixed top-0 right-0 bottom-0 w-[320px] bg-white shadow-xl z-50 overflow-y-auto"
           >
-            <div className="py-4 px-6">
-              {/* Mobile Navigation */}
-              <nav className="mb-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Menu
-                </h3>
-                <ul className="space-y-1">
-                  {navBarList.map(({ id, title, link }) => (
-                    <li key={id}>
-                      <NavLink
-                        to={link}
-                        className={({ isActive }) => `
-                          block px-3 py-2 rounded-md text-base font-medium
-                          ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-800 hover:bg-gray-100'}
-                        `}
-                        onClick={() => setShowMenu(false)}
-                      >
-                        {title}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-
-              {/* Mobile Categories */}
-              <div className="mb-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Danh mục
-                </h3>
-                <ul className="space-y-1">
-                  {categories.map((category) => (
-                    <li key={category.id}>
-                      <button
-                        className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
-                        onClick={() => handleCategorySelect(category)}
-                      >
-                        {category.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+            {/* Menu Header */}
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-100">
+              <div className="flex items-center justify-between p-5">
+                <Link to="/" onClick={() => setShowMenu(false)} className="flex items-center">
+                  <Image className="h-8 w-auto" imgSrc={logo} alt="Logo" />
+                </Link>
+                <button
+                  onClick={() => setShowMenu(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-full"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Mobile User Actions */}
-              <div>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  Tài khoản
-                </h3>
-                <ul className="space-y-1">
-                  {isLoggedIn ? (
-                    <>
-                      <li>
-                        <Link
-                          to="/profile"
-                          className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
-                          onClick={() => setShowMenu(false)}
-                        >
-                          Tài khoản của tôi
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/orders"
-                          className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
-                          onClick={() => setShowMenu(false)}
-                        >
-                          Đơn hàng
-                        </Link>
-                      </li>
-                      <li>
+              {/* User info bar */}
+              {isLoggedIn ? (
+                <div className="px-5 pb-4 flex items-center">
+                  <div className="flex-shrink-0">
+                    {auth?.avatar ? (
+                      <img
+                        src={auth.avatar}
+                        alt={auth.fullName}
+                        className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <FaUser className="w-4 h-4" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-800">{auth?.fullName || "User"}</p>
+                    <p className="text-xs text-gray-500 truncate">{auth?.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="px-5 pb-4 flex flex-col space-y-2">
+                  <Link
+                    to="/signin"
+                    onClick={() => setShowMenu(false)}
+                    className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium rounded-md transition-colors"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setShowMenu(false)}
+                    className="w-full py-2 px-4 border border-gray-300 hover:border-gray-400 text-gray-700 text-center font-medium rounded-md transition-colors"
+                  >
+                    Đăng ký
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="py-2 px-5">
+              {/* Main Navigation Links */}
+              <div className="py-3 border-b border-gray-100">
+                {navBarList.map(({ id, title, link }) => (
+                  <NavLink
+                    key={id}
+                    to={link}
+                    onClick={() => setShowMenu(false)}
+                    className={({ isActive }) => `
+                      block px-2 py-3 text-base font-medium rounded-md transition-colors
+                      ${isActive ? 'text-blue-600' : 'text-gray-800 hover:text-blue-600'}
+                    `}
+                  >
+                    {title}
+                  </NavLink>
+                ))}
+              </div>
+
+              {/* Accordions for Menu Sections */}
+              <div className="py-3 border-b border-gray-100">
+                {/* Categories Section */}
+                <div className="mb-1">
+                  <button
+                    onClick={() => toggleSection('categories')}
+                    className="flex items-center justify-between w-full px-2 py-3 text-left text-base font-medium text-gray-800 hover:text-blue-600 transition-colors"
+                  >
+                    <span>Danh mục</span>
+                    <FaChevronDown
+                      className={`w-4 h-4 text-gray-500 transition-transform ${
+                        expandedSection === 'categories' ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedSection === 'categories' && (
+                      <motion.div
+                        variants={accordionVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        className="pl-3 pr-2"
+                      >
+                        {categories.map((category) => (
+                          <button
+                            key={category.id}
+                            onClick={() => handleCategorySelect(category)}
+                            className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-blue-600 py-2 px-2 rounded hover:bg-gray-50 transition-colors"
+                          >
+                            <span>{category.name}</span>
+                            <FaChevronRight className="w-3 h-3 text-gray-400" />
+                          </button>
+                        ))}
                         <button
-                          className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-gray-100"
-                          onClick={handleLogout}
+                          onClick={() => {
+                            navigate("/shop");
+                            setShowMenu(false);
+                          }}
+                          className="w-full text-left mt-2 py-2 px-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline flex items-center"
                         >
-                          Đăng xuất
+                          Xem tất cả danh mục
+                          <FaChevronRight className="w-3 h-3 ml-1" />
                         </button>
-                      </li>
-                    </>
-                  ) : (
-                    <>
-                      <li>
-                        <Link
-                          to="/signin"
-                          className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
-                          onClick={() => setShowMenu(false)}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Account Section */}
+                {isLoggedIn && (
+                  <div className="mb-1">
+                    <button
+                      onClick={() => toggleSection('account')}
+                      className="flex items-center justify-between w-full px-2 py-3 text-left text-base font-medium text-gray-800 hover:text-blue-600 transition-colors"
+                    >
+                      <span>Tài khoản</span>
+                      <FaChevronDown
+                        className={`w-4 h-4 text-gray-500 transition-transform ${
+                          expandedSection === 'account' ? 'transform rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {expandedSection === 'account' && (
+                        <motion.div
+                          variants={accordionVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="hidden"
+                          className="pl-3 pr-2 space-y-1"
                         >
-                          Đăng nhập
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/signup"
-                          className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
-                          onClick={() => setShowMenu(false)}
-                        >
-                          Đăng ký
-                        </Link>
-                      </li>
-                    </>
-                  )}
-                </ul>
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowMenu(false)}
+                            className="block py-2 px-2 text-sm text-gray-600 hover:text-blue-600 rounded hover:bg-gray-50 transition-colors"
+                          >
+                            Tài khoản của tôi
+                          </Link>
+                          <Link
+                            to="/orderHistory"
+                            onClick={() => setShowMenu(false)}
+                            className="block py-2 px-2 text-sm text-gray-600 hover:text-blue-600 rounded hover:bg-gray-50 transition-colors"
+                          >
+                            Đơn hàng
+                          </Link>
+                          <Link
+                            to="/favorite"
+                            onClick={() => setShowMenu(false)}
+                            className="block py-2 px-2 text-sm text-gray-600 hover:text-blue-600 rounded hover:bg-gray-50 transition-colors"
+                          >
+                            Danh sách yêu thích
+                          </Link>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
+
+              {/* Quick Links */}
+              <div className="py-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    to="/cart"
+                    onClick={() => setShowMenu(false)}
+                    className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    <FaShoppingCart className="w-6 h-6 text-blue-600 mb-1" />
+                    <span className="text-sm font-medium text-gray-800">Giỏ hàng</span>
+                  </Link>
+                  <Link
+                    to="/favorite"
+                    onClick={() => setShowMenu(false)}
+                    className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    <FaHeart className="w-6 h-6 text-red-500 mb-1" />
+                    <span className="text-sm font-medium text-gray-800">Yêu thích</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Sign Out Button (if logged in) */}
+              {isLoggedIn && (
+                <div className="pt-3 border-t border-gray-100 mt-3">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-3 text-red-600 hover:text-red-700 text-base font-medium transition-colors"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

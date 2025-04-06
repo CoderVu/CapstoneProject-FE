@@ -20,8 +20,13 @@ const createOrderFromCart = async (orderRequest) => {
             method: 'POST',
             url: `/api/v1/user/order/create-cart`,
             data: orderRequest,
+  
+
         });
+        console.log("respỏder", response)
+ 
         const { data } = response.data;
+
 
         // showSuccessToast(response.data.message);
         return data;

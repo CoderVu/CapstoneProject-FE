@@ -65,6 +65,8 @@ const OrderHistory = () => {
     switch (status) {
       case "PENDING":
         return { color: "bg-yellow-100 text-yellow-800", text: "Chờ xác nhận" };
+      case "PAID":
+        return { color: "bg-green-100 text-green-800", text: "Đã thanh toán" };
       case "PROCESSING":
         return { color: "bg-blue-100 text-blue-800", text: "Đang xử lý" };
       case "SHIPPED":

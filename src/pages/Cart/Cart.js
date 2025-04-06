@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { emptyCart } from "../../assets/images/index";
 import ItemCard from "./ItemCard";
 import { getCartItems, removeCartItem } from "../../redux/actions/cartActions";
 import ProductRelated from "../../components/pageProps/productDetails/ProductRelated";
-import { FaTruck, FaTrash, FaShoppingBasket, FaCreditCard, FaRegCheckSquare, FaRegSquare, FaInfoCircle, FaGift } from "react-icons/fa";
+import { FaTruck, FaTrash, FaShoppingBasket, FaCreditCard, FaRegCheckSquare, FaRegSquare, FaInfoCircle, FaGift, FaCopy, FaCheck } from "react-icons/fa";
+import { getDiscountCodesForUser } from "../../redux/service/userService";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -19,11 +20,44 @@ const Cart = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
+  const [discountCodes, setDiscountCodes] = useState([]);
+  const [loadingDiscounts, setLoadingDiscounts] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [copiedCode, setCopiedCode] = useState(null);
+
+  // Default discount images
+  const discountImages = [
+    'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1550009158-9ebf69173e03?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1607083206968-13611e3d76db?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+    'https://images.unsplash.com/photo-1560769629-975ec94e6a86?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80'
+  ];
 
   // Fetch cart items
   useEffect(() => {
     dispatch(getCartItems());
   }, [dispatch]);
+
+  // Fetch user's discount codes
+  useEffect(() => {
+    const fetchDiscountCodes = async () => {
+      try {
+        setLoadingDiscounts(true);
+        const response = await getDiscountCodesForUser();
+        if (response && response.data) {
+          setDiscountCodes(response.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy mã giảm giá:", error);
+      } finally {
+        setLoadingDiscounts(false);
+      }
+    };
+
+    fetchDiscountCodes();
+  }, []);
 
   // Calculate total amount for all items
   useEffect(() => {
@@ -111,20 +145,65 @@ const Cart = () => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  // Handle applying discount code
+  const handleApplyPromoCode = () => {
+    if (!promoCode.trim()) return;
+
+    const foundDiscount = discountCodes.find(code => code.code === promoCode);
+    if (foundDiscount) {
+      setAppliedDiscount(foundDiscount);
+      // Clear input field after successful application
+      setPromoCode("");
+    } else {
+      // Show error message or handle invalid code
+      alert("Mã giảm giá không hợp lệ hoặc không tồn tại!");
+    }
+  };
+
+  // Calculate discount amount
+  const calculateDiscountAmount = () => {
+    if (!appliedDiscount) return 0;
+
+    const amount = selectedItems.length > 0 ? selectedTotal : totalAmt;
+    return Math.round((amount * appliedDiscount.discountPercentage) / 100);
+  };
+
+  // Copy discount code to clipboard
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        setCopiedCode(code);
+        setTimeout(() => setCopiedCode(null), 2000);
+
+        // Auto-fill the promo code input
+        setPromoCode(code);
+      })
+      .catch(err => {
+        console.error('Không thể sao chép mã:', err);
+      });
+  };
+
+  // Calculate final amount with discount
+  const getFinalAmount = () => {
+    const discountAmount = calculateDiscountAmount();
+    return (selectedItems.length > 0 ? selectedTotal : totalAmt) + shippingCharge - discountAmount;
+  };
+
   // Proceed to checkout
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) return;
 
-    navigate("/paymentgateway",
+    navigate("/proceed-to-checkout", 
       {
         state: {
           totalAmount: totalAmt,
           shippingCharge: shippingCharge,
           selectedItems: selectedItems.length > 0
-          ? selectedItems
-          : cartItems.map(item => item.id || item.productId),
+            ? selectedItems
+            : cartItems.map(item => item.id || item.productId),
           selectedTotal: selectedItems.length > 0 ? selectedTotal : totalAmt,
-          finalAmount: selectedItems.length > 0 ? selectedTotal + shippingCharge : totalAmt + shippingCharge
+          finalAmount: getFinalAmount(),
+          appliedDiscount: appliedDiscount
         }
       }
     );
@@ -205,11 +284,105 @@ const Cart = () => {
                     className="flex-1 h-10 px-4 border text-gray-800 text-sm outline-none border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     type="text"
                     placeholder="Nhập mã giảm giá"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
                   />
-                  <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-colors">
+                  <button
+                    onClick={handleApplyPromoCode}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-colors"
+                  >
                     Áp dụng
                   </button>
                 </div>
+
+                {/* Applied Discount */}
+                {appliedDiscount && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-100 rounded-lg flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center">
+                        <span className="font-medium text-green-700">Mã: {appliedDiscount.code}</span>
+                        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                          Giảm {appliedDiscount.discountPercentage}%
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-600 mt-1">
+                        Số tiền giảm: {formatPrice(calculateDiscountAmount())} VNĐ
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setAppliedDiscount(null)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* User's Discount Codes */}
+                {discountCodes.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Mã giảm giá của bạn:</h4>
+                    <div className="space-y-3">
+                      {discountCodes.map((code, index) => (
+                        <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
+                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
+                            <img
+                              src={discountImages[index % discountImages.length]}
+                              alt="Discount"
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md">
+                              {code.discountPercentage}%
+                            </div>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-medium text-gray-800">{code.code}</h5>
+                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
+                                {code.status === "UNVAILABLE" ? "Không khả dụng" : "Khả dụng"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Có hiệu lực đến: {new Date(code.expiryDate).toLocaleDateString("vi-VN", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </p>
+                            <button
+                              onClick={() => handleCopyCode(code.code)}
+                              className="mt-1 text-xs flex items-center text-blue-600 hover:text-blue-800"
+                            >
+                              {copiedCode === code.code ? (
+                                <>
+                                  <FaCheck className="mr-1" size={10} />
+                                  Đã sao chép
+                                </>
+                              ) : (
+                                <>
+                                  <FaCopy className="mr-1" size={10} />
+                                  Sao chép mã
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {loadingDiscounts && (
+                  <div className="mt-3 flex justify-center">
+                    <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                  </div>
+                )}
               </div>
 
               {/* Shop Promotion */}
@@ -226,76 +399,78 @@ const Cart = () => {
               </div>
 
               {/* Order Status (Toggleable) */}
-              {showOrderStatus && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="relative bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100 overflow-hidden"
-                >
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-medium text-gray-800">Trạng thái đơn hàng</h3>
-                    <button
-                      onClick={() => setShowOrderStatus(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    </button>
-                  </div>
+              <AnimatePresence>
+                {showOrderStatus && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="relative bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100 overflow-hidden"
+                  >
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-lg font-medium text-gray-800">Trạng thái đơn hàng</h3>
+                      <button
+                        onClick={() => setShowOrderStatus(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
 
-                  <div className="relative">
-                    {/* Progress Bar */}
-                    <div className="w-full h-1 bg-gray-200 absolute top-4"></div>
+                    <div className="relative">
+                      {/* Progress Bar */}
+                      <div className="w-full h-1 bg-gray-200 absolute top-4"></div>
 
-                    {/* Status Steps */}
-                    <div className="flex justify-between relative">
-                      {/* Step 1 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center z-10 mb-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
+                      {/* Status Steps */}
+                      <div className="flex justify-between relative">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center z-10 mb-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium text-gray-800">Đặt hàng</span>
+                          <span className="text-xs text-gray-500 mt-1">22/04/2023</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-800">Đặt hàng</span>
-                        <span className="text-xs text-gray-500 mt-1">22/04/2023</span>
-                      </div>
 
-                      {/* Step 2 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center z-10 mb-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
+                        {/* Step 2 */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center z-10 mb-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium text-gray-800">Xác nhận</span>
+                          <span className="text-xs text-gray-500 mt-1">22/04/2023</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-800">Xác nhận</span>
-                        <span className="text-xs text-gray-500 mt-1">22/04/2023</span>
-                      </div>
 
-                      {/* Step 3 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center z-10 mb-2">
-                          <FaTruck className="w-4 h-4" />
+                        {/* Step 3 */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center z-10 mb-2">
+                            <FaTruck className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-medium text-gray-400">Vận chuyển</span>
+                          <span className="text-xs text-gray-400 mt-1">--/--/----</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-400">Vận chuyển</span>
-                        <span className="text-xs text-gray-400 mt-1">--/--/----</span>
-                      </div>
 
-                      {/* Step 4 */}
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center z-10 mb-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path>
-                          </svg>
+                        {/* Step 4 */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center z-10 mb-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path>
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium text-gray-400">Hoàn tất</span>
+                          <span className="text-xs text-gray-400 mt-1">--/--/----</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-400">Hoàn tất</span>
-                        <span className="text-xs text-gray-400 mt-1">--/--/----</span>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Toggle Order Status Button */}
               {!showOrderStatus && (
@@ -338,17 +513,22 @@ const Cart = () => {
                     <span className="font-medium">{formatPrice(shippingCharge)} VNĐ</span>
                   </div>
 
-                  {/* Discount (if any) */}
+                  {/* Discount (if applied) */}
                   <div className="flex justify-between items-center text-green-600">
                     <span>Giảm giá:</span>
-                    <span className="font-medium">0 VNĐ</span>
+                    <span className="font-medium">
+                      {appliedDiscount
+                        ? `- ${formatPrice(calculateDiscountAmount())} VNĐ`
+                        : "0 VNĐ"
+                      }
+                    </span>
                   </div>
 
                   <div className="h-px bg-gray-100 my-2"></div>
 
                   <div className="flex justify-between items-center font-medium text-gray-800">
                     <span>Tổng thanh toán:</span>
-                    <span className="text-lg text-blue-600">{formatPrice(selectedTotal + shippingCharge)} VNĐ</span>
+                    <span className="text-lg text-blue-600">{formatPrice(getFinalAmount())} VNĐ</span>
                   </div>
                 </div>
 

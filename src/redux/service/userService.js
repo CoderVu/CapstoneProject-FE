@@ -99,3 +99,17 @@ export const updateUserInfo = async (userInfo) => {
     }
 }
 
+// Get discount codes for user
+export const getDiscountCodesForUser = async () => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/user/discount-code`,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching discount codes for user:", error);
+        throw error;
+    }
+};
+
