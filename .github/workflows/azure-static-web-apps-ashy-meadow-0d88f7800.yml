@@ -1,5 +1,5 @@
 name: Azure Static Web Apps CI/CD
-
+run: CI=false npm run build
 on:
   push:
     branches:
