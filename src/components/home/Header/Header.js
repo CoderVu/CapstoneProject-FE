@@ -21,10 +21,9 @@ const Header = () => {
   // Component state
   const [showMenu, setShowMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const [shopNavPosition, setShopNavPosition] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -98,15 +97,6 @@ const Header = () => {
     return () => document.body.removeEventListener("click", handleClickOutside);
   }, [searchQuery]);
 
-  // Filter products based on search query
-  useEffect(() => {
-    setFilteredProducts(
-      products.filter((item) =>
-        item.productName?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [searchQuery, products]);
-
   // Category hover handler
   const handleCategoryHover = (category) => {
     setActiveCategory(category);
@@ -123,8 +113,8 @@ const Header = () => {
   };
 
   // Handle category selection
-  const handleCategorySelect = (category) => {
-    navigate("/shop", { state: { category } });
+  const handleCategorySelect = (categoryProduct) => {
+    navigate("/shop", { state: { categoryProduct } });
     setShowModal(false);
     setShowMenu(false);
   };
@@ -132,6 +122,17 @@ const Header = () => {
   // Toggle mobile menu section
   const toggleSection = (section) => {
     setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+
+    if (searchQuery.trim()) {
+      // Navigate to search page with the query
+      navigate(`/search?keyword=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSearch(false);
+    }
   };
 
   // Animation variants
@@ -230,7 +231,7 @@ const Header = () => {
                     transition={{ duration: 0.2 }}
                     className="absolute right-0 top-12 bg-white rounded-lg shadow-lg z-50 overflow-hidden"
                   >
-                    <div className="flex items-center border border-gray-200 rounded-t-lg">
+                    <form onSubmit={handleSearchSubmit} className="flex items-center border border-gray-200 rounded-t-lg">
                       <input
                         className="w-full py-3 px-4 outline-none text-gray-700"
                         type="text"
@@ -239,43 +240,69 @@ const Header = () => {
                         placeholder="Tìm kiếm sản phẩm..."
                         autoFocus
                       />
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white p-3">
+                      <button
+                        type="submit"
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-3"
+                      >
                         <FaSearch className="w-4 h-4" />
                       </button>
-                    </div>
+                    </form>
 
-                    {/* Search Results */}
-                    {searchQuery && (
-                      <div className="max-h-80 overflow-y-auto">
-                        {filteredProducts.length > 0 ? (
-                          filteredProducts.map((item) => (
-                            <div
-                              key={item.id}
-                              onClick={() => {
-                                navigate(`/product/${item.id}`, { state: { item } });
-                                setSearchQuery("");
-                                setShowSearch(false);
-                              }}
-                              className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
-                            >
-                              <img
-                                className="w-14 h-14 object-cover rounded"
-                                src={item.mainImage?.path || "https://via.placeholder.com/56"}
-                                alt={item.productName}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-800 truncate">{item.productName}</p>
-                                <p className="text-blue-600 font-semibold">${item.price}</p>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-gray-500">
-                            Không tìm thấy sản phẩm
-                          </div>
-                        )}
+                    {/* Quick Search Suggestions */}
+                    <div className="p-3 border-t border-gray-100">
+                      <div className="text-sm text-gray-500 mb-2">Tìm kiếm nhanh</div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            navigate('/search?keyword=áo');
+                            setShowSearch(false);
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
+                          Áo
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/search?keyword=quần');
+                            setShowSearch(false);
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
+                          Quần
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/search?keyword=giày');
+                            setShowSearch(false);
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
+                          Giày
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/search?keyword=sale');
+                            setShowSearch(false);
+                          }}
+                          className="px-3 py-1 text-sm bg-red-50 hover:bg-red-100 rounded-full text-red-600"
+                        >
+                          Sale
+                        </button>
                       </div>
-                    )}
+
+                      {/* Advanced Search Link */}
+                      <div className="mt-3 text-center">
+                        <button
+                          onClick={() => {
+                            navigate('/search');
+                            setShowSearch(false);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 hover:underline text-sm"
+                        >
+                          Tìm kiếm nâng cao
+                        </button>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -437,6 +464,34 @@ const Header = () => {
                   </Link>
                 </div>
               )}
+
+              {/* Mobile Search */}
+              <div className="px-5 pb-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (searchQuery.trim()) {
+                      navigate(`/search?keyword=${encodeURIComponent(searchQuery.trim())}`);
+                      setShowMenu(false);
+                    }
+                  }}
+                  className="flex items-center border border-gray-300 rounded-lg overflow-hidden"
+                >
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tìm kiếm sản phẩm..."
+                    className="flex-1 py-2 px-3 outline-none text-gray-700"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white p-2"
+                  >
+                    <FaSearch className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
             </div>
 
             <div className="py-2 px-5">
@@ -485,7 +540,7 @@ const Header = () => {
                         {categories.map((category) => (
                           <button
                             key={category.id}
-                            onClick={() => handleCategorySelect(category)}
+                            onClick={() => handleCategorySelect(category.name)}
                             className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-blue-600 py-2 px-2 rounded hover:bg-gray-50 transition-colors"
                           >
                             <span>{category.name}</span>
@@ -637,7 +692,7 @@ const Header = () => {
                     <button
                       key={category.id}
                       className="p-3 bg-gray-50 hover:bg-blue-50 rounded-md transition-colors text-left border border-gray-100 hover:border-blue-200"
-                      onClick={() => handleCategorySelect(category)}
+                      onClick={() => handleCategorySelect(category.name)}
                     >
                       <h3 className="font-medium text-gray-800 mb-1">{category.name}</h3>
                       <p className="text-xs text-gray-500 line-clamp-2">{category.description || 'Khám phá sản phẩm trong danh mục này'}</p>

@@ -1,41 +1,125 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FaStar, FaRegStar, FaShoppingCart, FaEye, FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import AIMatchExplainer from "./AIMatchExplainer"; // Import the component
 
 /**
- * Component for displaying AI-powered similar product search results
+ * Component hiển thị kết quả tìm kiếm sản phẩm tương tự bằng AI
  */
 const AISimilarProducts = ({
   showSimilarProducts,
   setShowSimilarProducts,
   loadingSimilar,
-  filteredSimilarProducts,
+  filteredSimilarProducts = [],
   similarityThreshold,
   setSimilarityThreshold,
-  productResults = [], // Default empty array for productResults
-  errorMessage = "" // Add error message prop with default empty string
+  productResults = [], // Mảng sản phẩm mặc định rỗng
+  errorMessage = "" // Thông báo lỗi mặc định rỗng
 }) => {
   const navigate = useNavigate();
 
-  // If component shouldn't be displayed, return null
-  if (!showSimilarProducts) return null;
-
-  // Format price with thousands separator
+  // Định dạng giá với dấu phân cách hàng nghìn
   const formatPrice = (price) => {
     if (!price) return "0";
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  // Function to navigate to product details
+  // Hàm điều hướng đến trang chi tiết sản phẩm
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  // Filter product results based on similarity threshold
-  const filteredProductResults = productResults.filter(
-    product => product.similarity <= similarityThreshold
-  );
+  // Logic nâng cao: Ghép sản phẩm với filteredSimilarProducts dựa trên đường dẫn hình ảnh
+  // QUAN TRỌNG: Tất cả hooks phải được gọi trước bất kỳ lệnh return điều kiện nào
+  const enhancedProductResults = useMemo(() => {
+    if (!productResults?.length || !filteredSimilarProducts?.length) {
+      return productResults;
+    }
+
+    return productResults.map(product => {
+      // Lấy tất cả đường dẫn hình ảnh từ sản phẩm (mainImage và các hình khác)
+      const productImagePaths = [
+        product.mainImage?.path,
+        ...(product.images?.map(img => img.path) || [])
+      ].filter(Boolean); // Loại bỏ giá trị null/undefined
+
+      // Tìm nếu bất kỳ hình ảnh nào của sản phẩm khớp với filteredSimilarProducts
+      const matchingSimilarProduct = filteredSimilarProducts.find(similarProduct =>
+        productImagePaths.some(imagePath =>
+          imagePath === similarProduct.url ||
+          // Cũng kiểm tra nếu phần tên file khớp
+          imagePath.includes(similarProduct.filename?.split('.')[0])
+        )
+      );
+
+      // Nếu có sự khớp, sử dụng điểm tương đồng từ filteredSimilarProducts
+      if (matchingSimilarProduct) {
+        return {
+          ...product,
+          similarity: matchingSimilarProduct.similarity,
+          matchedImage: matchingSimilarProduct.url
+        };
+      }
+
+      // Nếu không khớp, giữ nguyên sản phẩm gốc với điểm tương đồng của nó
+      return product;
+    });
+  }, [productResults, filteredSimilarProducts]);
+
+  // Lọc kết quả sản phẩm dựa trên ngưỡng tương đồng
+  const filteredProductResults = useMemo(() => {
+    return enhancedProductResults.filter(
+      product => product.similarity <= similarityThreshold
+    ).sort((a, b) => a.similarity - b.similarity); // Sắp xếp theo tương đồng, kết quả tốt nhất đầu tiên
+  }, [enhancedProductResults, similarityThreshold]);
+
+  // Ghi log kết quả sản phẩm đã xử lý
+  console.log("Kết quả sản phẩm đã xử lý:", enhancedProductResults);
+  console.log("Kết quả sản phẩm đã lọc:", filteredProductResults);
+
+  // Lấy class CSS phù hợp cho nhãn phần trăm tương đồng
+  const getMatchBadgeClass = (similarity) => {
+    const matchPercent = (1 - similarity) * 100;
+    if (matchPercent >= 90) return "from-green-600 to-green-500";
+    if (matchPercent >= 70) return "from-blue-600 to-purple-600";
+    if (matchPercent >= 50) return "from-blue-500 to-indigo-500";
+    return "from-gray-600 to-gray-500";
+  };
+
+  // Lấy class CSS phù hợp cho thanh tiến trình tương đồng
+  const getProgressBarClass = (similarity) => {
+    const matchPercent = (1 - similarity) * 100;
+    if (matchPercent >= 90) return "from-green-500 to-green-400";
+    if (matchPercent >= 70) return "from-blue-500 to-purple-500";
+    if (matchPercent >= 50) return "from-blue-400 to-indigo-500";
+    return "from-gray-500 to-gray-400";
+  };
+
+  // Hàm hiển thị đánh giá sao
+  const renderRating = (rating, totalRate) => {
+    // Lấy giá trị đánh giá thực tế, đầu tiên kiểm tra product.rate.rating, sau đó là product.rating
+    const ratingValue = typeof rating === 'object' ? (rating?.rating || 0) : (rating || 0);
+
+    return (
+      <div className="flex items-center">
+        {Array.from({ length: 5 }).map((_, idx) => (
+          idx < Math.floor(ratingValue) ? (
+            <FaStar key={idx} className="text-yellow-400 text-xs" />
+          ) : (
+            <FaRegStar key={idx} className="text-gray-300 text-xs" />
+          )
+        ))}
+        {totalRate > 0 && (
+          <span className="ml-1.5 text-xs text-gray-500">({totalRate})</span>
+        )}
+      </div>
+    );
+  };
+
+  // Nếu component không nên hiển thị, trả về null
+  // QUAN TRỌNG: Lệnh return điều kiện này phải đến SAU tất cả các lệnh gọi hook
+  if (!showSimilarProducts) return null;
 
   return (
     <div className="w-full bg-white text-black p-6 rounded-xl shadow-xl mt-6 transition-all duration-300 ease-in-out border border-gray-300">
@@ -47,22 +131,22 @@ const AISimilarProducts = ({
             </svg>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">AI Vision Results</h2>
-            <p className="text-gray-500 text-sm">Found {filteredProductResults.length || filteredSimilarProducts.length || 0} visually similar items</p>
+            <h2 className="text-2xl font-bold text-gray-800">Kết Quả Tìm Kiếm Ảnh AI</h2>
+            <p className="text-gray-500 text-sm">Tìm thấy {filteredProductResults.length || filteredSimilarProducts.length || 0} sản phẩm tương tự về mặt hình ảnh</p>
           </div>
         </div>
         <div className="flex items-center space-x-4 w-full md:w-auto">
           <div className="flex items-center bg-gray-100 px-3 py-2 rounded-lg flex-1 md:flex-auto">
-            <span className="text-sm text-gray-600 mr-2 whitespace-nowrap">Match Level:</span>
+            <span className="text-sm text-gray-600 mr-2 whitespace-nowrap">Mức độ khớp:</span>
             <select
               value={similarityThreshold}
               onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
               className="bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1"
             >
-              <option value="1">All Matches</option>
-              <option value="0.5">Medium Match</option>
-              <option value="0.3">High Match</option>
-              <option value="0.1">Perfect Match</option>
+              <option value="1">Tất cả kết quả</option>
+              <option value="0.5">Khớp trung bình (50%+)</option>
+              <option value="0.3">Khớp cao (70%+)</option>
+              <option value="0.1">Khớp hoàn hảo (90%+)</option>
             </select>
           </div>
           <button
@@ -72,12 +156,15 @@ const AISimilarProducts = ({
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Close
+            Đóng
           </button>
         </div>
       </div>
 
-      {/* Display error message if exists */}
+      {/* Thêm component AIMatchExplainer */}
+      <AIMatchExplainer isOpen={false} />
+
+      {/* Hiển thị thông báo lỗi nếu có */}
       {errorMessage && (
         <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg">
           <div className="flex">
@@ -93,7 +180,7 @@ const AISimilarProducts = ({
         </div>
       )}
 
-      {/* Display similar products */}
+      {/* Hiển thị sản phẩm tương tự */}
       {loadingSimilar ? (
         <div className="flex flex-col items-center justify-center py-16">
           <div className="relative w-20 h-20">
@@ -101,8 +188,8 @@ const AISimilarProducts = ({
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin"></div>
           </div>
           <div className="mt-6 text-center">
-            <h3 className="text-xl font-medium text-gray-800">AI Image Analysis In Progress</h3>
-            <p className="text-gray-500 text-sm">Analyzing visual features and processing similarity metrics</p>
+            <h3 className="text-xl font-medium text-gray-800">Đang Phân Tích Ảnh</h3>
+            <p className="text-gray-500 text-sm">Đang xử lý hình ảnh và tính toán mức độ tương đồng</p>
           </div>
         </div>
       ) : filteredProductResults.length > 0 ? (
@@ -116,7 +203,7 @@ const AISimilarProducts = ({
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  Our AI has analyzed the image and found {filteredProductResults.length} visually similar products. Click on any product to view details.
+                  AI đã phân tích hình ảnh và tìm thấy {filteredProductResults.length} sản phẩm tương tự về mặt hình ảnh. Nhấp vào bất kỳ sản phẩm nào để xem chi tiết.
                 </p>
               </div>
             </div>
@@ -133,33 +220,47 @@ const AISimilarProducts = ({
                 className="group relative bg-white rounded-xl overflow-hidden shadow hover:shadow-md transition-all duration-300 border border-gray-200"
                 onClick={() => handleProductClick(product.id)}
               >
-                {/* Product Image Container */}
+                {/* Phần hình ảnh sản phẩm */}
                 <div className="relative overflow-hidden aspect-[3/4]">
+                  {/* Sử dụng hình ảnh khớp nếu có, nếu không sử dụng hình ảnh sản phẩm thông thường */}
                   <img
-                    src={product.mainImage?.path || (product.images && product.images.length > 0 ? product.images[0].path : '')}
-                    alt={product.productName || `Similar product ${index + 1}`}
+                    src={product.matchedImage || product.mainImage?.path || (product.images && product.images.length > 0 ? product.images[0].path : '')}
+                    alt={product.productName || `Sản phẩm tương tự ${index + 1}`}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
 
-                  {/* Match Badge */}
+                  {/* Nhãn độ khớp - Sử dụng lớp động dựa trên phần trăm khớp */}
                   <div className="absolute top-3 right-3 z-10">
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-                      {((1 - product.similarity) * 100).toFixed(0)}% Match
+                    <span className={`bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
+                      Khớp {((1 - product.similarity) * 100).toFixed(0)}%
                     </span>
                   </div>
 
-                  {/* Overlay Actions */}
+                  {/* Nhãn sản phẩm */}
+                  <div className="absolute top-3 left-3 flex flex-col gap-1">
+                    {product.newProduct && (
+                      <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md">Mới</span>
+                    )}
+                    {product.bestSeller && (
+                      <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-md">Bán Chạy</span>
+                    )}
+                    {product.onSale && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">Giảm Giá</span>
+                    )}
+                  </div>
+
+                  {/* Lớp phủ hành động */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-4 flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-full flex gap-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Add to cart logic here if needed
+                          // Logic thêm vào giỏ hàng nếu cần
                         }}
                         className="flex-1 bg-white text-gray-900 py-1.5 text-xs font-medium rounded-md hover:bg-gray-100 transition flex items-center justify-center gap-1"
                       >
                         <FaShoppingCart className="text-xs" />
-                        <span>Add to Cart</span>
+                        <span>Thêm vào giỏ</span>
                       </button>
                       <button
                         onClick={(e) => {
@@ -169,34 +270,28 @@ const AISimilarProducts = ({
                         className="flex-1 bg-blue-600 text-white py-1.5 text-xs font-medium rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-1"
                       >
                         <FaEye className="text-xs" />
-                        <span>View Details</span>
+                        <span>Xem chi tiết</span>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Product Info */}
+                {/* Thông tin sản phẩm */}
                 <div className="p-4 flex flex-col gap-2">
-                  {/* Product Name */}
+                  {/* Tên thương hiệu nếu có */}
+                  {product.brandName && (
+                    <span className="text-xs text-gray-500 font-medium">{product.brandName}</span>
+                  )}
+
+                  {/* Tên sản phẩm */}
                   <h3 className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
-                    {product.productName || 'Product'}
+                    {product.productName || 'Sản phẩm'}
                   </h3>
 
-                  {/* Rating */}
-                  <div className="flex">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      idx < Math.floor(product.rating || 0) ? (
-                        <FaStar key={idx} className="text-yellow-400 text-xs" />
-                      ) : (
-                        <FaRegStar key={idx} className="text-gray-300 text-xs" />
-                      )
-                    ))}
-                    {product.totalRate > 0 && (
-                      <span className="ml-1.5 text-xs text-gray-500">({product.totalRate || 0})</span>
-                    )}
-                  </div>
+                  {/* Đánh giá - Đã sửa để xử lý đúng cấu trúc đối tượng đánh giá */}
+                  {product.rate && renderRating(product.rate.rating, product.rate.totalRate)}
 
-                  {/* Price & Sale */}
+                  {/* Giá & Giảm giá */}
                   <div className="mt-1 flex items-baseline gap-2">
                     {product.discountPrice ? (
                       <>
@@ -214,16 +309,16 @@ const AISimilarProducts = ({
                     )}
                   </div>
 
-                  {/* Similarity Score */}
+                  {/* Điểm tương đồng - Cập nhật với các lớp màu động */}
                   <div className="mt-1">
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"
+                        className={`h-2 rounded-full bg-gradient-to-r ${getProgressBarClass(product.similarity)}`}
                         style={{ width: `${(1 - product.similarity) * 100}%` }}
                       />
                     </div>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-xs text-gray-500">Visual Similarity</span>
+                      <span className="text-xs text-gray-500">Độ tương đồng</span>
                       <span className="text-xs font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
@@ -233,47 +328,68 @@ const AISimilarProducts = ({
           </div>
         </div>
       ) : filteredSimilarProducts.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {filteredSimilarProducts.map((product, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="bg-white border border-gray-300 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
-            >
-              <div className="relative">
-                <img
-                  src={product.url}
-                  alt={`Similar product ${index + 1}`}
-                  className="w-full h-56 object-cover"
-                />
-                <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {((1 - product.similarity) * 100).toFixed(0)}% Match
-                </div>
+        <div>
+          <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
               </div>
-              <div className="p-4">
-                <h3 className="text-gray-800 font-medium">Visual Match Score</h3>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden mt-2">
-                  <div
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full"
-                    style={{ width: `${(1 - product.similarity) * 100}%` }}
-                  />
-                </div>
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-gray-500">Visual Similarity</span>
-                  <span className="text-sm font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
-                </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-800">
+                  AI đã phân tích hình ảnh và tìm thấy {filteredSimilarProducts.length} mẫu hình ảnh tương tự. Đây là các kết quả khớp hình ảnh trực tiếp mà không có dữ liệu sản phẩm.
+                </p>
+              </div>
+            </div>
+          </div>
 
-                <div className="mt-4 flex justify-center">
-                  <button className="py-2 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all duration-300 flex items-center">
-                    <FaEye className="mr-2" />
-                    View Similar Product
-                  </button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {filteredSimilarProducts.map((product, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-white border border-gray-300 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
+              >
+                <div className="relative">
+                  <img
+                    src={product.url}
+                    alt={`Sản phẩm tương tự ${index + 1}`}
+                    className="w-full h-56 object-cover"
+                  />
+                  <div className={`absolute top-3 right-3 bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
+                    Khớp {((1 - product.similarity) * 100).toFixed(0)}%
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                <div className="p-4">
+                  <h3 className="text-gray-800 font-medium">Hình ảnh tương tự #{index + 1}</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {product.filename ? product.filename.split('-').slice(-1)[0].split('.')[0] : 'Mẫu tương tự'}
+                  </p>
+
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden mt-2">
+                    <div
+                      className={`h-2.5 rounded-full bg-gradient-to-r ${getProgressBarClass(product.similarity)}`}
+                      style={{ width: `${(1 - product.similarity) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500">Độ tương đồng</span>
+                    <span className="text-sm font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
+                  </div>
+
+                  <div className="mt-4 flex justify-center">
+                    <button className="py-2 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-all duration-300 flex items-center">
+                      <FaEye className="mr-2" />
+                      Xem sản phẩm tương tự
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border border-gray-300">
@@ -282,9 +398,9 @@ const AISimilarProducts = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
-          <h3 className="text-xl font-medium text-gray-800 mb-2">No Visual Matches Found</h3>
+          <h3 className="text-xl font-medium text-gray-800 mb-2">Không tìm thấy kết quả nào</h3>
           <p className="text-gray-600 max-w-md mx-auto">
-            {errorMessage || "Our AI couldn't find products matching your selected similarity threshold. Try lowering the threshold or using a different image."}
+            {errorMessage || "AI không tìm thấy sản phẩm nào phù hợp với ngưỡng tương đồng bạn đã chọn. Hãy giảm ngưỡng hoặc sử dụng hình ảnh khác."}
           </p>
           <div className="mt-6 space-x-3">
             {similarityThreshold !== 1 && (
@@ -292,14 +408,14 @@ const AISimilarProducts = ({
                 onClick={() => setSimilarityThreshold(1)}
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-colors shadow-md"
               >
-                Show All Results
+                Hiển thị tất cả kết quả
               </button>
             )}
             <button
               onClick={() => setShowSimilarProducts(false)}
               className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
             >
-              Close
+              Đóng
             </button>
           </div>
         </div>

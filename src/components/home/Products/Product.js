@@ -77,7 +77,7 @@ const Product = (props) => {
         } catch (error) {
           // Check for 409 Conflict error (already in favorites)
           if (error.response && error.response.status === 409) {
-            console.log("Product already in favorites");
+          
             // Update the UI state to show as favorited
             setIsFavorite(true);
           } else {

@@ -37,14 +37,17 @@ const Shop = () => {
   };
 
   useEffect(() => {
-    if (location.state && location.state.gender) {
-      setFilters((prevFilters) => ({
-        ...prevFilters,
-        ...location.state,
-      }));
+    if (location.state && (location.state.categoryProduct)) {
+      setFilters((prevFilters) => {
+        const updatedFilters = {
+          ...prevFilters,
+          ...location.state,
+        };
+        console.log("Updated Filters from location.state:", updatedFilters); // Log the updated filters
+        return updatedFilters;
+      });
     }
   }, [location.state]);
-
   useEffect(() => {
     dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
   }, [dispatch, filters, page, itemsPerPage]);
@@ -178,7 +181,7 @@ const Shop = () => {
                   </svg>
                 </button>
               </div>
-              <ShopSideNav onFilterChange={handleFilterChange} />
+              <ShopSideNav onFilterChange={handleFilterChange} initialFilters={filters} />
             </motion.div>
           </div>
         )}
@@ -197,7 +200,7 @@ const Shop = () => {
                 </button>
               )}
             </div>
-            <ShopSideNav onFilterChange={handleFilterChange} />
+            <ShopSideNav onFilterChange={handleFilterChange} initialFilters={filters} />
           </div>
         </div>
 

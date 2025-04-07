@@ -128,11 +128,25 @@ const filterProducts = async (filter) => {
             params: filter,
         });
         const { data } = response.data;
-        console.log("Filtered products:", data.totalElements);
-        console.log("Filter:", data);
+
+
         return data;
     } catch (error) {
         console.error("Error filtering products:", error);
+        throw error;
+    }
+}
+const searchProducts = async (keyword, page, size) => {
+    try {
+        const response = await axios({
+            method: 'GET',
+            url: `/api/v1/public/products/search?keyword`,
+            params: { keyword, page, size },
+        });
+        const { data } = response.data;
+        return data;
+    } catch (error) {
+        console.error("Error searching products:", error);
         throw error;
     }
 }
@@ -380,7 +394,6 @@ const getProductsByImgUrls = async (imgUrls) => {
 
         // Extract and return the data
         const { data } = response.data;
-        console.log("Fetched products by image URLs:", data);
         return data;
     } catch (error) {
         console.error("Error fetching products by image URLs:", error);
@@ -391,6 +404,7 @@ export {
     fetchAllProducts,
     fetchProductDetail,
     filterProducts,
+    searchProducts,
     fetchProductByCollection,
     fetchAllProductsOnSale,
     fetchProductDescription,

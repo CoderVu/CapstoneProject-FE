@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Brand from "./Brand";
 import Category from "./Category";
 import Color from "./Color";
 import Price from "./Price";
 
-const ShopSideNav = ({ onFilterChange }) => {
+const ShopSideNav = ({ onFilterChange, initialFilters = {} }) => {
   const [filters, setFilters] = useState({
     categoryProduct: "",
     brandProduct: "",
@@ -13,18 +13,49 @@ const ShopSideNav = ({ onFilterChange }) => {
     priceMax: "",
     colorProduct: "",
     sizeProduct: "",
+    ...initialFilters
   });
 
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(initialFilters.brandProduct || null);
+  const [selectedCategory, setSelectedCategory] = useState(initialFilters.categoryProduct || null);
+  const [selectedColor, setSelectedColor] = useState(initialFilters.colorProduct || null);
+  const [selectedPrice, setSelectedPrice] = useState(
+    initialFilters.priceMin || initialFilters.priceMax
+      ? { priceMin: initialFilters.priceMin, priceMax: initialFilters.priceMax }
+      : null
+  );
   const [expandedSections, setExpandedSections] = useState({
     category: true,
     color: true,
     brand: true,
     price: true,
   });
+
+  // Update local state when initialFilters changes
+  useEffect(() => {
+    if (Object.keys(initialFilters).length > 0) {
+      setFilters(prev => ({
+        ...prev,
+        ...initialFilters
+      }));
+
+      if (initialFilters.categoryProduct) {
+        setSelectedCategory(initialFilters.categoryProduct);
+      }
+      if (initialFilters.brandProduct) {
+        setSelectedBrand(initialFilters.brandProduct);
+      }
+      if (initialFilters.colorProduct) {
+        setSelectedColor(initialFilters.colorProduct);
+      }
+      if (initialFilters.priceMin || initialFilters.priceMax) {
+        setSelectedPrice({
+          priceMin: initialFilters.priceMin || "",
+          priceMax: initialFilters.priceMax || ""
+        });
+      }
+    }
+  }, [initialFilters]);
 
   const handleChange = (e) => {
     if (e.target.name === "price") {

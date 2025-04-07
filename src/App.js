@@ -37,6 +37,7 @@ import OrderHistory from "./pages/Order/OrderHistory";
 import OrderList from "./pages/Admin/Order/OrderList";
 import Favorites from "./pages/Favorate/Favorites";
 import DiscountCode from "./pages/Admin/Discount/DiscountCode";
+import Search from "./components/home/Search/Search";
 
 const Layout = () => {
   return (
@@ -57,6 +58,7 @@ const router = createBrowserRouter(
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path ="/search" element = {<Search />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/offer" element={<Offer />} />
