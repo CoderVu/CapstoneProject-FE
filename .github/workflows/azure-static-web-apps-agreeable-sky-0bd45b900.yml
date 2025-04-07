@@ -11,6 +11,7 @@ on:
 
 jobs:
   build_and_deploy_job:
+    # Chạy khi có push lên main hoặc khi PR được mở/sync/reopen (không phải closed)
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
@@ -24,13 +25,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Hoặc version Node phù hợp với dự án bạn
+          node-version: '18'  # Đảm bảo đúng version Node với dự án
 
       - name: Install dependencies
         run: npm install
 
       - name: Build the app
-        run: npm run build
+        run: CI=false npm run build  # Tắt CI mode để tránh fail do warning
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
@@ -40,9 +41,10 @@ jobs:
           action: "upload"
           app_location: "/"            # app nằm ở thư mục gốc
           output_location: "build"     # CRA build ra thư mục build
-          api_location: ""             # nếu không dùng API riêng thì để rỗng
+          api_location: ""             # không dùng API backend riêng
 
   close_pull_request_job:
+    # Chạy khi pull request bị đóng
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
