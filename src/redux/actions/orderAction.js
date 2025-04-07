@@ -1,6 +1,4 @@
 import types from "../types";
-import axios from "../setup/axios";
-import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
 import { fetchAllOrder } from "../service/orderService";
 
 // Action to dispatch when fetching orders starts
