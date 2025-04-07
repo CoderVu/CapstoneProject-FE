@@ -170,7 +170,7 @@ const Product = (props) => {
             isHovered ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -189,7 +189,7 @@ const Product = (props) => {
               <FaEye className="text-xs" />
               <span>Xem chi tiết</span>
             </motion.button>
-          </div>
+          </div> */}
         </div>
       </div>
 

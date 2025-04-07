@@ -38,6 +38,7 @@ import OrderList from "./pages/Admin/Order/OrderList";
 import Favorites from "./pages/Favorate/Favorites";
 import DiscountCode from "./pages/Admin/Discount/DiscountCode";
 import Search from "./components/home/Search/Search";
+import BuyNowPage from "./components/pageProps/BuyNowPage";
 
 const Layout = () => {
   return (
@@ -65,8 +66,9 @@ const router = createBrowserRouter(
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/favorite" element={<Favorites />} />
+        <Route path="/buy-now" element={<BuyNowPage />} />
         <Route path="/proceed-to-checkout" element={<Payment />} />
-        <Route path="/orderHistory" element= {<OrderHistory />} />
+        <Route path="/order-history" element= {<OrderHistory />} />
         <Route path="/profile" element={<UserProfile />} />
       </Route>
 

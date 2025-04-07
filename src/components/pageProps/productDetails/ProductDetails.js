@@ -16,8 +16,7 @@ import AISimilarProducts from "./AISimilarProducts"; // Import the new component
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getProductsByImgUrls } from "../../../redux/service/productService";
-import { toast } from "react-toastify"; // Add toast for notifications
-
+import { showSuccessToast, showErrorToast } from "../../../components/Toast/ToastNotification";
 // Add custom CSS for animations
 const styles = `
   @keyframes scan {
@@ -52,6 +51,8 @@ const ProductDetails = () => {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(30);
   const [hasMore, setHasMore] = useState(true);
+
+
   const [ratingSummary, setRatingSummary] = useState({
     totalReviews: 0,
     averageRating: 0,
@@ -142,7 +143,8 @@ const ProductDetails = () => {
 
   const findSimilarProducts = async (imageUrl) => {
     if (!imageUrl) {
-      toast.error("Chưa chọn hình ảnh để tìm kiếm bằng AI");
+    
+      showErrorToast("Chưa có hình ảnh để tìm kiếm sản phẩm tương tự");
       return;
     }
 
@@ -200,7 +202,7 @@ const ProductDetails = () => {
           const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
 
           setProductResults(sortedProducts);
-          toast.success(`Đã tìm thấy ${sortedProducts.length} sản phẩm tương tự về hình ảnh`);
+          showSuccessToast(`Đã tìm thấy ${sortedProducts.length} sản phẩm tương tự về hình ảnh`);
         } else {
           setErrorMessage("Không tìm thấy thông tin sản phẩm cho hình ảnh tương tự");
           setProductResults([]);
@@ -215,7 +217,7 @@ const ProductDetails = () => {
       setErrorMessage(error.message || "Lỗi xử lý hình ảnh khi tìm sản phẩm tương tự");
       setSimilarProducts([]);
       setProductResults([]);
-      toast.error("Không thể tìm thấy sản phẩm tương tự. Vui lòng thử lại.");
+      showErrorToast("Không thể tìm thấy sản phẩm tương tự. Vui lòng thử một hình ảnh khác.");
     } finally {
       setLoadingSimilar(false);
     }
@@ -223,7 +225,8 @@ const ProductDetails = () => {
 
   const findSimilarByUploadedImage = async () => {
     if (!uploadedImage) {
-      toast.error("Vui lòng chọn hình ảnh trước");
+
+      showErrorToast("Chưa chọn hình ảnh để tìm kiếm bằng AI");
       return;
     }
 
@@ -281,7 +284,7 @@ const ProductDetails = () => {
           const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
 
           setProductResults(sortedProducts);
-          toast.success(`Đã tìm thấy ${sortedProducts.length} sản phẩm tương tự về hình ảnh`);
+          showSuccessToast(`Đã tìm thấy ${sortedProducts.length} sản phẩm tương tự về hình ảnh`);
         } else {
           setErrorMessage("Không tìm thấy thông tin sản phẩm cho hình ảnh tương tự");
           setProductResults([]);
@@ -296,7 +299,7 @@ const ProductDetails = () => {
       setErrorMessage(error.message || "Lỗi xử lý hình ảnh");
       setSimilarProducts([]);
       setProductResults([]);
-      toast.error("Không thể tìm thấy sản phẩm tương tự. Vui lòng thử một hình ảnh khác.");
+      showErrorToast("Không thể tìm thấy sản phẩm tương tự. Vui lòng thử một hình ảnh khác.");
     } finally {
       setLoadingSimilar(false);
     }

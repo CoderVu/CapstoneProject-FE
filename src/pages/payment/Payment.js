@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { FaQrcode, FaArrowLeft, FaCheckCircle, FaPlus, FaCreditCard, FaMapMarkerAlt, FaPhone, FaShoppingCart, FaMoneyBill } from "react-icons/fa";
-import { createOrderFromCart } from "../../redux/service/orderService";
+import { createOrderFromCart, createOrderNow } from "../../redux/service/orderService";
 import AddressSelector from "./AddressSelector";
 import { fetchAddress } from "../../redux/service/authService";
 
@@ -491,7 +491,7 @@ const PaymentGateway = () => {
 
             <div className="flex justify-center space-x-4">
               <Link
-                to="/orderHistory"
+                to="/order-history"
                 className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150"
               >
                 Xem đơn hàng

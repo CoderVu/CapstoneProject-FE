@@ -360,7 +360,7 @@ const Header = () => {
                           <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Tài khoản của tôi
                           </Link>
-                          <Link to="/orderHistory" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <Link to="/order-history" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Đơn hàng
                           </Link>
                           <Link to="/favorite" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -594,7 +594,7 @@ const Header = () => {
                             Tài khoản của tôi
                           </Link>
                           <Link
-                            to="/orderHistory"
+                            to="/OrderHistory"
                             onClick={() => setShowMenu(false)}
                             className="block py-2 px-2 text-sm text-gray-600 hover:text-blue-600 rounded hover:bg-gray-50 transition-colors"
                           >

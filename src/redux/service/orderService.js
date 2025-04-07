@@ -23,7 +23,6 @@ const createOrderFromCart = async (orderRequest) => {
   
 
         });
-        console.log("respỏder", response)
  
         const { data } = response.data;
 
@@ -33,6 +32,24 @@ const createOrderFromCart = async (orderRequest) => {
     } catch (error) {
         console.error("Error creating order from cart:", error);
         showErrorToast(error.response.data.message || "Failed to create order from cart");
+        throw error;
+    }
+}
+
+const createOrderNow = async (orderRequest) => {
+    try {
+        const response = await axios({
+            method: 'POST',
+            url: `/api/v1/user/order/create`,
+            data: orderRequest,
+        });
+        const { data } = response.data;
+        showSuccessToast(response.data.message);
+        console.log("dasdta", data)
+        return data;
+    } catch (error) {
+        console.error("Error creating order now:", error);
+        showErrorToast(error.response.data.message || "Failed to create order now");
         throw error;
     }
 }
@@ -83,4 +100,4 @@ const updateOrderStatus = async (orderId, status) => {
     }
 }
 
-export { fetchOrderMock, createOrderFromCart, fetchOrder, fetchAllOrder , updateOrderStatus };
+export { fetchOrderMock, createOrderFromCart, createOrderNow ,fetchOrder, fetchAllOrder , updateOrderStatus };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaShoppingCart, FaBolt } from "react-icons/fa";
 import { addToCartItems } from "../../../redux/actions/cartActions";
+import BuyNowButton from "./BuyNowButton";
 
 const ProductInfo = ({ productInfo, onImageClick }) => {
   const dispatch = useDispatch();
@@ -311,7 +312,18 @@ const ProductInfo = ({ productInfo, onImageClick }) => {
           disabled={!selectedColor || !selectedSize || stockQuantity === 0}
         >
           <FaBolt />
-          Mua ngay
+
+          <BuyNowButton
+            productId={productInfo?.id}
+            selectedSize={availableVariants.find(variant => variant.sizeName === selectedSize)}
+            selectedColor={availableVariants.find(variant => variant.color === selectedColor)}
+            quantity={quantity}
+            productPrice={productInfo?.discountPrice}
+            productName={productInfo?.productName}
+            productImage={productInfo?.images?.[0]?.path}
+            disabled={!selectedColor || !selectedSize || stockQuantity === 0}
+          />
+
         </button>
       </div>
 
