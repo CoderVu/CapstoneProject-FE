@@ -57,7 +57,7 @@ const SignIn = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://192.168.1.70:8080/oauth2/authorization/google";
+    window.location.href = "https://servercapstone-d8c7gxexepekfdf6.canadacentral-01.azurewebsites.net/oauth2/authorization/google";
   };
 
   return (
