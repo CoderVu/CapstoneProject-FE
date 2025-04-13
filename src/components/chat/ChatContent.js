@@ -134,7 +134,7 @@ const ChatContent = () => {
         };
 
         if (showChat) {
-            chatService.connect("ws://https://servercapstone-d8c7gxexepekfdf6.canadacentral-01.azurewebsites.net/ws", auth?.id);
+            chatService.connect("ws://http://localhost:8080/ws", auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
                 listenerAddedRef.current = true;

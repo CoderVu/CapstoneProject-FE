@@ -42,5 +42,12 @@ export const navBarList = [
     title: "Contact",
     link: "/contact",
   },
+  {
+    id: 1005,
+    title: "Offer",
+    link: "/offer",
+  },
+ 
+
 ];
 // =================== NavBarList End here ======================

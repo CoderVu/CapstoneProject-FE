@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-    baseURL: 'https://servercapstone-d8c7gxexepekfdf6.canadacentral-01.azurewebsites.net/',
+    baseURL: 'http://localhost:8080/',
     withCredentials: true, 
 });
 

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
-import { fetchOrder } from "../../redux/service/orderService";
+import { fetchOrder, cancelOder } from "../../redux/service/orderService";
 import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock, FaFileInvoice, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PrintInvoice from "./PrintInvoice";
-
+import OrderRating from "./OrderRating";
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,8 @@ const OrderHistory = () => {
   const [filterStatus, setFilterStatus] = useState("ALL"); // "ALL", "PENDING", "PROCESSING", etc.
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [cancellingOrder, setCancellingOrder] = useState(null); // Track the order being cancelled
+  const [ratingOrderId, setRatingOrderId] = useState(false); // Track the order being rated
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(5);
@@ -26,6 +27,7 @@ const OrderHistory = () => {
       try {
         setLoading(true);
         const orderData = await fetchOrder();
+        console.log("lich su don hang", orderData);
         setOrders(orderData);
         setError(null);
       } catch (err) {
@@ -38,7 +40,45 @@ const OrderHistory = () => {
 
     getOrderHistory();
   }, []);
+  // Function to handle successful rating submission
+  const handleRatingSuccess = () => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.orderCode === ratingOrderId
+          ? { ...order, isFeedback: true } // Update the order to indicate it has been rated
+          : order
+      )
+    );
+    setRatingOrderId(false); // Close the rating modal
+  };
+  // Function to handle order cancellation
+  const handleCancelOrder = async (orderCode) => {
+    try {
+      setCancellingOrder(orderCode);
+      // Call the cancelOder function imported from orderService
+      await cancelOder(orderCode);
 
+      // Update the local state to reflect the cancelled order
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.orderCode === orderCode ? { ...order, status: "CANCELLED" } : order
+        )
+      );
+
+
+    } catch (err) {
+      // setError("Không thể hủy đơn hàng. Vui lòng thử lại sau.");
+      // console.error(err);
+    } finally {
+      setCancellingOrder(null);
+    }
+  };
+  const handleRateOrder = (orderId) => {
+    setRatingOrderId(orderId);
+  };
+  const handleCloseRating = () => {
+    setRatingOrderId(false);
+  };
   // Function to toggle expanded order view
   const toggleOrderExpand = (orderCode) => {
     if (expandedOrder === orderCode) {
@@ -378,9 +418,9 @@ const OrderHistory = () => {
                                   className="bg-blue-600 h-2.5 rounded-full"
                                   style={{
                                     width: order.status === "PENDING" ? "25%" :
-                                           order.status === "PROCESSING" ? "50%" :
-                                           order.status === "SHIPPED" ? "75%" :
-                                           order.status === "DELIVERED" ? "100%" : "0%"
+                                      order.status === "PROCESSING" ? "50%" :
+                                        order.status === "SHIPPED" ? "75%" :
+                                          order.status === "DELIVERED" ? "100%" : "0%"
                                   }}
                                 ></div>
 
@@ -454,11 +494,43 @@ const OrderHistory = () => {
 
                         {/* Action buttons */}
                         <div className="mt-6 flex flex-wrap justify-end gap-3">
-                          {order.status === "PENDING" && (
-                            <button className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors">
-                              Hủy đơn hàng
+                          {/* Show cancel button only for PENDING or PROCESSING orders */}
+                          {(order.status === "PENDING" || order.status === "PROCESSING") && (
+                            <button
+                              onClick={() => handleCancelOrder(order.orderCode)}
+                              disabled={cancellingOrder === order.orderCode}
+                              className={`px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors ${cancellingOrder === order.orderCode ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            >
+                              {cancellingOrder === order.orderCode ? (
+                                <>
+                                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-red-500 mr-2"></span>
+                                  Đang hủy...
+                                </>
+                              ) : 'Hủy đơn hàng'}
+                            </button>
+
+                          )}
+                          {order.status === "DELIVERED" && (
+                            <button
+                              onClick={() => handleRateOrder(order.orderCode)}
+                              className={`px-4 py-2 ${order.isFeedback ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'} text-white rounded transition-colors`}
+                              disabled={order.isFeedback}
+                            >
+                              {order.isFeedback ? 'Đã đánh giá' : 'Đánh giá đơn hàng'}
                             </button>
                           )}
+                          <div>
+
+                            {/* Order Rating Modal */}
+                            {ratingOrderId && (
+                              <OrderRating
+                                orderId={ratingOrderId}
+                                onRatingSuccess={handleRatingSuccess}
+                                onClose={handleCloseRating}
+                              />
+                            )}
+                          </div>
 
                           {/* Using PrintInvoice component for printing and PDF download */}
                           <PrintInvoice
@@ -486,11 +558,10 @@ const OrderHistory = () => {
                     <button
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className={`relative inline-flex items-center px-3 py-2 rounded-l-md border ${
-                        currentPage === 1
-                          ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={`relative inline-flex items-center px-3 py-2 rounded-l-md border ${currentPage === 1
+                        ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
                     >
                       <span className="sr-only">Trang trước</span>
                       <FaChevronLeft className="h-3 w-3" />
@@ -500,13 +571,12 @@ const OrderHistory = () => {
                       <button
                         key={index}
                         onClick={() => number !== '...' ? paginate(number) : null}
-                        className={`relative inline-flex items-center px-4 py-2 border ${
-                          number === currentPage
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                            : number === '...'
-                              ? 'border-gray-300 bg-white text-gray-700'
-                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                        }`}
+                        className={`relative inline-flex items-center px-4 py-2 border ${number === currentPage
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : number === '...'
+                            ? 'border-gray-300 bg-white text-gray-700'
+                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
                       >
                         {number}
                       </button>
@@ -515,11 +585,10 @@ const OrderHistory = () => {
                     <button
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className={`relative inline-flex items-center px-3 py-2 rounded-r-md border ${
-                        currentPage === totalPages
-                          ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={`relative inline-flex items-center px-3 py-2 rounded-r-md border ${currentPage === totalPages
+                        ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
                     >
                       <span className="sr-only">Trang sau</span>
                       <FaChevronRight className="h-3 w-3" />

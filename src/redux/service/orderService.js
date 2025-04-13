@@ -80,6 +80,22 @@ const fetchAllOrder = async (page, size) => {
         throw error;
     }
 }
+const cancelOder = async (orderCode) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/user/order/cancel`,
+            params: { orderCode }
+        });
+        const { data } = response.data;
+        showSuccessToast(response.data.message);
+        return data;
+    } catch (error) {
+        console.error("Error cancelling order:", error);
+        showErrorToast(error.response.data.message);
+        throw error;
+    }
+}
 const updateOrderStatus = async (orderId, status) => {
     try {
         const response = await axios({
@@ -100,4 +116,4 @@ const updateOrderStatus = async (orderId, status) => {
     }
 }
 
-export { fetchOrderMock, createOrderFromCart, createOrderNow ,fetchOrder, fetchAllOrder , updateOrderStatus };
+export { fetchOrderMock, cancelOder, createOrderFromCart, createOrderNow ,fetchOrder, fetchAllOrder , updateOrderStatus };
