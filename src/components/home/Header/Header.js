@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { HiOutlineMenuAlt4 } from "react-icons/hi";
 import { FaSearch, FaUser, FaShoppingCart, FaHeart, FaTimes, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { logo } from "../../../assets/images";
 import Image from "../../designLayouts/Image";
@@ -12,7 +11,7 @@ import { logoutUser } from "../../../redux/actions/authActions";
 
 const Header = () => {
   // Redux state
-  const products = useSelector((state) => state.product.products || []);
+
   const categories = useSelector((state) => state.category.categories);
   const cartItems = useSelector((state) => state.cart.cartItems || []);
   const auth = useSelector((state) => state.auth.auth);

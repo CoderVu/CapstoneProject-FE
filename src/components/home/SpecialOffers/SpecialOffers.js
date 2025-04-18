@@ -118,7 +118,7 @@ const SpecialOffers = () => {
       <div className="mb-10 relative">
         <h2 className="text-2xl font-bold text-center uppercase relative inline-block">
           Sản phẩm đang giảm giá
-          <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-red-500"></span>
+          {/* <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-red-500"></span> */}
         </h2>
         <div className="absolute top-1/2 left-0 w-full border-t border-gray-200 -z-10"></div>
       </div>
@@ -158,7 +158,7 @@ const SpecialOffers = () => {
                 secondaryImg={product.images[0]?.path}
                 productName={product.productName}
                 price={product.price}
-                discountPrice="80"
+                discountPrice= {product.discountPrice}
                 colors={product.variants?.map((variant) => variant.color) || []}
                 badge={product.newProduct ? "New" : "Sale"}
                 rating={product.rate?.rating}
@@ -182,7 +182,7 @@ const SpecialOffers = () => {
                   secondaryImg={product.images[0]?.path}
                   productName={product.productName}
                   price={product.price}
-                  discountPrice="80"
+                  discountPrice= {product.discountPrice}
                   colors={product.variants?.map((variant) => variant.color) || []}
                   badge={product.newProduct ? "New" : "Sale"}
                   rating={product.rate?.rating}

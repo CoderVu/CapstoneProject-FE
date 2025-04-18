@@ -70,22 +70,22 @@ const ShopSideNav = ({ onFilterChange, initialFilters = {} }) => {
     }
   };
 
-  const handleClearFilters = () => {
-    const resetFilters = {
-      categoryProduct: "",
-      brandProduct: "",
-      priceMin: "",
-      priceMax: "",
-      colorProduct: "",
-      sizeProduct: "",
-    };
-    setFilters(resetFilters);
-    setSelectedBrand(null);
-    setSelectedCategory(null);
-    setSelectedColor(null);
-    setSelectedPrice(null);
-    onFilterChange(resetFilters);
-  };
+  // const handleClearFilters = () => {
+  //   const resetFilters = {
+  //     categoryProduct: "",
+  //     brandProduct: "",
+  //     priceMin: "",
+  //     priceMax: "",
+  //     colorProduct: "",
+  //     sizeProduct: "",
+  //   };
+  //   setFilters(resetFilters);
+  //   setSelectedBrand(null);
+  //   setSelectedCategory(null);
+  //   setSelectedColor(null);
+  //   setSelectedPrice(null);
+  //   onFilterChange(resetFilters);
+  // };
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -215,7 +215,7 @@ const ShopSideNav = ({ onFilterChange, initialFilters = {} }) => {
           exit={{ opacity: 0, y: 10 }}
           className="mt-6"
         >
-          <button
+          {/* <button
             onClick={handleClearFilters}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
           >
@@ -223,7 +223,7 @@ const ShopSideNav = ({ onFilterChange, initialFilters = {} }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
             <span>Xóa tất cả</span>
-          </button>
+          </button> */}
         </motion.div>
       ) : (
         <div className="mt-6 py-3 px-4 bg-blue-50 border border-blue-100 rounded-lg text-center">

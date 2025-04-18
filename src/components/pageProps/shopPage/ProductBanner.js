@@ -1,20 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import Product from "../../home/Products/Product";
 
 const ProductBanner = ({ products = [], itemsPerPageFromBanner, loading }) => {
+  const [itemsPerPage, setItemsPerPage] = useState(12); // Default items per page
+
+  const totalPages = Math.ceil(products.length / itemsPerPage); // Calculate total pages
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    itemsPerPageFromBanner(value);
+  };
+
   return (
     <div className="w-full relative">
-      {/* Items per page dropdown - Always visible */}
-      <div className="absolute top-0 right-0 mb-6 flex items-center gap-2">
-        <label className="text-gray-700">Show:</label>
-        <select
-          onChange={(e) => itemsPerPageFromBanner(parseInt(e.target.value, 10))}
-          className="border py-1 px-4 cursor-pointer text-primeColor focus:border-primeColor"
-        >
-          {[12, 24, 36, 48, 60].map((num) => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
+      {/* Items per page and total pages */}
+      <div className="absolute -top-10 right-0 flex items-center gap-4 z-10 bg-white p-2 rounded-md shadow-md"> 
+    
+        <div className="flex items-center gap-2">
+          <label className="text-gray-700">Show:</label>
+          <select
+            onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value, 10))}
+            className="border py-1 px-4 cursor-pointer text-primeColor focus:border-primeColor"
+          >
+            {[12, 24, 36, 48, 60].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Product list */}
@@ -30,7 +44,7 @@ const ProductBanner = ({ products = [], itemsPerPageFromBanner, loading }) => {
                 secondaryImg={product.images[0]?.path}
                 productName={product.productName}
                 price={product.price}
-                discountPrice="80"
+                discountPrice={product.discountPrice}
                 colors={product.variants.map((variant) => variant.color)}
                 badge={product.newProduct ? "New" : ""}
                 rating={product.rate?.rating}

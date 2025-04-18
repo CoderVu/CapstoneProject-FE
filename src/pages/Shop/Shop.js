@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -10,11 +10,17 @@ import { filterProduct } from "../../redux/actions/productActions";
 const Shop = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { products, totalPages, totalElements, loading, error } = useSelector((state) => state.product);
+  const { products, totalPages, totalElements, loading, error } = useSelector(
+    (state) => state.product
+  );
+
+  // Pagination & view states
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [isGridView, setIsGridView] = useState(true);
   const [page, setPage] = useState(0);
+  const [isGridView, setIsGridView] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Filter state
   const [filters, setFilters] = useState({
     gender: "",
     categoryProduct: "",
@@ -25,7 +31,7 @@ const Shop = () => {
     sizeProduct: "",
   });
 
-  // Filter names for display
+  // Map filter keys to labels
   const filterLabels = {
     gender: "Giới tính",
     categoryProduct: "Danh mục",
@@ -36,60 +42,46 @@ const Shop = () => {
     sizeProduct: "Kích cỡ",
   };
 
+  // Ref to skip initial dispatch
+  const didMountRef = useRef(false);
+
+  // If navigated with initial category filter, set it
   useEffect(() => {
-    if (location.state && (location.state.categoryProduct)) {
-      setFilters((prevFilters) => {
-        const updatedFilters = {
-          ...prevFilters,
-          ...location.state,
-        };
-        console.log("Updated Filters from location.state:", updatedFilters); // Log the updated filters
-        return updatedFilters;
-      });
+    if (location.state?.categoryProduct) {
+      setFilters((prev) => ({ ...prev, ...location.state }));
+      setPage(0);
     }
   }, [location.state]);
+
+  // Dispatch filter action when filters/page/size change (after mount)
   useEffect(() => {
-    dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
+    if (didMountRef.current) {
+      dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
+    } else {
+      didMountRef.current = true;
+      // Uncomment to load default products on first mount
+      // dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
+    }
   }, [dispatch, filters, page, itemsPerPage]);
 
-  const itemsPerPageFromBanner = (itemsPerPage) => {
-    setItemsPerPage(itemsPerPage);
+  // Handlers only update state; effect handles dispatch
+  const handleFilterChange = (newFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
     setPage(0);
   };
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    // Scroll to top when changing page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleViewChange = (isGridView) => {
-    setIsGridView(isGridView);
-  };
-
-  const handleFilterChange = (newFilters) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      ...newFilters,
+  const handleClearFilter = (key) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...(key === "priceMin" || key === "priceMax"
+        ? { priceMin: "", priceMax: "" }
+        : { [key]: "" }),
     }));
-    setPage(0); // Reset to first page when filter changes
-    dispatch(filterProduct({ ...filters, ...newFilters, page: 0, size: itemsPerPage }));
-  };
-
-  const handleClearFilter = (filterKey) => {
-    let newFilters = { ...filters };
-    if (filterKey === "priceMin" || filterKey === "priceMax") {
-      newFilters = { ...newFilters, priceMin: "", priceMax: "" };
-    } else {
-      newFilters[filterKey] = "";
-    }
-    setFilters(newFilters);
-    setPage(0); // Reset to first page when filter changes
-    dispatch(filterProduct({ ...newFilters, page: 0, size: itemsPerPage }));
+    setPage(0);
   };
 
   const handleClearAllFilters = () => {
-    const resetFilters = {
+    setFilters({
       gender: "",
       categoryProduct: "",
       brandProduct: "",
@@ -97,71 +89,59 @@ const Shop = () => {
       priceMax: "",
       colorProduct: "",
       sizeProduct: "",
-    };
-    setFilters(resetFilters);
+    });
     setPage(0);
-    dispatch(filterProduct({ ...resetFilters, page: 0, size: itemsPerPage }));
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value);
-
-  // Calculate visible page numbers
-  const getVisiblePageNumbers = () => {
-    const delta = 2; // How many pages to show before and after current page
-    const range = [];
-    const rangeWithDots = [];
-    let l;
-
-    for (let i = 0; i < totalPages; i++) {
-      if (
-        i === 0 ||
-        i === totalPages - 1 ||
-        (i >= page - delta && i <= page + delta)
-      ) {
-        range.push(i);
-      } else if (i === page - delta - 1 || i === page + delta + 1) {
-        range.push("...");
-      }
-    }
-
-    for (const i of range) {
-      if (l) {
-        if (i === "...") {
-          rangeWithDots.push(i);
-        } else if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l !== 1) {
-          rangeWithDots.push("...");
-        }
-      }
-      rangeWithDots.push(i);
-      l = i;
-    }
-
-    return rangeWithDots;
+  const itemsPerPageFromBanner = (count) => {
+    setItemsPerPage(count);
+    setPage(0);
   };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleViewChange = (grid) => {
+    setIsGridView(grid);
+  };
+
+  const hasActiveFilters = Object.values(filters).some((val) => !!val);
 
   return (
     <div className="max-w-container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <Breadcrumbs title="" gender={filters.gender} />
-
-        {/* Mobile filter button */}
         <button
           className="flex items-center gap-2 py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 md:hidden"
-          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+          onClick={() => setIsMobileFilterOpen((open) => !open)}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            />
           </svg>
           Bộ lọc
         </button>
       </div>
 
-      <div className="w-full h-full flex flex-col md:flex-row gap-6 pb-12">
+      <div className="flex flex-col md:flex-row gap-6 pb-12">
         {/* Mobile filter sidebar */}
         {isMobileFilterOpen && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden" onClick={() => setIsMobileFilterOpen(false)}>
+          <div
+            className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden"
+            onClick={() => setIsMobileFilterOpen(false)}
+          >
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -176,7 +156,13 @@ const Shop = () => {
                   className="text-gray-500 hover:text-gray-700"
                   onClick={() => setIsMobileFilterOpen(false)}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -187,10 +173,10 @@ const Shop = () => {
         )}
 
         {/* Desktop sidebar */}
-        <div className="w-full md:w-[250px] lg:w-[280px] hidden md:block flex-shrink-0">
+        <div className="hidden md:block md:w-[250px] lg:w-[280px] flex-shrink-0">
           <div className="sticky top-20 w-full p-5 bg-white rounded-xl shadow-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Lọc sản phẩm</h2>
+              {/* <h2 className="text-lg font-bold text-gray-800">Lọc sản phẩm</h2>
               {hasActiveFilters && (
                 <button
                   onClick={handleClearAllFilters}
@@ -198,13 +184,13 @@ const Shop = () => {
                 >
                   Xóa tất cả
                 </button>
-              )}
+              )} */}
             </div>
             <ShopSideNav onFilterChange={handleFilterChange} initialFilters={filters} />
           </div>
         </div>
 
-        <div className="w-full md:flex-1">
+        <div className="flex-1">
           {/* Applied Filters */}
           {hasActiveFilters && (
             <div className="bg-gray-50 rounded-xl p-4 mb-6">
@@ -218,28 +204,37 @@ const Shop = () => {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {Object.keys(filters).map((key) => (
-                  filters[key] && (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      className="flex items-center bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm"
-                    >
-                      <span className="text-xs text-gray-500 mr-1">{filterLabels[key]}:</span>
-                      <span className="text-sm font-medium">{filters[key]}</span>
-                      <button
-                        onClick={() => handleClearFilter(key)}
-                        className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                {Object.keys(filters).map(
+                  (key) =>
+                    filters[key] && (
+                      <motion.div
+                        key={key}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="flex items-center bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </motion.div>
-                  )
-                ))}
+                        <span className="text-xs text-gray-500 mr-1">
+                          {filterLabels[key]}:
+                        </span>
+                        <span className="text-sm font-medium">{filters[key]}</span>
+                        <button
+                          onClick={() => handleClearFilter(key)}
+                          className="ml-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </motion.div>
+                    )
+                )}
               </div>
             </div>
           )}
@@ -256,7 +251,13 @@ const Shop = () => {
           ) : (
             !loading && (
               <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow-md py-12 px-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-gray-300 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <p className="text-xl text-gray-700 font-medium mb-2">Không tìm thấy sản phẩm nào</p>
@@ -271,14 +272,12 @@ const Shop = () => {
             )
           )}
 
-          {/* Loading state */}
+          {/* Loading & Error */}
           {loading && (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           )}
-
-          {/* Error state */}
           {error && !loading && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               <p className="font-medium">Lỗi: {error}</p>
@@ -302,20 +301,18 @@ const Shop = () => {
                 </button>
 
                 <div className="hidden md:flex space-x-1">
-                  {getVisiblePageNumbers().map((pageNum, index) => (
-                    pageNum === "..." ? (
-                      <span key={`ellipsis-${index}`} className="px-2 py-2 text-gray-500">...</span>
-                    ) : (
-                      <button
-                        key={`page-${pageNum}`}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${
-                          pageNum === page ? "bg-blue-600 text-white border border-blue-600" : "border border-gray-300 text-gray-600 hover:border-blue-300"
-                        }`}
-                      >
-                        {pageNum + 1}
-                      </button>
-                    )
+                  {Array.from({ length: totalPages }, (_, i) => i).map((i) => (
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${
+                        i === page
+                          ? "bg-blue-600 text-white border border-blue-600"
+                          : "border border-gray-300 text-gray-600 hover:border-blue-300"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
                   ))}
                 </div>
 
@@ -335,14 +332,8 @@ const Shop = () => {
                   Tiếp <span className="hidden sm:inline ml-1">»</span>
                 </button>
               </div>
-
               <p className="text-sm text-gray-500">
-                {totalElements > 0 && (
-                  <>
-                    <span className="font-medium">{page * itemsPerPage + 1} - {Math.min((page + 1) * itemsPerPage, totalElements)}</span> trong{" "}
-                    <span className="font-medium">{totalElements}</span> sản phẩm
-                  </>
-                )}
+                {page * itemsPerPage + 1} - {Math.min((page + 1) * itemsPerPage, totalElements)} trong {totalElements} sản phẩm
               </p>
             </div>
           )}

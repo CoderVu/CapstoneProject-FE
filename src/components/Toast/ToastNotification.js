@@ -212,18 +212,17 @@ export const showWarningToast = (message) => {
 };
 
 // 🧑‍💼 Custom thông báo có hình ảnh và thông tin user
-export const showCustomToast = ({ userName, productName, productCode, timeAgo }) => {
+export const showCustomToast = ({ productImage, userName, productName, orderCode, timeAgo, productId }) => {
   MySwal.fire({
-    ...toastConfig, // Include the same base configuration as other toasts
+    ...toastConfig,
+    toast: true,
+    position: 'bottom-left',
     html: `
       <div class="px-5 pt-4 pb-5 text-center">
         <div class="user-avatar">
-          <img
-            src="https://dbimage.blob.core.windows.net/images/c7ce4a03-1ad8-4874-9a80-292bcb88087b-orebiLogo.png"
-            alt="User"
-          />
+          <img src="${productImage}" alt="User" />
           <div class="badge">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9C4.045 12.733 2 10.352 2 7.5a4.5 4.5 0 018-2.828A4.5 4.5 0 0118 7.5c0 2.852-2.044 5.233-3.885 6.82a22.049 22.049 0 01-3.744 2.582l-.019.01-.005.003h-.002a.739.739 0 01-.69.001l-.002-.001z" />
             </svg>
           </div>
@@ -232,9 +231,9 @@ export const showCustomToast = ({ userName, productName, productCode, timeAgo })
         <div>
           <p class="text-gray-800 font-medium mb-1" style="font-size: 0.9rem;">
             <span class="text-purple-700">${userName}</span> vừa mua
-            <span class="text-indigo-600">${productName}</span>
+            <a href="http://localhost:3000/product/${productId}" class="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">${productName}</a>
           </p>
-          <p class="text-gray-500" style="font-size: 0.8rem; margin-bottom: 0.5rem;">${productCode}</p>
+          <p class="text-gray-500" style="font-size: 0.8rem; margin-bottom: 0.5rem;">${orderCode}</p>
           <div style="display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #9CA3AF;">
             <svg xmlns="http://www.w3.org/2000/svg" style="width: 0.8rem; height: 0.8rem; margin-right: 0.25rem; color: #8B5CF6;" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />

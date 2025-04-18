@@ -89,7 +89,7 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) 
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <h2 className="text-2xl font-bold uppercase mb-4 md:mb-0 relative">
           SẢN PHẨM MỚI
-          <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-primeColor"></span>
+          {/* <span className="absolute bottom-0 left-0 w-1/3 h-1 bg-primeColor"></span> */}
         </h2>
 
         <div className="flex items-center space-x-4">
@@ -127,7 +127,7 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) 
                 secondaryImg={product.images[0]?.path}
                 productName={product.productName}
                 price={product.price}
-                discountPrice="80"
+                discountPrice= {product.discountPrice}
                 colors={product.variants?.map((variant) => variant.color) || []}
                 badge={product.newProduct ? "New" : ""}
                 rating={product.rate?.rating}

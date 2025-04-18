@@ -1,18 +1,22 @@
 import axios from "../setup/axios";
 import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
-const fetchOrderMock= async () => {
+const fetchOrderMock = async () => {
     try {
         const response = await axios({
             method: 'GET',
-            url: `/api/v1/public/orders/mock`,
+            url: `/api/v1/public/orders/recent`,
         });
         const { data } = response.data;
-        return data;
+
+        // Assuming you want the first item from the data array
+        const singleItem = Array.isArray(data) ? data[0] : data;
+
+        return singleItem;
     } catch (error) {
         console.error("Error fetching product description:", error);
         throw error;
     }
-}
+};
 
 const createOrderFromCart = async (orderRequest) => {
     try {
@@ -20,10 +24,7 @@ const createOrderFromCart = async (orderRequest) => {
             method: 'POST',
             url: `/api/v1/user/order/create-cart`,
             data: orderRequest,
-  
-
         });
- 
         const { data } = response.data;
 
 

@@ -115,9 +115,11 @@ function AppContent() {
         const data = await fetchOrderMock();
         showCustomToast({
           userName: data.userName,
-          productName: "Áo thun nam",
-          productCode: "Mã SP: 123456",
-          timeAgo: "15 phút trước",
+          productName: data.productName,
+          orderCode: data.orderCode,
+          timeAgo: data.orderDate,
+          productImage: data.imageUrl,
+          productId : data.productId
         });
       } catch (error) {
         console.error("Failed to fetch mock order data:", error);
@@ -126,7 +128,7 @@ function AppContent() {
 
     fetchMockOrder();
 
-    const interval = setInterval(fetchMockOrder, 1000000000);
+    const interval = setInterval(fetchMockOrder, 1000000); // Fetch every 10 seconds
 
     return () => clearInterval(interval);
   }, []);

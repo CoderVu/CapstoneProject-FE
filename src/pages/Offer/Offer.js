@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDiscountCodes, applyDiscountCodeToMe, getDiscountCodesForUser } from '../../redux/service/discountService';
-import { showSuccessToast, showErrorToast, showInfoToast } from '../../components/Toast/ToastNotification';
+import { showSuccessToast, showErrorToast } from '../../components/Toast/ToastNotification';
 
 const discountImages = [
   'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
@@ -18,7 +18,6 @@ const Offer = () => {
   const [userCodes, setUserCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  const [discountCode, setDiscountCode] = useState('');
   const [activeTab, setActiveTab] = useState('available');
 
   useEffect(() => {
