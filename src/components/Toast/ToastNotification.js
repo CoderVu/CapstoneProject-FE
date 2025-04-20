@@ -231,7 +231,7 @@ export const showCustomToast = ({ productImage, userName, productName, orderCode
         <div>
           <p class="text-gray-800 font-medium mb-1" style="font-size: 0.9rem;">
             <span class="text-purple-700">${userName}</span> vừa mua
-            <a href="http://localhost:3000/product/${productId}" class="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">${productName}</a>
+            <a href="https://polite-plant-004c99b1e.6.azurestaticapps.net/product/${productId}" class="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">${productName}</a>
           </p>
           <p class="text-gray-500" style="font-size: 0.8rem; margin-bottom: 0.5rem;">${orderCode}</p>
           <div style="display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #9CA3AF;">
