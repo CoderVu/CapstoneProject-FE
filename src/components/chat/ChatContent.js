@@ -134,7 +134,7 @@ const ChatContent = () => {
         };
 
         if (showChat) {
-            chatService.connect("ws://https://capstoneproject-be-iapt.onrender.com/ws", auth?.id);
+            chatService.connect("wss://https://capstoneproject-be-iapt.onrender.com/ws", auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
                 listenerAddedRef.current = true;
