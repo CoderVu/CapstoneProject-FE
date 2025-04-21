@@ -211,100 +211,13 @@ const Header = () => {
 
           {/* Header Actions */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
             <div className="relative" ref={searchInputRef}>
               <button
-                onClick={() => setShowSearch(!showSearch)}
+                onClick={() => { navigate('/search'); setShowSearch(false); }}
                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <FaSearch className="w-5 h-5" />
               </button>
-
-              {/* Search Dropdown */}
-              <AnimatePresence>
-                {showSearch && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, width: 0 }}
-                    animate={{ opacity: 1, y: 0, width: "300px" }}
-                    exit={{ opacity: 0, y: 10, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-12 bg-white rounded-lg shadow-lg z-50 overflow-hidden"
-                  >
-                    <form onSubmit={handleSearchSubmit} className="flex items-center border border-gray-200 rounded-t-lg">
-                      <input
-                        className="w-full py-3 px-4 outline-none text-gray-700"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Tìm kiếm sản phẩm..."
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-3"
-                      >
-                        <FaSearch className="w-4 h-4" />
-                      </button>
-                    </form>
-
-                    {/* Quick Search Suggestions */}
-                    <div className="p-3 border-t border-gray-100">
-                      <div className="text-sm text-gray-500 mb-2">Tìm kiếm nhanh</div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => {
-                            navigate('/search?keyword=áo');
-                            setShowSearch(false);
-                          }}
-                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
-                        >
-                          Áo
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate('/search?keyword=quần');
-                            setShowSearch(false);
-                          }}
-                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
-                        >
-                          Quần
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate('/search?keyword=giày');
-                            setShowSearch(false);
-                          }}
-                          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
-                        >
-                          Giày
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate('/search?keyword=sale');
-                            setShowSearch(false);
-                          }}
-                          className="px-3 py-1 text-sm bg-red-50 hover:bg-red-100 rounded-full text-red-600"
-                        >
-                          Sale
-                        </button>
-                      </div>
-
-                      {/* Advanced Search Link */}
-                      <div className="mt-3 text-center">
-                        <button
-                          onClick={() => {
-                            navigate('/search');
-                            setShowSearch(false);
-                          }}
-                          className="text-blue-600 hover:text-blue-800 hover:underline text-sm"
-                        >
-                          Tìm kiếm nâng cao
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Favorites */}
@@ -388,13 +301,7 @@ const Header = () => {
               </AnimatePresence>
             </div>
 
-            {/* Mobile Menu Toggle - IMPROVED WITH TEXT */}
-            <button
-              className="lg:hidden flex items-center space-x-1 py-2 px-3 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-all"
-              onClick={() => setShowMenu(!showMenu)}
-            >
-              <span className="text-sm font-medium">{showMenu ? "Đóng" : "Menu"}</span>
-            </button>
+            
           </div>
         </div>
       </div>
@@ -521,9 +428,8 @@ const Header = () => {
                   >
                     <span>Danh mục</span>
                     <FaChevronDown
-                      className={`w-4 h-4 text-gray-500 transition-transform ${
-                        expandedSection === 'categories' ? 'transform rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-gray-500 transition-transform ${expandedSection === 'categories' ? 'transform rotate-180' : ''
+                        }`}
                     />
                   </button>
 
@@ -570,9 +476,8 @@ const Header = () => {
                     >
                       <span>Tài khoản</span>
                       <FaChevronDown
-                        className={`w-4 h-4 text-gray-500 transition-transform ${
-                          expandedSection === 'account' ? 'transform rotate-180' : ''
-                        }`}
+                        className={`w-4 h-4 text-gray-500 transition-transform ${expandedSection === 'account' ? 'transform rotate-180' : ''
+                          }`}
                       />
                     </button>
 

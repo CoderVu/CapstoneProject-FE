@@ -6,12 +6,17 @@ import CategorySection from "../../components/home/Category/CategorySection";
 import SpecialOffers from "../../components/home/SpecialOffers/SpecialOffers";
 import YearProduct from "../../components/home/YearProduct/YearProduct";
 import ViewedProducts from "../../components/home/Viewed/ViewedProducts";
+import SurveyAIRecommend from "../../components/pageProps/productDetails/SurveyAIRecommend";
 
 const Home = () => {
   return (
     <div className="w-full mx-auto">
       <Banner />
       <div className="max-w-container mx-auto px-4">
+        {/* AI Match section */}
+        <div className="max-w-container mx-auto px-4 pt-8 pb-8">
+        <SurveyAIRecommend />
+      </div>
         {/* Category section */}
         <div className="py-10">
           <CategorySection />
