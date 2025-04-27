@@ -39,6 +39,7 @@ import Favorites from "./pages/Favorate/Favorites";
 import DiscountCode from "./pages/Admin/Discount/DiscountCode";
 import Search from "./components/home/Search/Search";
 import BuyNowPage from "./components/pageProps/BuyNowPage";
+import Statistics from "./pages/Admin/Statistics/Statistics";
 
 const Layout = () => {
   return (
@@ -80,7 +81,7 @@ const router = createBrowserRouter(
       {/* Route Admin cần bảo vệ */}
       <Route path="/admin" element={<AdminRoute />}>
         <Route element={<Slidebar />}>
-          <Route path="dashboard" element={<ProductTable />} />
+          <Route path="dashboard" element={<Statistics/>} />
           <Route path="products" element={<ProductTable />} />
           <Route path="products/:id" element={<ProductDetail />} />
           <Route path="categories" element={<Categories />} />

@@ -232,13 +232,13 @@ const AISimilarProducts = ({
                   {/* Nhãn độ khớp - Sử dụng lớp động dựa trên phần trăm khớp */}
                   <div className="absolute top-3 right-3 z-10">
                     <span className={`bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
-                      Khớp {((1 - product.similarity) * 100).toFixed(0)}%
+                      Giống {((1 - product.similarity) * 100).toFixed(0)}%
                     </span>
                   </div>
 
                   {/* Nhãn sản phẩm */}
                   <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {product.newProduct && (
+                    {/* {product.newProduct && (
                       <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md">Mới</span>
                     )}
                     {product.bestSeller && (
@@ -246,7 +246,7 @@ const AISimilarProducts = ({
                     )}
                     {product.onSale && (
                       <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">Giảm Giá</span>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Lớp phủ hành động */}
@@ -360,7 +360,7 @@ const AISimilarProducts = ({
                     className="w-full h-56 object-cover"
                   />
                   <div className={`absolute top-3 right-3 bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
-                    Khớp {((1 - product.similarity) * 100).toFixed(0)}%
+                    Giống {((1 - product.similarity) * 100).toFixed(0)}%
                   </div>
                 </div>
                 <div className="p-4">

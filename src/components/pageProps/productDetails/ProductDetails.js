@@ -16,6 +16,7 @@ import AISimilarProducts from "./AISimilarProducts"; // Import the new component
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getProductsByImgUrls } from "../../../redux/service/productService";
+import findSimilarImages from "../../../redux/setup/ai";
 import { showSuccessToast, showErrorToast } from "../../../components/Toast/ToastNotification";
 // Add custom CSS for animations
 const styles = `
@@ -153,20 +154,8 @@ const ProductDetails = () => {
       setShowSimilarProducts(true);
       setErrorMessage("");
 
-      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: imageUrl }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
+      const data = await findSimilarImages(imageUrl);
+      
 
       if (!data.similar_images || data.similar_images.length === 0) {
         setErrorMessage("Không tìm thấy sản phẩm tương tự");
@@ -363,7 +352,7 @@ const ProductDetails = () => {
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold">AI Thị Giác</h3>
+                    <h3 className="text-lg font-semibold">Tìm Kiếm Sản Phẩm Tương Tự</h3>
                   </div>
                   <button
                     onClick={() => setShowAiPanel(false)}
