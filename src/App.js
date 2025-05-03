@@ -14,7 +14,7 @@ import FooterBottom from "./components/home/Footer/FooterBottom";
 import Header from "./components/home/Header/Header";
 import About from "./pages/About/About";
 import SignIn from "./pages/Account/SignIn";
-import OAuth2Callback from "./pages/Account/OAuth2Callback";
+// import OAuth2Callback from "./pages/Account/OAuth2Callback";
 import SignUp from "./pages/Account/SignUp";
 import Cart from "./pages/Cart/Cart";
 import Contact from "./pages/Contact/Contact";
@@ -40,6 +40,7 @@ import DiscountCode from "./pages/Admin/Discount/DiscountCode";
 import Search from "./components/home/Search/Search";
 import BuyNowPage from "./components/pageProps/BuyNowPage";
 import Statistics from "./pages/Admin/Statistics/Statistics";
+import VerifyOtpPage from "./pages/Account/VerifyOtpPage";
 
 const Layout = () => {
   return (
@@ -75,7 +76,8 @@ const router = createBrowserRouter(
 
       {/* Route đăng nhập & đăng ký */}
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />}  />
+      {/* <Route path="/oauth2/callback" element={<OAuth2Callback />} /> */}
       <Route path="/signin" element={<SignIn />} />
 
       {/* Route Admin cần bảo vệ */}

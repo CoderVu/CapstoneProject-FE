@@ -12,6 +12,9 @@ const authReducer = (state = initialState, action) => {
     case types.LOGIN_REQUEST:
       return {
         ...state,
+        isAuthenticated: false,
+        auth: null,
+        error: null,
         loading: true,
       };
     case types.LOGIN_SUCCESS:
@@ -21,7 +24,7 @@ const authReducer = (state = initialState, action) => {
         auth: action.payload,
         loading: false,
       };
-    case types.LOGIN_ERROR:
+    case types.LOGIN_FAILURE:
       return {
         ...state,
         error: action.payload,

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { oauth2LoginSuccess } from "../../redux/actions/authActions";
 import { fetchUserData } from "../../redux/service/authService";
 
-const OAuth2Callback = () => {
+const OAuth2Callbackk = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -49,4 +49,4 @@ const OAuth2Callback = () => {
     return <div>Loading...</div>;
 };
 
-export default OAuth2Callback;
+export default OAuth2Callbackk;

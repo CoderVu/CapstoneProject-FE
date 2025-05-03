@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
 import { FcGoogle } from "react-icons/fc"; 
-import { oauth2LoginSuccess } from "../../redux/actions/authActions";
-import { fetchUserData } from "../../redux/service/authService";
+
 const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +15,6 @@ const SignIn = () => {
   const navigate = useNavigate();
   const loading = useSelector((state) => state.auth.loading);
   const error = useSelector((state) => state.auth.error);
-  
   const auth = useSelector(state => state.auth.auth);
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -55,59 +53,14 @@ const SignIn = () => {
 
     if (phoneNumber && password) {
       dispatch(loginUser(phoneNumber, password));
-      console.log ("error", error)
     }
-
-
   };
+
   const handleGoogleLogin = () => {
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.innerWidth - width) / 2;
-    const top = window.screenY + (window.innerHeight - height) / 2;
-    
-    window.open(
-      "http://localhost:8080/oauth2/authorization/google",
-      // "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google",
-      "_blank",
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
-    
-
-  
-    const messageListener = async (event) => {
-      if (event.origin !== "http://localhost:8080") return;
-  
-      const { token } = event.data;
-  
-      if (token) {
-        try {
-          localStorage.setItem("token", token);
-  
-          const data = await fetchUserData(token);
-          if (data && data.data) {
-            const { id, email, fullName, phoneNumber, address, avatar, role } = data.data;
-            const user = { id, email, fullName, phoneNumber, address, avatar, role };
-            const isAdmin = role?.name === "ROLE_ADMIN";
-  
-            dispatch(oauth2LoginSuccess(user, token));
-            navigate(isAdmin ? "/admin/dashboard" : "/");
-          } else {
-            console.error("Invalid user data:", data);
-            navigate("/signin");
-          }
-        } catch (error) {
-          console.error("OAuth2 fetch error:", error);
-          navigate("/signin");
-        }
-      }
-  
-      window.removeEventListener("message", messageListener);
-    };
-  
-    window.addEventListener("message", messageListener);
+    // window.location.href = "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google";
+    window.location.href = "http://localhost:8080/oauth2/authorization/google"; // Localhost URL for testing
   };
-  
+
   return (
     <div className="w-full h-screen flex items-center justify-center">
       <div className="w-full lgl:w-1/2 h-full flex items-center justify-center">

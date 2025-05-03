@@ -7,7 +7,7 @@ const loginUserSuccess = (auth) => ({
 });
 
 const loginUserError = (error) => ({
-  type: types.LOGIN_ERROR,
+  type: types.LOGIN_FAILURE,
   payload: error,
 });
 
@@ -16,23 +16,20 @@ export const loginUser = (phoneNumber, password) => {
     dispatch({ type: types.LOGIN_REQUEST });
     try {
       const res = await loginUserService(phoneNumber, password);
-      if (res.statusCode === 200) {
-        const { data } = res;
-        localStorage.setItem("token", data.token);
-        dispatch(loginUserSuccess(data));
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } else {
-        dispatch(loginUserError(res.message));
-      }
+      console.log("Login dataa:", res);
+
+      const  dulieu  = res.data; 
+      localStorage.setItem("token", dulieu.token); 
+      dispatch(loginUserSuccess(dulieu)); 
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      const errorMessage =
-        error.response && error.response.data && error.response.message
-          ? error.response.message
-          : "An error occurred during login.";
+      const errorMessage = error?.response?.data?.message || "Login failed";
+      console.error("Login error:", errorMessage);
       dispatch(loginUserError(errorMessage));
     }
   };
 };
+
 
 export const fetchUserInfo = (token) => async (dispatch) => {
   dispatch({ type: types.LOGIN_REQUEST });
@@ -43,7 +40,7 @@ export const fetchUserInfo = (token) => async (dispatch) => {
       dispatch(loginUserSuccess(data));
     }
   } catch (error) {
-    dispatch({ type: types.LOGIN_ERROR, payload: error.message });
+    dispatch({ type: types.LOGIN_FAILURE, payload: error.message });
   }
 };
 
