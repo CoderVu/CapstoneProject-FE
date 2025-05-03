@@ -5,20 +5,17 @@ import { loginUser } from "../../redux/actions/authActions";
 import { FcGoogle } from "react-icons/fc"; 
 import { oauth2LoginSuccess } from "../../redux/actions/authActions";
 import { fetchUserData } from "../../redux/service/authService";
+import types from "../../redux/types";
 const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [errPhoneNumber, setErrPhoneNumber] = useState("");
   const [errPassword, setErrPassword] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loading = useSelector((state) => state.auth.loading);
   const error = useSelector((state) => state.auth.error);
-  
   const auth = useSelector(state => state.auth.auth);
-
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
@@ -31,11 +28,14 @@ const SignIn = () => {
       }
     }
   }, [isAuthenticated, auth, navigate]);
-
+  useEffect(() => {
+    // Reset auth state khi vào màn đăng nhập
+    dispatch({ type: types.LOGIN_RESET });
+  }, [dispatch]);
   const handlePhoneNumber = (e) => {
     setPhoneNumber(e.target.value);
     setErrPhoneNumber("");
-  };
+  };    
 
   const handlePassword = (e) => {
     setPassword(e.target.value);
@@ -67,8 +67,8 @@ const SignIn = () => {
     const top = window.screenY + (window.innerHeight - height) / 2;
     
     window.open(
-      "http://localhost:8080/oauth2/authorization/google",
-      // "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google",
+     // "http://localhost:8080/oauth2/authorization/google",
+       "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google",
       "_blank",
       `width=${width},height=${height},top=${top},left=${left}`
     );
@@ -194,7 +194,7 @@ const SignIn = () => {
                   </Link>
                 </p>
               </div>
-              {error && (
+              {!isAuthenticated && error && (
                 <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                   <span className="font-bold italic mr-1">!</span>
                   {error}

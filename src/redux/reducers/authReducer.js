@@ -30,6 +30,10 @@ const authReducer = (state = initialState, action) => {
         error: action.payload,
         loading: false,
       };
+    case types.LOGIN_RESET:
+      return {
+        ...initialState, 
+      };
     case types.LOGOUT:
       return {
         ...state,
