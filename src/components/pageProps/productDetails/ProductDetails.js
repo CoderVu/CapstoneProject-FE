@@ -228,7 +228,7 @@ const ProductDetails = () => {
       const formData = new FormData();
       formData.append('file', uploadedImage);
 
-      const response = await fetch('http://127.0.0.1:5000/api/find_similar', {
+      const response = await fetch('https://bee9-14-176-208-79.ngrok-free.app/api/find_similar', {
         method: 'POST',
         body: formData,
       });
