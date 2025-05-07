@@ -22,7 +22,7 @@ const PaymentGateway = () => {
     deliveryAddress: "",
     deliveryPhone: "",
     orderInfo: "Payment for order",
-    paymentMethod: "ZALOPAY", // Default to ZaloPay
+    paymentMethod: "",
   });
 
   // Calculate total amount
@@ -270,7 +270,7 @@ const PaymentGateway = () => {
               </div>
 
               {/* Coming Soon Options */}
-              <div className="border border-gray-200 rounded-lg p-5 flex items-center cursor-not-allowed opacity-60">
+              {/* <div className="border border-gray-200 rounded-lg p-5 flex items-center cursor-not-allowed opacity-60">
                 <div className="flex-shrink-0 mr-4 bg-gray-100 p-3 rounded-lg">
                   <FaCreditCard className="w-10 h-10 text-gray-400" />
                 </div>
@@ -283,7 +283,7 @@ const PaymentGateway = () => {
                 <div className="ml-4">
                   <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="mt-8 bg-blue-50 p-4 rounded-lg">

@@ -15,8 +15,8 @@ const Home = () => {
       <div className="max-w-container mx-auto px-4">
         {/* AI Match section */}
         <div className="max-w-container mx-auto px-4 pt-8 pb-8">
-        <SurveyAIRecommend />
-      </div>
+          {/* <SurveyAIRecommend /> */}
+        </div>
         {/* Category section */}
         <div className="py-10">
           <CategorySection />

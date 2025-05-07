@@ -23,7 +23,7 @@ const ORDER_STATUS = {
   PROCESSING: { color: "bg-blue-100 text-blue-800", text: "Đang xử lý" },
   SHIPPED: { color: "bg-indigo-100 text-indigo-800", text: "Đang giao hàng" },
   DELIVERED: { color: "bg-green-100 text-green-800", text: "Đã giao hàng" },
-  CANCELLED: { color: "bg-red-100 text-red-800", text: "Đã hủy" },
+  CANCELED: { color: "bg-red-100 text-red-800", text: "Đã hủy" },
   DEFAULT: { color: "bg-gray-100 text-gray-800", text: "Không xác định" },
 };
 
@@ -109,16 +109,27 @@ const OrderList = () => {
   // Handle updating the order status
   const handleUpdateStatus = async () => {
     try {
+      // Kiểm tra nếu trạng thái hiện tại là "CANCLED"
+      if (statusDialog.currentStatus === "CANCELED") {
+        setStatusDialog(prev => ({
+          ...prev,
+          error: "Không thể cập nhật trạng thái cho đơn hàng đã bị hủy."
+        }));
+        return;
+      }
+
+      // Kiểm tra nếu trạng thái mới giống trạng thái hiện tại
       if (statusDialog.currentStatus === statusDialog.newStatus) {
         setStatusDialog(prev => ({
           ...prev,
-          error: "Vui lòng chọn trạng thái khác với trạng thái hiện tại"
+          error: "Vui lòng chọn trạng thái khác với trạng thái hiện tại."
         }));
         return;
       }
 
       setStatusDialog(prev => ({ ...prev, isUpdating: true, error: null }));
 
+      // Gửi yêu cầu cập nhật trạng thái
       await updateOrderStatus(statusDialog.orderId, statusDialog.newStatus);
 
       setStatusDialog(prev => ({
@@ -128,7 +139,7 @@ const OrderList = () => {
         error: null
       }));
 
-      // Refresh the order list after 1 second to show success message
+      // Làm mới danh sách đơn hàng sau khi cập nhật thành công
       setTimeout(() => {
         loadOrders();
         closeStatusDialog();
@@ -143,7 +154,6 @@ const OrderList = () => {
       }));
     }
   };
-
   // Load orders từ API chỉ sử dụng phân trang
   const loadOrders = async () => {
     try {
@@ -155,7 +165,8 @@ const OrderList = () => {
         endDate: dateRange.endDate
       } : {};
 
-      await dispatch(fetchOrders(currentPage, itemsPerPage, filters));
+    dispatch(fetchOrders(currentPage, itemsPerPage, filters));
+    
     } catch (error) {
       console.error("Failed to load orders:", error);
     } finally {
@@ -167,6 +178,7 @@ const OrderList = () => {
   const handleRefresh = () => {
     loadOrders();
   };
+
 
   // Xử lý khi mở/đóng chi tiết đơn hàng
   const toggleOrderDetails = (orderId) => {
@@ -351,7 +363,6 @@ const OrderList = () => {
                           <span>{statusDialog.error}</span>
                         </div>
                       )}
-
                       {statusDialog.success && (
                         <div className="mb-4 p-2 bg-green-50 text-green-700 text-sm rounded-md border border-green-200 flex items-start">
                           <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
@@ -752,7 +763,7 @@ const OrderList = () => {
         {/* Always show pagination regardless of page count */}
         <Pagination
           currentPage={currentPage}
-          totalPages={displayTotalPages || 1} // Nếu không có trang, hiển thị ít nhất 1 trang
+          totalPages={displayTotalPages || 1} 
           onPageChange={handlePageChange}
           itemsPerPage={itemsPerPage}
           totalItems={displayTotalItems}

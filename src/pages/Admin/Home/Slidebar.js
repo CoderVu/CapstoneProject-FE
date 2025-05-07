@@ -10,8 +10,6 @@ import {
   BarChart2,
   Settings,
   Gift,
-  Menu,
-  X,
   Moon,
   Sun,
   Send,
@@ -21,13 +19,13 @@ import { ChatProvider } from "../../../components/context/showChat";
 import ChatButton from "../../../components/chat/ChatButton";
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // Sidebar mặc định đóng
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
   const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
   const auth = useSelector((state) => state.auth.auth);
 
-  // Check for system/saved dark mode preference on mount
+  // Kiểm tra chế độ tối từ hệ thống hoặc localStorage
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode") === "true";
     const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -40,7 +38,7 @@ const Sidebar = () => {
     }
   }, []);
 
-  // Apply dark mode changes whenever isDarkMode changes
+  // Áp dụng thay đổi chế độ tối
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -51,17 +49,17 @@ const Sidebar = () => {
     }
   }, [isDarkMode]);
 
-  // Toggle dark mode
+  // Toggle chế độ tối
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Handle mobile menu toggle
+  // Toggle sidebar
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  // Menu items configuration
+  // Cấu hình menu
   const menuItems = [
     { path: "/admin/dashboard", name: "Tổng quan", icon: Home },
     { path: "/admin/products", name: "Sản phẩm", icon: Package },
@@ -75,127 +73,44 @@ const Sidebar = () => {
     { path: "/admin/settings", name: "Cài đặt", icon: Settings },
   ];
 
-  // Làm cho các mã màu dễ kiểm tra hơn
-  const lightModeClasses = {
-    nav: "bg-white border-gray-200",
-    sidebar: "bg-white border-gray-200",
-    text: "text-gray-900",
-    hoverBg: "hover:bg-gray-100",
-    activeBg: "bg-gray-100",
-    iconColor: "text-gray-500",
-    activeIconColor: "text-blue-600",
-    mainContent: "bg-white",
-  };
-
-  const darkModeClasses = {
-    nav: "bg-gray-800 border-gray-700",
-    sidebar: "bg-gray-800 border-gray-700",
-    text: "text-white",
-    hoverBg: "hover:bg-gray-700",
-    activeBg: "bg-gray-700",
-    iconColor: "text-gray-400",
-    activeIconColor: "text-blue-400",
-    mainContent: "bg-gray-800",
-  };
-
-  // Chọn theme dựa trên trạng thái dark mode
-  const theme = isDarkMode ? darkModeClasses : lightModeClasses;
-
   return (
     <ChatProvider>
-      <>
-        {/* Top Navigation */}
-        <nav
-          className={`fixed top-0 z-50 w-full ${theme.nav} border-b shadow-sm transition-colors duration-200`}
+      <div className="flex h-screen">
+        {/* Sidebar */}
+        <aside
+          onMouseEnter={() => setIsOpen(true)} // Mở khi hover
+          onMouseLeave={() => setIsOpen(false)} // Đóng khi rời chuột
+          className={`fixed top-0 left-0 h-full bg-white dark:bg-gray-800 border-r dark:border-gray-700 transition-all duration-300 ${
+            isOpen ? "w-64" : "w-16"
+          }`}
         >
-          <div className="px-4 py-3 lg:px-5 lg:pl-3 flex justify-between items-center">
-            {/* Left Section */}
-            <div className="flex items-center">
-              <button
-                onClick={toggleSidebar}
-                type="button"
-                className={`p-2 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                } rounded-lg ${theme.hoverBg} focus:outline-none focus:ring-2 focus:ring-gray-200 ${
-                  isDarkMode ? "dark:focus:ring-gray-600" : ""
-                }`}
-                aria-expanded={isOpen}
-              >
-                <span className="sr-only">Điều chỉnh Sidebar</span>
-                {isOpen ? <X className="w-6 h-6 sm:hidden" /> : <Menu className="w-6 h-6" />}
-              </button>
-              <a href="/" className="flex items-center ml-2">
-                <img
-                  src="https://flowbite.com/docs/images/logo.svg"
-                  className="h-8 mr-3"
-                  alt="Logo"
-                />
-                <span
-                  className={`text-xl font-semibold ${
-                    isDarkMode ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  Shop
-                </span>
-              </a>
+          <div className="flex flex-col h-full">
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center justify-center h-24 border-b dark:border-gray-700">
+              <img
+                className="w-12 h-12 rounded-full border-2 border-blue-500"
+                src={
+                  isLoggedIn && auth?.avatar
+                    ? auth.avatar
+                    : "https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                }
+                alt="User Avatar"
+              />
+              {isOpen && (
+                <div className="mt-2 text-center">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {isLoggedIn ? auth?.fullName || "Admin" : "Guest"}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {isLoggedIn ? "Quản trị viên" : "Khách"}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Profile Section */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                } rounded-lg ${theme.hoverBg} focus:outline-none`}
-                aria-label="Chế độ tối"
-              >
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-              <div className="flex items-center space-x-2">
-                {isLoggedIn && auth?.avatar ? (
-                  <img
-                    className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 transition-all duration-200"
-                    src={auth.avatar} // Dynamically load the user's avatar
-                    alt="User Avatar"
-                  />
-                ) : (
-                  <img
-                    className="w-8 h-8 rounded-full border-2 border-transparent hover:border-blue-500 transition-all duration-200"
-                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" // Default avatar
-                    alt="Default Avatar"
-                  />
-                )}
-                <span
-                  className={`hidden md:inline text-sm font-medium ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {isLoggedIn ? auth?.fullName || "Admin" : "Guest"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {/* Sidebar and Main Content */}
-        <div className="flex w-full">
-          {/* Mobile Backdrop */}
-          {isOpen && (
-            <div
-              className="fixed inset-0 bg-gray-900 bg-opacity-50 z-30 sm:hidden"
-              onClick={toggleSidebar}
-              aria-hidden="true"
-            ></div>
-          )}
-
-          {/* Sidebar */}
-          <aside
-            className={`fixed top-0 left-0 z-40 w-64 h-full pt-20 ${theme.sidebar} border-r transition-all duration-300 ease-in-out ${
-              isOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0 sm:w-20"
-            }`}
-          >
-            <div className="h-full px-3 pb-4 overflow-y-auto">
-              <ul className="space-y-2 font-medium">
+            {/* Menu Items */}
+            <nav className="flex-1 overflow-y-auto">
+              <ul className="space-y-2 p-2">
                 {menuItems.map((item) => {
                   const IconComponent = item.icon;
                   const isActive = location.pathname === item.path;
@@ -203,44 +118,64 @@ const Sidebar = () => {
                     <li key={item.path}>
                       <NavLink
                         to={item.path}
-                        className={({ isActive }) => `
-                        flex items-center p-2 ${theme.text} rounded-lg
-                        ${theme.hoverBg}
-                        ${isActive ? theme.activeBg : ""}
-                        transition-all duration-200
-                      `}
+                        className={`flex items-center p-2 rounded-lg transition-all ${
+                          isActive
+                            ? "bg-gray-100 dark:bg-gray-700 text-blue-600"
+                            : "text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
                       >
-                        <IconComponent
-                          className={`w-5 h-5 transition duration-75 ${
-                            isActive ? theme.activeIconColor : theme.iconColor
-                          }`}
-                        />
-                        <span className={`ml-3 ${!isOpen ? "sm:hidden" : ""}`}>{item.name}</span>
+                        <IconComponent className="w-5 h-5" />
+                        <span
+                          className={`ml-3 ${
+                            isOpen ? "block" : "hidden"
+                          } transition-all`}
+                        >
+                          {item.name}
+                        </span>
                       </NavLink>
                     </li>
                   );
                 })}
               </ul>
-            </div>
-          </aside>
+            </nav>
 
-          {/* Main Content */}
-          <main
-            className={`w-full transition-all duration-300 ease-in-out ${
-              isOpen ? "sm:ml-64" : "sm:ml-20"
-            } p-4 pt-20`}
-          >
-            <div
-              className={`p-4 ${theme.mainContent} rounded-lg shadow-sm min-h-[calc(100vh-6rem)]`}
-            >
-              <Outlet />
+            {/* Dark Mode Toggle */}
+            <div className="p-2 border-t dark:border-gray-700">
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center justify-center w-full p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5 text-yellow-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-500" />
+                )}
+                <span
+                  className={`ml-3 ${
+                    isOpen ? "block" : "hidden"
+                  } transition-all`}
+                >
+                  {isDarkMode ? "Chế độ sáng" : "Chế độ tối"}
+                </span>
+              </button>
             </div>
-          </main>
-        </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main
+          className={`flex-1 bg-gray-50 dark:bg-gray-900 p-4 transition-all duration-300 ${
+            isOpen ? "ml-64" : "ml-16"
+          }`}
+        >
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <Outlet />
+          </div>
+        </main>
 
         {/* Chat Button */}
         <ChatButton />
-      </>
+      </div>
     </ChatProvider>
   );
 };

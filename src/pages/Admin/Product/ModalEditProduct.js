@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import axios from "../../../redux/setup/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductDetail } from "../../../redux/actions/productActions";
@@ -6,15 +6,17 @@ import { getCategories } from "../../../redux/actions/categoryAction";
 import { getAllBrands } from "../../../redux/actions/brandAction";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Save, X, Plus, Trash2, Tag, Package, DollarSign,
-  Image, Box, Check, Truck, Star, ShoppingBag, Upload
+    Save, X, Plus, Trash2, Tag, Package, DollarSign,
+    Image, Box, Check, Truck, Star, ShoppingBag, Upload
 } from "lucide-react";
 
 import { showSuccessToast, showErrorToast } from "../../../components/Toast/ToastNotification";
+import { getAllColors } from "../../../redux/actions/colorAction";
 
 const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
     const categories = useSelector((state) => state.category.categories);
     const brands = useSelector((state) => state.brand.brands);
+    const { colors } = useSelector((state) => state.color);
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("basic");
@@ -64,11 +66,17 @@ const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
     }, [product]);
 
     useEffect(() => {
-       if (isOpen) {
-           dispatch(getCategories());
-           dispatch(getAllBrands());
-       }
+        if (isOpen) {
+            dispatch(getCategories());
+            dispatch(getAllBrands());
+            dispatch(getAllColors());
+        }
     }, [isOpen, dispatch]);
+
+    useEffect(() => {
+        // Log danh sách màu sắc sau khi được lấy từ Redux store
+        console.log("Danh sách màu sắc:", colors);
+    }, [colors]);
 
     useEffect(() => {
         // Create preview URLs for new image uploads
@@ -200,11 +208,10 @@ const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
         <button
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-                isActive
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-600 hover:bg-gray-100"
-            }`}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive
+                ? "bg-blue-50 text-blue-600 font-medium"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
         >
             <Icon className={`mr-2 h-4 w-4 ${isActive ? "text-blue-500" : "text-gray-500"}`} />
             {label}
@@ -329,11 +336,10 @@ const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
                                             {["male", "female", "kids"].map((gender) => (
                                                 <label
                                                     key={gender}
-                                                    className={`flex items-center justify-center p-2.5 border rounded-lg cursor-pointer transition-colors ${
-                                                        productData.gender === gender
-                                                            ? "bg-blue-50 border-blue-500 text-blue-700"
-                                                            : "bg-white border-gray-300 hover:bg-gray-50"
-                                                    }`}
+                                                    className={`flex items-center justify-center p-2.5 border rounded-lg cursor-pointer transition-colors ${productData.gender === gender
+                                                        ? "bg-blue-50 border-blue-500 text-blue-700"
+                                                        : "bg-white border-gray-300 hover:bg-gray-50"
+                                                        }`}
                                                 >
                                                     <input
                                                         type="radio"
@@ -483,24 +489,28 @@ const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <input
-                                                                type="text"
+                                                            <select
                                                                 value={image.color}
                                                                 onChange={(e) => handleExistingImageColorChange(index, e)}
-                                                                placeholder="Màu sắc"
-                                                                className="w-full p-1.5 text-sm border border-gray-300 rounded"
-                                                            />
+                                                                className="p-2 border border-gray-300 rounded-lg w-full bg-white"
+                                                            >
+                                                                <option value="">-- Chọn màu sắc --</option>
+                                                                {colors.map((color) => (
+                                                                    <option key={color.id} value={color.color}>
+                                                                        {color.color}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
 
                                                             <div className="flex space-x-1">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleSetMainImage(image.id)}
                                                                     disabled={productData.mainImageId === image.id}
-                                                                    className={`flex-1 p-1 text-xs rounded ${
-                                                                        productData.mainImageId === image.id
-                                                                            ? "bg-blue-100 text-blue-600 cursor-default"
-                                                                            : "bg-blue-500 text-white hover:bg-blue-600"
-                                                                    }`}
+                                                                    className={`flex-1 p-1 text-xs rounded ${productData.mainImageId === image.id
+                                                                        ? "bg-blue-100 text-blue-600 cursor-default"
+                                                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                                                        }`}
                                                                 >
                                                                     <Check className="w-3 h-3 mx-auto" />
                                                                 </button>
@@ -566,13 +576,18 @@ const ModalUpdateProduct = ({ isOpen, onRequestClose, product }) => {
                                                         </div>
                                                     </div>
 
-                                                    <input
-                                                        type="text"
-                                                        value={input.color}
-                                                        onChange={(e) => handleColorChange(index, e)}
-                                                        placeholder="Màu sắc"
-                                                        className="p-2 border border-gray-300 rounded-lg sm:w-1/3"
-                                                    />
+                                                        <select
+                                                            value={input.color}
+                                                            onChange={(e) => handleColorChange(index, e)}
+                                                            className="p-2 border border-gray-300 rounded-lg sm:w-1/3 bg-white"
+                                                        >
+                                                            <option value="">-- Chọn màu sắc --</option>
+                                                            {colors.map((color) => (
+                                                                <option key={color.id} value={color.color}>
+                                                                    {color.color}
+                                                                </option>
+                                                            ))}
+                                                        </select>
 
                                                     <button
                                                         type="button"

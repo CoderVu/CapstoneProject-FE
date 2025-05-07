@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Bar, Pie } from "react-chartjs-2";
+import { Line, Pie } from "react-chartjs-2";
 import axios from "../../../redux/setup/axios";
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement } from "chart.js";
+import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement } from "chart.js";
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
+ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 const Statistics = () => {
   const [statistics, setStatistics] = useState(null);
@@ -49,11 +49,16 @@ const Statistics = () => {
     labels: sortedOrdersByDate.map(([date]) => date),
     datasets: [
       {
-        label: "Orders by Date",
+        label: "Đơn hàng theo ngày",
+      
         data: sortedOrdersByDate.map(([, count]) => count),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
+        pointBackgroundColor: "rgba(75, 192, 192, 1)",
+        pointBorderColor: "#fff",
+        tension: 0.4,
+        fill: true,
       },
     ],
   };
@@ -91,10 +96,29 @@ const Statistics = () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Bar Chart for Orders by Date */}
+          {/* Line Chart for Orders by Date */}
           <div>
             <h2 className="text-lg font-semibold mb-2">Đơn hàng theo ngày</h2>
-            <Bar data={ordersByDateData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />
+            <Line
+              data={ordersByDateData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { position: "top" },
+                },
+                scales: {
+                  x: {
+                    ticks: {
+                      maxRotation: 45,
+                      minRotation: 0,
+                    },
+                  },
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
+              }}
+            />
           </div>
 
           {/* Pie Chart for Orders by Status */}
