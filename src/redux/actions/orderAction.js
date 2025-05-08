@@ -2,8 +2,9 @@ import types from "../types";
 import { fetchAllOrder } from "../service/orderService";
 
 // Action to dispatch when fetching orders starts
-const fetchOrdersRequest = () => ({
+const fetchOrdersRequest = (page, size) => ({
   type: types.FETCH_ORDER_REQUEST,
+  payload: { page, size },
 });
 
 // Action to dispatch when fetching orders fails

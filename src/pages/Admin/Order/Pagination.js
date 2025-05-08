@@ -16,8 +16,14 @@ const Pagination = ({
   showItemsPerPage = true,
 }) => {
   // Start index and end index for displaying "showing X - Y of Z items" text
-  const startIndex = totalItems > 0 ? currentPage * itemsPerPage + 1 : 0;
-  const endIndex = Math.min((currentPage + 1) * itemsPerPage, totalItems);
+  let startIndex, endIndex;
+  if (totalItems === 0) {
+    startIndex = 0;
+    endIndex = 0;
+  } else {
+    startIndex = currentPage * itemsPerPage + 1;
+    endIndex = Math.min((currentPage + 1) * itemsPerPage, totalItems);
+  }
 
   // Function to render page numbers, with logic to handle many pages
   const renderPageNumbers = () => {
