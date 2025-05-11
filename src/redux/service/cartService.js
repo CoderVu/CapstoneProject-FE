@@ -1,7 +1,7 @@
 import axios from "../setup/axios";
 import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
 
-const addToCart = async (productId, quantity, size, color) => {
+const addToCart = async (productId, quantity, size, color, price) => {
     try {
         const response = await axios({
             method: 'POST',
@@ -11,6 +11,7 @@ const addToCart = async (productId, quantity, size, color) => {
                 quantity,
                 size,
                 color,
+                price,
             },
         });
         showSuccessToast(response.data.message);

@@ -62,73 +62,78 @@ const Breadcrumbs = ({ prevLocation, title, gender }) => {
   };
 
   return (
-    <div className="w-full py-6 md:py-8 flex flex-col gap-4">
+    <div className="w-full py-4 sm:py-6 md:py-8 flex flex-col gap-3 sm:gap-4 md:gap-6 bg-gradient-to-b from-white to-gray-50">
       {title && (
         <motion.h1
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-3xl md:text-4xl text-gray-800 font-bold"
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-800 font-bold tracking-tight px-2 sm:px-4"
         >
           {title}
         </motion.h1>
       )}
 
-      <div className="flex items-center flex-wrap">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="flex items-center flex-wrap bg-white rounded-lg shadow-sm p-2 sm:p-3 md:p-4 mx-2 sm:mx-4"
+      >
         {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={index}>
             {index > 0 && (
-              <span className="mx-2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <span className="mx-2 sm:mx-3 text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </span>
             )}
 
             {index === breadcrumbs.length - 1 ? (
-              <span className="text-sm md:text-base font-medium text-blue-600">
+              <span className="text-xs sm:text-sm md:text-base font-semibold text-blue-600 bg-blue-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                 {crumb.name}
               </span>
             ) : (
               <Link
                 to={crumb.path}
-                className="text-sm md:text-base text-gray-500 hover:text-blue-600 hover:underline transition-colors"
+                className="text-xs sm:text-sm md:text-base text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-all duration-200"
               >
                 {crumb.name}
               </Link>
             )}
           </React.Fragment>
         ))}
-      </div>
+      </motion.div>
 
       {gender && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-2"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-2 px-2 sm:px-4"
         >
-          <div className="inline-block bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg px-4 py-2">
-            <div className="flex items-center gap-2">
+          <div className="inline-block bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3">
               {gender === "male" && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               )}
 
               {gender === "female" && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               )}
 
               {gender === "kids" && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               )}
 
-              <span className="text-sm md:text-base font-semibold text-gray-700">
+              <span className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">
                 {getGenderText(gender)}
               </span>
             </div>

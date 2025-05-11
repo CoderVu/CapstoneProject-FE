@@ -42,6 +42,7 @@ import BuyNowPage from "./components/pageProps/BuyNowPage";
 import Statistics from "./pages/Admin/Statistics/Statistics";
 import VerifyOtpPage from "./pages/Account/VerifyOtpPage";
 
+
 const Layout = () => {
   return (
     <div className="wider-container">
@@ -61,7 +62,7 @@ const router = createBrowserRouter(
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/shop" element={<Shop />} />
-        <Route path ="/search" element = {<Search />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/offer" element={<Offer />} />
@@ -70,8 +71,9 @@ const router = createBrowserRouter(
         <Route path="/favorite" element={<Favorites />} />
         <Route path="/buy-now" element={<BuyNowPage />} />
         <Route path="/proceed-to-checkout" element={<Payment />} />
-        <Route path="/order-history" element= {<OrderHistory />} />
+        <Route path="/orders" element={<OrderHistory />} />
         <Route path="/profile" element={<UserProfile />} />
+        {/* <Route path="/image-editor" element={<ImageEditor />} /> */}
       </Route>
 
       {/* Route đăng nhập & đăng ký */}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Home,
   Package,
@@ -14,14 +14,19 @@ import {
   Sun,
   Send,
   MessageCircle,
+  LogOut,
 } from "lucide-react";
 import { ChatProvider } from "../../../components/context/showChat";
 import ChatButton from "../../../components/chat/ChatButton";
+import OrderNotification from "../../../components/Toast/OrderNotification";
+import { logoutUser } from "../../../redux/actions/authActions";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false); // Sidebar mặc định đóng
   const [isDarkMode, setIsDarkMode] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth.isAuthenticated);
   const auth = useSelector((state) => state.auth.auth);
 
@@ -58,6 +63,11 @@ const Sidebar = () => {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate('/signin');
+  };  
 
   // Cấu hình menu
   const menuItems = [
@@ -159,6 +169,23 @@ const Sidebar = () => {
                 </span>
               </button>
             </div>
+
+            {/* Logout Button */}
+            <div className="p-2 border-t dark:border-gray-700">
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span
+                  className={`ml-3 ${
+                    isOpen ? "block" : "hidden"
+                  } transition-all`}
+                >
+                  Đăng xuất
+                </span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -172,6 +199,9 @@ const Sidebar = () => {
             <Outlet />
           </div>
         </main>
+
+        {/* Order Notifications */}
+        <OrderNotification />
 
         {/* Chat Button */}
         <ChatButton />

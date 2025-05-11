@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FaStar, FaRegStar, FaShoppingCart, FaEye, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaStar, FaRegStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+
 import { motion } from "framer-motion";
 import { addFavorite, removeFavorite } from "../../../redux/service/userService";
 
@@ -39,7 +39,6 @@ const formatPrice = (price) => {
 };
 
 const Product = (props) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(props.isFavorite || false);
@@ -111,7 +110,7 @@ const Product = (props) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+      className="group relative bg-white dark:bg-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full"
       onClick={handleProductDetails}
     >
       {/* Product Image Container */}
@@ -137,7 +136,7 @@ const Product = (props) => {
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           {props.badge && (
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 shadow-sm">
               New
             </span>
           )}
@@ -145,7 +144,7 @@ const Product = (props) => {
 
         <div className="absolute top-3 right-3 z-10">
           {discountPercentage > 0 && (
-            <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+            <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 shadow-sm">
               -{discountPercentage}%
             </span>
           )}
@@ -154,7 +153,7 @@ const Product = (props) => {
         {/* Favorite Button - Always visible with opacity transition */}
         <button
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 z-20 p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-sm transition-all duration-300 hover:bg-white dark:hover:bg-gray-700 opacity-70 group-hover:opacity-100"
+          className="absolute top-3 right-3 z-20 p-2 bg-white/80 dark:bg-gray-800/80 shadow-sm transition-all duration-300 hover:bg-white dark:hover:bg-gray-700 opacity-70 group-hover:opacity-100"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           {isFavorite ? (
@@ -194,22 +193,22 @@ const Product = (props) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col gap-2">
-        {/* Product Name */}
+      <div className="p-4 flex flex-col gap-2 h-[180px]">
+        {/* Product Name - Fixed height */}
         <h2
-          className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors h-10"
           title={props.productName}
         >
           {props.productName}
         </h2>
 
-        {/* Colors - Showing exactly 3 colors with +n more if needed */}
+        {/* Colors - Fixed height */}
         {uniqueColors.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1">
+          <div className="flex items-center gap-1.5 h-6">
             {uniqueColors.slice(0, 3).map((color, index) => (
               <div key={index} className="flex flex-col items-center">
                 <span
-                  className="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800"
+                  className="inline-block w-4 h-4 border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800"
                   style={{ backgroundColor: color }}
                   title={color}
                 ></span>
@@ -223,13 +222,13 @@ const Product = (props) => {
           </div>
         )}
 
-        {/* Rating Stars */}
-        <div className="mt-1">
+        {/* Rating Stars - Fixed height */}
+        <div className="h-5">
           <RatingStars rating={props.rating} totalRate={props.totalRate} />
         </div>
 
-        {/* Price & Sale */}
-        <div className="mt-1 flex items-baseline gap-2">
+        {/* Price & Sale - Fixed height */}
+        <div className="h-6 flex items-baseline gap-2">
           {props.discountPrice ? (
             <>
               <span className="text-xs text-gray-400 line-through font-normal">
@@ -246,9 +245,9 @@ const Product = (props) => {
           )}
         </div>
 
-        {/* Sales Info */}
+        {/* Sales Info - Fixed height */}
         {props.totalSold > 0 && (
-          <div className="mt-1 flex items-center justify-between">
+          <div className="h-5 flex items-center justify-between">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Đã bán: {props.totalSold}
             </span>

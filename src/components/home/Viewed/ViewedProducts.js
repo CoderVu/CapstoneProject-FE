@@ -54,12 +54,10 @@ const ViewedProducts = () => {
 
   return (
     <div className="w-full pb-16">
-      <div className="mb-8 relative">
-        <h2 className="text-2xl font-bold text-center uppercase relative inline-block">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-center uppercase text-gray-800">
           Sản phẩm đã xem
-          {/* <div className="absolute left-1/2 bottom-0 w-20 h-1 bg-primeColor transform -translate-x-1/2 mt-1"></div> */}
         </h2>
-        <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-200 -z-10 transform -translate-y-1/2"></div>
       </div>
 
       {/* Responsive Grid */}
@@ -77,7 +75,7 @@ const ViewedProducts = () => {
               badge={product.newProduct ? "New" : ""}
               rating={product.rate?.rating}
               totalRate={product.rate?.totalRate}
-              totalSold="100"
+              totalSold={product.sold}
             />
           </div>
         ))}

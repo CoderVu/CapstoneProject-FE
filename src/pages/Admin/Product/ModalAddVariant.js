@@ -5,7 +5,7 @@ import { addVariantProduct } from "../../../redux/service/productService";
 import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Save, X, Plus, Trash2, Tag, Package, DollarSign, LayoutGrid
+    Save, X, Plus, Trash2, Tag, Package, DollarSign, LayoutGrid
 } from "lucide-react";
 
 const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
@@ -33,7 +33,7 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
 
     // Add a new variant row
     const addVariantRow = () => {
-        setVariantList([...variantList, { sizeName: "", colorName: "", quantity: 0, price: 0 }]);
+        setVariantList([...variantList, { sizeName: "", colorName: "", quantity: 0 }]);
     };
 
     // Remove a variant row
@@ -152,7 +152,7 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
                                                     </select>
                                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                                                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                                         </svg>
                                                     </div>
                                                 </div>
@@ -176,7 +176,7 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
                                                     </select>
                                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                                                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                                         </svg>
                                                     </div>
                                                 </div>
@@ -209,25 +209,6 @@ const ModalAddVariant = ({ isOpen, onRequestClose, onSubmit, productId }) => {
                                                     >
                                                         +
                                                     </button>
-                                                </div>
-                                            </div>
-
-                                            {/* Price Input */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Giá</label>
-                                                <div className="relative">
-                                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                        <DollarSign className="w-4 h-4 text-gray-500" />
-                                                    </div>
-                                                    <input
-                                                        type="number"
-                                                        name="price"
-                                                        value={variant.price}
-                                                        onChange={(e) => handleChange(index, e)}
-                                                        required
-                                                        min="0"
-                                                        className="w-full pl-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                    />
                                                 </div>
                                             </div>
                                         </div>

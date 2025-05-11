@@ -29,36 +29,38 @@ const FavoritesList = ({ favoriteProducts, onRemoveFavorite }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-4"
+      className="w-full py-8 flex justify-center items-center"
     >
-      <div className="w-20 h-20 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 mb-6">
-        <FaHeart className="text-red-500 text-4xl opacity-70" />
-      </div>
+      <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm max-w-md text-center">
+        <div className="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 mb-4">
+          <FaHeart className="text-red-500 text-3xl opacity-70" />
+        </div>
 
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-        Chưa có sản phẩm yêu thích nào
-      </h3>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
+          Chưa có sản phẩm yêu thích nào
+        </h3>
 
-      <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8">
-        Hãy thêm sản phẩm vào danh sách yêu thích của bạn để dễ dàng theo dõi và mua sau này.
-      </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Hãy thêm sản phẩm vào danh sách yêu thích của bạn để dễ dàng theo dõi và mua sau này.
+        </p>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          to="/"
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-        >
-          <FaSearch className="text-sm" />
-          <span>Khám phá sản phẩm</span>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primeColor hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+          >
+            <FaSearch className="text-sm" />
+            <span>Khám phá sản phẩm</span>
+          </Link>
 
-        <Link
-          to="/cart"
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-        >
-          <FaShoppingBag className="text-sm" />
-          <span>Xem giỏ hàng</span>
-        </Link>
+          <Link
+            to="/cart"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white text-primeColor font-medium rounded-md border border-primeColor hover:bg-primeColor hover:text-white transition-colors"
+          >
+            <FaShoppingBag className="text-sm" />
+            <span>Xem giỏ hàng</span>
+          </Link>
+        </div>
       </div>
     </motion.div>
   );
@@ -66,16 +68,16 @@ const FavoritesList = ({ favoriteProducts, onRemoveFavorite }) => {
   // Compact Search Bar
   const SearchBar = () => (
     <div className="flex justify-end mb-4">
-      <div className="relative flex items-center max-w-xs bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+      <div className="relative flex items-center max-w-xs bg-white dark:bg-gray-800 rounded-md shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
         <div className="pl-3 pr-1 text-gray-500 dark:text-gray-400">
-          <FaSearch className="text-xs" />
+          <FaSearch className="text-sm" />
         </div>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Tìm sản phẩm..."
-          className="w-full py-1.5 px-1 text-sm bg-transparent focus:outline-none text-gray-700 dark:text-gray-200"
+          className="w-full py-2 px-2 text-sm bg-transparent focus:outline-none text-gray-700 dark:text-gray-200"
         />
       </div>
     </div>
@@ -86,46 +88,31 @@ const FavoritesList = ({ favoriteProducts, onRemoveFavorite }) => {
   }
 
   return (
-    <div className="space-y-4">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex flex-col md:flex-row md:items-center md:justify-between gap-2"
-      >
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <FaHeart className="text-red-500" />
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+    <div className="w-full pb-16">
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <FaHeart className="text-red-500 text-xl" />
+            <h2 className="text-2xl font-bold text-gray-800">
               Sản phẩm yêu thích ({favoriteProducts.length})
             </h2>
           </div>
-
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Danh sách sản phẩm bạn đã đánh dấu là yêu thích
-          </p>
+          <SearchBar />
         </div>
-
-        <SearchBar />
-      </motion.div>
+      </div>
 
       {filteredProducts.length === 0 && searchTerm && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="py-6 text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm"
-        >
-          <p className="text-gray-600 dark:text-gray-400">
-            Không tìm thấy sản phẩm nào phù hợp với "{searchTerm}"
-          </p>
-        </motion.div>
+        <div className="w-full py-8 flex justify-center items-center">
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-md max-w-md">
+            <p className="text-gray-600 text-center">
+              Không tìm thấy sản phẩm nào phù hợp với "{searchTerm}"
+            </p>
+          </div>
+        </div>
       )}
 
       <AnimatePresence>
-        <motion.div
-          layout
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {filteredProducts.map((product) => (
             <motion.div
               key={product.id}
@@ -138,25 +125,27 @@ const FavoritesList = ({ favoriteProducts, onRemoveFavorite }) => {
               }}
               exit={{ opacity: 0, scale: 0.8, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="h-full relative group"
+              className="transform transition duration-300 hover:-translate-y-1 hover:shadow-lg relative group h-full"
             >
-              <Product
-                id={product.id}
-                img={product.mainImage?.path}
-                secondaryImg={product.images[0]?.path}
-                productName={product.productName}
-                price={product.price}
-                discountPrice={product.discountPrice || null}
-                colors={product.variants?.map((variant) => variant.color) || []}
-                badge={product.newProduct ? "New" : ""}
-                rating={product.rate?.rating || 0}
-                totalRate={product.rate?.totalRate || 0}
-                totalSold={product.totalSold || 0}
-                isFavorite={true}
-                onRemoveFavorite={handleRemoveWithAnimation}
-              />
+              <div className="h-full">
+                <Product
+                  id={product.id}
+                  img={product.mainImage?.path}
+                  secondaryImg={product.images[0]?.path}
+                  productName={product.productName}
+                  price={product.price}
+                  discountPrice={product.discountPrice || null}
+                  colors={product.variants?.map((variant) => variant.color) || []}
+                  badge={product.newProduct ? "New" : ""}
+                  rating={product.rate?.rating || 0}
+                  totalRate={product.rate?.totalRate || 0}
+                  totalSold={product.sold || 0}
+                  isFavorite={true}
+                  onRemoveFavorite={handleRemoveWithAnimation}
 
-              {/* Quick remove button that appears on hover */}
+                />
+              </div>
+
               <motion.button
                 initial={{ opacity: 0 }}
                 whileHover={{ scale: 1.1 }}
@@ -172,8 +161,23 @@ const FavoritesList = ({ favoriteProducts, onRemoveFavorite }) => {
               </motion.button>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </AnimatePresence>
+
+      {/* Empty space filler */}
+      {filteredProducts.length % 4 !== 0 && filteredProducts.length < 8 && (
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            Khám phá thêm sản phẩm để thêm vào danh sách yêu thích
+          </p>
+          <Link
+            to="/"
+            className="mt-4 inline-block bg-white border border-primeColor text-primeColor hover:bg-primeColor hover:text-white transition-colors duration-300 rounded-md px-6 py-2 text-sm"
+          >
+            Khám phá thêm
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

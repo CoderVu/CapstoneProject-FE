@@ -21,8 +21,7 @@ const ModalEditVariant = ({ isOpen, onRequestClose, onSubmit, productId, variant
         id: variant?.id,
         sizeName: "",
         colorName: "",
-        quantity: 0,
-        price: 0,
+        quantity: 0
     });
 
     useEffect(() => {
@@ -31,8 +30,8 @@ const ModalEditVariant = ({ isOpen, onRequestClose, onSubmit, productId, variant
                 id: variant?.id,
                 sizeName: variant.sizeName || "",
                 colorName: variant.color || "",
-                quantity: variant.quantity || 0,
-                price: variant.price || 0,
+                quantity: variant.quantity || 0
+             
             });
         }
     }, [variant]);
@@ -179,27 +178,6 @@ const ModalEditVariant = ({ isOpen, onRequestClose, onSubmit, productId, variant
                             </div>
                         </div>
 
-                        {/* Price Input */}
-                        <div>
-                            <label className="flex items-center text-gray-700 text-sm font-medium mb-2">
-                                <DollarSign className="mr-2 h-4 w-4 text-blue-500" />
-                                Giá
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    name="price"
-                                    value={variantData.price}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 pr-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                />
-                                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
-                                    VNĐ
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Summary Section */}
                         <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mt-5">
                             <h3 className="text-sm font-medium text-blue-800 mb-2">Thông tin biến thể</h3>
@@ -216,12 +194,7 @@ const ModalEditVariant = ({ isOpen, onRequestClose, onSubmit, productId, variant
                                     <p className="text-gray-500">Số lượng:</p>
                                     <p className="font-medium">{variantData.quantity}</p>
                                 </div>
-                                <div>
-                                    <p className="text-gray-500">Giá:</p>
-                                    <p className="font-medium">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(variantData.price)}
-                                    </p>
-                                </div>
+                            
                             </div>
                         </div>
 

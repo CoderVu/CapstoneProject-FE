@@ -85,14 +85,14 @@ const Favorites = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="max-w-container mx-auto px-4 sm:px-6"
+      className="max-w-container mx-auto px-2 sm:px-4 md:px-6 lg:px-8"
     >
       <Breadcrumbs title="Danh sách yêu thích" />
 
-      <div className="py-6 md:py-10">
+      <div className="py-4 sm:py-6 md:py-8 lg:py-10">
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center items-center py-12 sm:py-16 md:py-20">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : (
           <FavoritesList

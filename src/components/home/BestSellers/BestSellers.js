@@ -178,7 +178,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
                 badge={product.bestSeller ? "Best Seller" : "Top"}
                 rating={product.rate?.rating}
                 totalRate={product.rate?.totalRate}
-                totalSold="100"
+                totalSold={product.sold}
               />
             </div>
           ))}

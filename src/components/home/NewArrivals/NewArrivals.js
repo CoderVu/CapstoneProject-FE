@@ -132,7 +132,7 @@ const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) 
                 badge={product.newProduct ? "New" : ""}
                 rating={product.rate?.rating}
                 totalRate={product.rate?.totalRate}
-                totalSold="100"
+                totalSold={product.sold}
               />
             </div>
           ))}
