@@ -41,6 +41,7 @@ import Search from "./components/home/Search/Search";
 import BuyNowPage from "./components/pageProps/BuyNowPage";
 import Statistics from "./pages/Admin/Statistics/Statistics";
 import VerifyOtpPage from "./pages/Account/VerifyOtpPage";
+import Customers from "./pages/Admin/Customers/Customers";
 
 
 const Layout = () => {
@@ -94,11 +95,10 @@ const router = createBrowserRouter(
           <Route path="add-products" element={<div className="text-2xl font-bold">Thêm Sản Phẩm Mới</div>} />
           <Route path="orders" element={<OrderList />} />
           <Route path="promotions" element={<DiscountCode />} />
-          <Route path="customers" element={<div className="text-2xl font-bold">Quản Lý Khách Hàng</div>} />
-          <Route path="reports" element={<div className="text-2xl font-bold">Báo Cáo & Thống Kê</div>} />
-          <Route path="messages" element={<div className="text-2xl font-bold">Tin Nhắn</div>} />
+          <Route path="customers" element={<Customers />} />
           <Route path="shipping" element={<div className="text-2xl font-bold">Quản Lý Vận Chuyển</div>} />
           <Route path="settings" element={<div className="text-2xl font-bold">Cài Đặt Hệ Thống</div>} />
+      
         </Route>
       </Route>
     </Route>

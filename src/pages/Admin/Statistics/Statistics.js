@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Line, Pie } from "react-chartjs-2";
+import { Line, Pie, Bar } from "react-chartjs-2";
 import axios from "../../../redux/setup/axios";
-import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement } from "chart.js";
+import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement, BarElement } from "chart.js";
 
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
+ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement, BarElement);
 
 const Statistics = () => {
   const [statistics, setStatistics] = useState(null);
@@ -16,8 +16,8 @@ const Statistics = () => {
         method: "GET",
         url: `/api/v1/admin/order/order-statistics`,
       });
-      const { data } = response.data;
-      return data;
+      console.log(response.data.data);
+      return response.data.data;
     } catch (error) {
       console.error("Error fetching statistics:", error);
       throw error;
@@ -40,9 +40,13 @@ const Statistics = () => {
     fetchStatistics();
   }, []);
 
-  // Prepare data for charts
-  const sortedOrdersByDate = statistics
+  // Prepare data for charts with null checks
+  const sortedOrdersByDate = statistics?.ordersByDate 
     ? Object.entries(statistics.ordersByDate).sort((a, b) => new Date(a[0]) - new Date(b[0]))
+    : [];
+
+  const sortedRevenueByMonth = statistics?.revenueByMonthYear
+    ? Object.entries(statistics.revenueByMonthYear).sort((a, b) => a[0].localeCompare(b[0]))
     : [];
 
   const ordersByDateData = {
@@ -50,7 +54,6 @@ const Statistics = () => {
     datasets: [
       {
         label: "Đơn hàng theo ngày",
-      
         data: sortedOrdersByDate.map(([, count]) => count),
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
@@ -63,12 +66,29 @@ const Statistics = () => {
     ],
   };
 
+  const revenueByMonthData = {
+    labels: sortedRevenueByMonth.map(([month]) => month),
+    datasets: [
+      {
+        label: "Doanh thu theo tháng",
+        data: sortedRevenueByMonth.map(([, amount]) => amount),
+        backgroundColor: "rgba(153, 102, 255, 0.2)",
+        borderColor: "rgba(153, 102, 255, 1)",
+        borderWidth: 2,
+        pointBackgroundColor: "rgba(153, 102, 255, 1)",
+        pointBorderColor: "#fff",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
   const ordersByStatusData = {
-    labels: statistics ? Object.keys(statistics.ordersByStatus) : [],
+    labels: statistics?.ordersByStatus ? Object.keys(statistics.ordersByStatus) : [],
     datasets: [
       {
         label: "Orders by Status",
-        data: statistics ? Object.values(statistics.ordersByStatus) : [],
+        data: statistics?.ordersByStatus ? Object.values(statistics.ordersByStatus) : [],
         backgroundColor: [
           "rgba(75, 192, 192, 0.6)",
           "rgba(153, 102, 255, 0.6)",
@@ -86,56 +106,329 @@ const Statistics = () => {
     ],
   };
 
+  const topProductsData = {
+    labels: statistics?.topProducts ? statistics.topProducts.map(item => Object.keys(item)[0]) : [],
+    datasets: [
+      {
+        label: "Số lượng bán ra",
+        data: statistics?.topProducts ? statistics.topProducts.map(item => Object.values(item)[0]) : [],
+        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const ordersByRegionData = {
+    labels: statistics?.ordersByRegion 
+      ? Object.keys(statistics.ordersByRegion).map(address => {
+          // Extract province from address
+          const provinceMatch = address.match(/Tỉnh ([^,]+)|Thành phố ([^,]+)/);
+          if (provinceMatch) {
+            return provinceMatch[1] || provinceMatch[2]; // Return either "Tỉnh" or "Thành phố" match
+          }
+          return "Không xác định";
+        })
+      : [],
+    datasets: [
+      {
+        label: "Số đơn hàng",
+        data: statistics?.ordersByRegion 
+          ? Object.entries(statistics.ordersByRegion).reduce((acc, [address, count]) => {
+              const provinceMatch = address.match(/Tỉnh ([^,]+)|Thành phố ([^,]+)/);
+              const province = provinceMatch ? (provinceMatch[1] || provinceMatch[2]) : "Không xác định";
+              acc[province] = (acc[province] || 0) + count;
+              return acc;
+            }, {})
+          : [],
+        backgroundColor: "rgba(255, 159, 64, 0.6)",
+        borderColor: "rgba(255, 159, 64, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Thống kê</h1>
-      <p className="text-gray-600 mb-4">Thống kê đơn hàng và doanh thu</p>
+    <div className="p-4 md:p-6 bg-white rounded-lg shadow-md max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-800">Thống kê</h1>
+        <p className="text-sm md:text-base text-gray-600">Thống kê đơn hàng và doanh thu</p>
+      </div>
+
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-center">
+          <p>{error}</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Line Chart for Orders by Date */}
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Đơn hàng theo ngày</h2>
-            <Line
-              data={ordersByDateData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { position: "top" },
-                },
-                scales: {
-                  x: {
-                    ticks: {
-                      maxRotation: 45,
-                      minRotation: 0,
+        <div className="space-y-6">
+          {/* Total Orders and Revenue Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
+              <h3 className="text-sm font-medium text-blue-600 mb-1">Tổng đơn hàng</h3>
+              <p className="text-2xl font-bold text-blue-700">{statistics?.totalOrders || 0}</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg shadow-sm">
+              <h3 className="text-sm font-medium text-green-600 mb-1">Tổng doanh thu</h3>
+              <p className="text-2xl font-bold text-green-700">
+                {(statistics?.totalRevenue || 0).toLocaleString()} VND
+              </p>
+            </div>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Line Chart for Orders by Date */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Đơn hàng theo ngày</h2>
+              <div className="h-[300px]">
+                <Line
+                  data={ordersByDateData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { 
+                        position: "top",
+                        labels: {
+                          boxWidth: 12,
+                          padding: 15
+                        }
+                      },
                     },
-                  },
-                  y: {
-                    beginAtZero: true,
-                  },
-                },
-              }}
-            />
-          </div>
+                    scales: {
+                      x: {
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 0,
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
 
-          {/* Pie Chart for Orders by Status */}
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Đơn hàng theo trạng thái</h2>
-            <Pie data={ordersByStatusData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />
-          </div>
+            {/* Line Chart for Revenue by Month */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Doanh thu theo tháng</h2>
+              <div className="h-[300px]">
+                <Line
+                  data={revenueByMonthData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { 
+                        position: "top",
+                        labels: {
+                          boxWidth: 12,
+                          padding: 15
+                        }
+                      },
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 0,
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          font: {
+                            size: 11
+                          },
+                          callback: function(value) {
+                            return value.toLocaleString() + ' VND';
+                          }
+                        },
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
 
-          {/* Total Orders and Revenue */}
-          <div className="col-span-1 md:col-span-2 text-center mt-6">
-            <h2 className="text-lg font-semibold">Tổng quan</h2>
-            <p>
-              Tổng đơn hàng: <span className="font-bold">{statistics.totalOrders}</span>
-            </p>
-            <p>
-              Tổng doanh thu: <span className="font-bold">{statistics.totalRevenue.toLocaleString()} VND</span>
-            </p>
+            {/* Pie Chart for Orders by Status */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Đơn hàng theo trạng thái</h2>
+              <div className="h-[300px]">
+                <Pie 
+                  data={ordersByStatusData} 
+                  options={{ 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                      legend: { 
+                        position: "top",
+                        labels: {
+                          boxWidth: 12,
+                          padding: 15
+                        }
+                      } 
+                    }
+                  }} 
+                />
+              </div>
+            </div>
+
+            {/* Bar Chart for Top Products */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Top 5 sản phẩm bán chạy</h2>
+              <div className="h-[300px]">
+                <Bar
+                  data={topProductsData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: "top",
+                        labels: {
+                          boxWidth: 12,
+                          padding: 15
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 0,
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Bar Chart for Orders by Region */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Đơn hàng theo khu vực</h2>
+              <div className="h-[300px]">
+                <Bar
+                  data={ordersByRegionData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: "top",
+                        labels: {
+                          boxWidth: 12,
+                          padding: 15
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: {
+                          maxRotation: 45,
+                          minRotation: 0,
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          font: {
+                            size: 11
+                          }
+                        },
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Top Customers Table */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">Top 5 khách hàng</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng chi tiêu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {statistics?.topCustomers?.map((customer, index) => {
+                      const name = Object.keys(customer)[0];
+                      const amount = Object.values(customer)[0];
+                      return (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{amount.toLocaleString()} VND</td>
+                        </tr>
+                      );
+                    }) || (
+                      <tr>
+                        <td colSpan="2" className="px-6 py-4 text-center text-sm text-gray-500">Không có dữ liệu</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}

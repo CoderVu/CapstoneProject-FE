@@ -8,6 +8,8 @@ const fetchOrderMock = async () => {
         });
         const { data } = response.data;
 
+        console.log("datds", data)
+
         // Assuming you want the first item from the data array
         const singleItem = Array.isArray(data) ? data[0] : data;
 

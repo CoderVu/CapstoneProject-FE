@@ -77,7 +77,7 @@ const Sidebar = () => {
     { path: "/admin/orders", name: "Đơn hàng", icon: ShoppingCart },
     { path: "/admin/promotions", name: "Khuyến mãi", icon: Gift },
     { path: "/admin/customers", name: "Khách hàng", icon: Users },
-    { path: "/admin/reports", name: "Báo cáo", icon: BarChart2 },
+    // { path: "/admin/reports", name: "Báo cáo", icon: BarChart2 },
     { path: "/admin/messages", name: "Tin nhắn", icon: MessageCircle },
     { path: "/admin/shipping", name: "Vận chuyển", icon: Send },
     { path: "/admin/settings", name: "Cài đặt", icon: Settings },

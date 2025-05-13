@@ -9,21 +9,32 @@ import { FaSpinner } from 'react-icons/fa';
 const ChatHistory = memo(({ messages, auth, getUserById, clickedMessageIndex, toggleTimestamp, messagesEndRef, isTyping, selectedUser }) => {
     // Format message time for timestamps
     const formatMessageTime = useCallback((time) => {
-        if (!time) return "Không xác định";
+        if (!time) return "";
 
         try {
             const date = parseISO(time);
+            const now = new Date();
+            const messageDate = new Date(date);
 
+            // If message is from today, show only time
             if (isToday(date)) {
                 return format(date, "HH:mm", { locale: vi });
-            } else if (isYesterday(date)) {
-                return `Hôm qua, ${format(date, "HH:mm", { locale: vi })}`;
-            } else {
-                return format(date, "dd/MM/yyyy, HH:mm", { locale: vi });
+            }
+            // If message is from yesterday, show "Hôm qua" and time
+            else if (isYesterday(date)) {
+                return `Hôm qua ${format(date, "HH:mm", { locale: vi })}`;
+            }
+            // If message is from this year, show date and time
+            else if (messageDate.getFullYear() === now.getFullYear()) {
+                return format(date, "dd/MM HH:mm", { locale: vi });
+            }
+            // If message is from previous years, show full date and time
+            else {
+                return format(date, "dd/MM/yyyy HH:mm", { locale: vi });
             }
         } catch (error) {
             console.error("Error parsing date:", error);
-            return "Không xác định";
+            return "";
         }
     }, []);
 
@@ -33,13 +44,17 @@ const ChatHistory = memo(({ messages, auth, getUserById, clickedMessageIndex, to
 
         try {
             const date = parseISO(time);
+            const now = new Date();
+            const messageDate = new Date(date);
 
             if (isToday(date)) {
                 return "Hôm nay";
             } else if (isYesterday(date)) {
                 return "Hôm qua";
+            } else if (messageDate.getFullYear() === now.getFullYear()) {
+                return format(date, "dd/MM/yyyy", { locale: vi });
             } else {
-                return format(date, "EEEE, dd/MM/yyyy", { locale: vi });
+                return format(date, "dd/MM/yyyy", { locale: vi });
             }
         } catch (error) {
             return "";

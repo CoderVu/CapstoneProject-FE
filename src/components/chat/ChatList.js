@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { BsCheckAll } from 'react-icons/bs';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const ChatList = memo(({ sortedChattedUsers, isUserOnline, getLastMessage, formatLastMessageTime, handleUserSelect }) => {
     const containerVariants = {
@@ -33,7 +35,6 @@ const ChatList = memo(({ sortedChattedUsers, isUserOnline, getLastMessage, forma
                 sortedChattedUsers.map(user => {
                     const isOnline = isUserOnline(user.id);
                     const lastMessage = getLastMessage(user.id);
-                    const messageTime = formatLastMessageTime(user.id);
 
                     return (
                         <motion.div
@@ -57,7 +58,6 @@ const ChatList = memo(({ sortedChattedUsers, isUserOnline, getLastMessage, forma
                                     <div className="ml-3 flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
                                             <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{user.fullName}</span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">{messageTime}</span>
                                         </div>
                                         <div className="flex items-center mt-1">
                                             <div className="flex-1 text-sm text-gray-500 dark:text-gray-400 truncate flex items-center">

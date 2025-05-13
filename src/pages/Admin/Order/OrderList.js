@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { fetchOrders } from "../../../redux/actions/orderAction";
 import { updateOrderStatus } from "../../../redux/service/orderService";
 import {
@@ -22,6 +23,7 @@ const ORDER_STATUS = {
 };
 
 const OrderList = () => {
+  const location = useLocation();
   const dispatch = useDispatch();
   const { orders = [], totalPages = 0, totalElements = 0, loading, error } = useSelector((state) => state.order);
 
@@ -45,6 +47,15 @@ const OrderList = () => {
   useEffect(() => {
     dispatch(fetchOrders(currentPage, itemsPerPage, searchTerm, statusFilter, dateRange));
   }, [dispatch, currentPage, itemsPerPage, searchTerm, statusFilter, dateRange]);
+
+  useEffect(() => {
+    // Check if we have searchOrderCode from navigation state
+    if (location.state?.searchOrderCode) {
+      setSearchTerm(location.state.searchOrderCode);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
 

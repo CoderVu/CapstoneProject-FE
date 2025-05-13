@@ -67,8 +67,8 @@ const SignIn = () => {
     const top = window.screenY + (window.innerHeight - height) / 2;
     
     window.open(
-     // "http://localhost:8080/oauth2/authorization/google",
-       "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google",
+      "http://localhost:8080/oauth2/authorization/google",
+      // "https://capstoneproject-be-iapt.onrender.com/oauth2/authorization/google",
       "_blank",
       `width=${width},height=${height},top=${top},left=${left}`
     );
@@ -76,8 +76,8 @@ const SignIn = () => {
 
   
     const messageListener = async (event) => {
-       if (event.origin !== "https://capstoneproject-be-iapt.onrender.com") return; 
-      //if (event.origin !== "http://localhost:8080") return; 
+     //  if (event.origin !== "https://capstoneproject-be-iapt.onrender.com") return; 
+      if (event.origin !== "http://localhost:8080") return; 
       const { token } = event.data;
   
       if (token) {

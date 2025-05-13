@@ -10,11 +10,19 @@ const ViewedProducts = () => {
   useEffect(() => {
     const fetchViewedProducts = async () => {
       try {
+        setLoading(true);
         const data = await fetchProductViewed();
-        setViewedProducts(data);
-        setLoading(false);
+        console.log("Viewed products data:", data); // Debug log
+        if (data && Array.isArray(data)) {
+          setViewedProducts(data);
+        } else {
+          console.error("Invalid data format received:", data);
+          setError(new Error("Invalid data format"));
+        }
       } catch (error) {
+        console.error("Error fetching viewed products:", error);
         setError(error);
+      } finally {
         setLoading(false);
       }
     };
@@ -50,7 +58,14 @@ const ViewedProducts = () => {
   );
 
   // If no viewed products
-  if (!viewedProducts || viewedProducts.length === 0) return null;
+  if (!viewedProducts || viewedProducts.length === 0) {
+    console.log("No viewed products found"); // Debug log
+    return (
+      <div className="w-full py-8 text-center">
+        <p className="text-gray-500">Bạn chưa xem sản phẩm nào</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full pb-16">
@@ -70,7 +85,7 @@ const ViewedProducts = () => {
               secondaryImg={product.images[0]?.path}
               productName={product.productName}
               price={product.price}
-              discountPrice= {product.discountPrice}
+              discountPrice={product.discountPrice}
               colors={product.variants?.map((variant) => variant.color) || []}
               badge={product.newProduct ? "New" : ""}
               rating={product.rate?.rating}

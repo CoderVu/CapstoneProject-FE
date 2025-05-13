@@ -1,75 +1,55 @@
-import {
-  getDashboardStats,
-  getOrderStats,
-  getSalesAnalytics,
-  getTopSellingProducts,
-  getRealTimeStats
-} from "../service/adminService";
+import types from "../types";
+import { fetchAllUsers, getUserById, deleteUser } from "../service/adminService";
 
-// Action Types
-export const FETCH_DASHBOARD_STATS = "FETCH_DASHBOARD_STATS";
-export const FETCH_ORDER_STATS = "FETCH_ORDER_STATS";
-export const FETCH_SALES_ANALYTICS = "FETCH_SALES_ANALYTICS";
-export const FETCH_TOP_SELLING_PRODUCTS = "FETCH_TOP_SELLING_PRODUCTS";
-export const FETCH_REALTIME_STATS = "FETCH_REALTIME_STATS";
-
-// Action Creators
-export const fetchDashboardStats = () => async (dispatch) => {
-  try {
-    const response = await getDashboardStats();
-    dispatch({
-      type: FETCH_DASHBOARD_STATS,
-      payload: response.data
-    });
-  } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-  }
+// Action to fetch all users
+export const fetchAllUsersAction = () => async (dispatch) => {
+    dispatch({ type: types.FETCH_USERS_REQUEST });
+    try {
+        const response = await fetchAllUsers();
+        dispatch({
+            type: types.FETCH_USERS_SUCCESS,
+            payload: response.data
+        });
+    } catch (error) {
+        dispatch({
+            type: types.FETCH_USERS_ERROR,
+            payload: error.message
+        });
+    }
 };
 
-export const fetchOrderStats = () => async (dispatch) => {
-  try {
-    const response = await getOrderStats();
-    dispatch({
-      type: FETCH_ORDER_STATS,
-      payload: response.data
-    });
-  } catch (error) {
-    console.error("Error fetching order stats:", error);
-  }
+// Action to fetch user by ID
+export const fetchUserByIdAction = (id) => async (dispatch) => {
+    dispatch({ type: types.FETCH_USER_REQUEST });
+    try {
+        const response = await getUserById(id);
+        dispatch({
+            type: types.FETCH_USER_SUCCESS,
+            payload: response.data
+        });
+    } catch (error) {
+        dispatch({
+            type: types.FETCH_USER_ERROR,
+            payload: error.message
+        });
+    }
 };
 
-export const fetchSalesAnalytics = (period) => async (dispatch) => {
-  try {
-    const response = await getSalesAnalytics(period);
-    dispatch({
-      type: FETCH_SALES_ANALYTICS,
-      payload: response.data
-    });
-  } catch (error) {
-    console.error("Error fetching sales analytics:", error);
-  }
-};
-
-export const fetchTopSellingProducts = () => async (dispatch) => {
-  try {
-    const response = await getTopSellingProducts();
-    dispatch({
-      type: FETCH_TOP_SELLING_PRODUCTS,
-      payload: response.data
-    });
-  } catch (error) {
-    console.error("Error fetching top selling products:", error);
-  }
-};
-
-export const fetchRealTimeStats = () => async (dispatch) => {
-  try {
-    const response = await getRealTimeStats();
-    dispatch({
-      type: FETCH_REALTIME_STATS,
-      payload: response.data
-    });
-  } catch (error) {
-    console.error("Error fetching realtime stats:", error);
-  }
+// Action to delete user
+export const deleteUserAction = (id) => async (dispatch) => {
+    dispatch({ type: types.DELETE_USER_REQUEST });
+    try {
+        await deleteUser(id);
+        dispatch({
+            type: types.DELETE_USER_SUCCESS,
+            payload: id
+        });
+        // Refresh the user list after deletion
+        dispatch(fetchAllUsersAction());
+    } catch (error) {
+        dispatch({
+            type: types.DELETE_USER_ERROR,
+            payload: error.message
+        });
+    }
 }; 

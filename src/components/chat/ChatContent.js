@@ -468,17 +468,12 @@ const ChatContent = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-1">
-                                <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                                    <FaPhone />
-                                </button>
-                                <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                                    <FaVideo />
-                                </button>
-                                <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                                    <RiSearchLine />
-                                </button>
-                                <button className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                                    <FaEllipsisV />
+                                <button
+                                    onClick={() => setShowChat(false)}
+                                    className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                    aria-label="Close"
+                                >
+                                    <FaTimes />
                                 </button>
                             </div>
                         </div>
@@ -553,22 +548,14 @@ const ChatContent = () => {
                                             {/* Attachment Menu */}
                                             {showAttachMenu && (
                                                 <div className="absolute bottom-11 right-0 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                    <div className="p-1 w-40 grid grid-cols-3 gap-1">
+                                                    <div className="p-1 w-40">
                                                         <label
                                                             htmlFor="imageInput"
-                                                            className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                                                            className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
                                                         >
-                                                            <FaRegFileImage className="text-lg text-blue-500 dark:text-blue-400" />
-                                                            <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">Hình ảnh</span>
+                                                            <FaRegFileImage className="text-lg text-blue-500 dark:text-blue-400 mr-2" />
+                                                            <span className="text-sm text-gray-600 dark:text-gray-300">Gửi ảnh</span>
                                                         </label>
-                                                        <div className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                                                            <FaGift className="text-lg text-red-500 dark:text-red-400" />
-                                                            <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">Quà</span>
-                                                        </div>
-                                                        <div className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
-                                                            <FaUserFriends className="text-lg text-green-500 dark:text-green-400" />
-                                                            <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">Liên hệ</span>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -608,7 +595,7 @@ const ChatContent = () => {
                                     </div>
                                 </div>
 
-                                {/* Send button or voice recording button based on if there's a message */}
+                                {/* Send button */}
                                 {message.trim() || image || emojiUrl ? (
                                     <button
                                         onClick={handleSendMessage}
@@ -617,11 +604,7 @@ const ChatContent = () => {
                                         <FaPaperPlane className="text-lg" />
                                     </button>
                                 ) : (
-                                    <button
-                                        className="ml-2 rounded-full w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-                                    >
-                                        <FaMicrophone className="text-lg" />
-                                    </button>
+                                    <div className="ml-2 w-12 h-12"></div>
                                 )}
                             </div>
 

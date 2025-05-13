@@ -22,6 +22,7 @@ import rateReducer from "./reducers/rateReducer";
 import cartReducer from "./reducers/cartReducer";
 import sizeReducer from "./reducers/sizeReducer";
 import orderReducer from "./reducers/orderReducer";
+import adminReducer from "./reducers/adminReducer";
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
@@ -37,7 +38,8 @@ const rootReducer = combineReducers({
   auth: authReducer,
   rating: rateReducer,
   cart : cartReducer,
-  order :orderReducer,
+  order : orderReducer,
+  admin: adminReducer,
 });
 
 const persistConfig = {

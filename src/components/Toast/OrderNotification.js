@@ -3,16 +3,36 @@ import { showSuccessToast, showErrorToast } from './ToastNotification';
 import orderNotificationService from '../../ws/orderNotificationService';
 import { Bell, X, Volume2, VolumeX } from 'lucide-react';
 import notificationSound from '../../assets/sounds/notification.wav';
+import { useNavigate } from 'react-router-dom';
 
 const OrderNotification = () => {
-    const [notifications, setNotifications] = useState([]);
+    const navigate = useNavigate();
+    const [notifications, setNotifications] = useState(() => {
+        // Load notifications from localStorage on initial render
+        const savedNotifications = localStorage.getItem('orderNotifications');
+        return savedNotifications ? JSON.parse(savedNotifications) : [];
+    });
     const [isOpen, setIsOpen] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(() => {
+        // Load mute state from localStorage
+        return localStorage.getItem('notificationsMuted') === 'true';
+    });
     const audioRef = useRef(new Audio(notificationSound));
+
+    // Save notifications to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem('orderNotifications', JSON.stringify(notifications));
+    }, [notifications]);
+
+    // Save mute state to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('notificationsMuted', isMuted.toString());
+    }, [isMuted]);
 
     useEffect(() => {
         // Connect to WebSocket when component mounts
-        const wsUrl = `wss://capstoneproject-be-iapt.onrender.com/ws/orders`;
+        //const wsUrl = `wss://capstoneproject-be-iapt.onrender.com/ws/orders`;
+        const wsUrl = `ws://localhost:8080/ws/orders`;
         orderNotificationService.connect(wsUrl, 'admin');
 
         // Add message listener
@@ -51,12 +71,19 @@ const OrderNotification = () => {
 
     const clearNotifications = () => {
         setNotifications([]);
+        localStorage.removeItem('orderNotifications');
     };
 
     const toggleMute = () => {
         setIsMuted(!isMuted);
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
+    };
+
+    const handleOrderClick = (orderCode) => {
+        // Navigate to orders page with search parameter
+        navigate('/admin/orders', { state: { searchOrderCode: orderCode } });
+        setIsOpen(false); // Close notification panel
     };
 
     return (
@@ -117,8 +144,11 @@ const OrderNotification = () => {
                             >
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                            Đơn hàng #{notification.orderCode}
+                                        <p 
+                                            className="text-sm font-medium text-gray-800 dark:text-gray-200 cursor-pointer hover:text-blue-600"
+                                            onClick={() => handleOrderClick(notification.orderCode)}
+                                        >
+                                            Mã đơn hàng {notification.orderCode}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                             {new Date(notification.timestamp).toLocaleTimeString('vi-VN')}

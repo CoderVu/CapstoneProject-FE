@@ -252,11 +252,8 @@ const UserList = ({
             <OnlineUsersList />
 
             {/* Divider with label */}
-            <div className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30 flex items-center justify-between">
+            <div className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30">
                 <span>CÁC CUỘC TRÒ CHUYỆN</span>
-                <button className="hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
-                    <BiPin className="text-gray-400 dark:text-gray-500" />
-                </button>
             </div>
 
             {/* Recent Chats */}
