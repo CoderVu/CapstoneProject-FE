@@ -110,3 +110,27 @@ export const getProductsOnSale = () => async (dispatch) => {
     dispatch({ type: types.FETCH_PRODUCT_ON_SALE_ERROR, payload: error.message });
   }
 };
+
+// Action to fetch all products for client-side filtering
+export const getAllProducts = () => async (dispatch) => {
+  dispatch({ type: types.FETCH_ALL_PRODUCTS_REQUEST });
+  try {
+    const data = await fetchAllProducts(0, 1000); // Fetch with large size to get all products
+    dispatch({
+      type: types.FETCH_ALL_PRODUCTS_SUCCESS,
+      payload: {
+        allProducts: data.response,
+        filteredProducts: data.response,
+        totalElements: data.totalElements,
+      },
+    });
+  } catch (error) {
+    dispatch({ type: types.FETCH_ALL_PRODUCTS_ERROR, payload: error.message });
+  }
+};
+
+// Client-side filter action
+export const filterProductsLocally = (filters) => ({
+  type: types.FILTER_PRODUCTS_LOCAL,
+  payload: filters,
+});

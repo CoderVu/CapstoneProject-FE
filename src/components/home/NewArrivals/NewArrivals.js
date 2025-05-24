@@ -1,32 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Slider from "react-slick";
 import Product from "../Products/Product";
-import { fetchProductByCollection } from "../../../redux/service/productService";
+import { getNewArrivals } from "../../../redux/actions/homeActions";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { products, loading, error, initialized } = useSelector((state) => state.home.newArrivals);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "slider"
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await fetchProductByCollection(collectionId, 0, 20);
-        setProducts(data.response);
-        setLoading(false);
-      } catch (error) {
-        setError(error);
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [collectionId]);
+    if (!initialized) {
+      dispatch(getNewArrivals(collectionId));
+    }
+  }, [dispatch, collectionId, initialized]);
 
   if (loading) return (
     <div className="w-full h-60 flex justify-center items-center">

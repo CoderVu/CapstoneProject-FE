@@ -214,7 +214,6 @@ const ProductDetails = () => {
 
   const findSimilarByUploadedImage = async () => {
     if (!uploadedImage) {
-
       showErrorToast("Chưa chọn hình ảnh để tìm kiếm bằng AI");
       return;
     }
@@ -228,16 +227,7 @@ const ProductDetails = () => {
       const formData = new FormData();
       formData.append('file', uploadedImage);
 
-      const response = await fetch('https://bee9-14-176-208-79.ngrok-free.app/api/find_similar', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await findSimilarImages(formData);
 
       if (!data.similar_images || data.similar_images.length === 0) {
         setErrorMessage("Không tìm thấy sản phẩm tương tự cho hình ảnh của bạn");

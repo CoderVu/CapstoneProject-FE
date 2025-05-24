@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { FaQrcode, FaArrowLeft, FaCheckCircle, FaPlus, FaCreditCard, FaMapMarkerAlt, FaPhone, FaShoppingCart, FaMoneyBill } from "react-icons/fa";
-import { createOrderFromCart, createOrderNow } from "../../redux/service/orderService";
+import { createOrderFromCart} from "../../redux/service/orderService";
 import AddressSelector from "./AddressSelector";
 import { fetchAddress } from "../../redux/service/authService";
 
@@ -112,6 +112,7 @@ const PaymentGateway = () => {
         orderInfo: formData.orderInfo,
         lang: "vi",
         extraData: "additional data",
+        discountCode: cartState.appliedDiscount?.code || null,
       };
   
       // Call the API to create the order

@@ -76,7 +76,7 @@ const Product = (props) => {
         } catch (error) {
           // Check for 409 Conflict error (already in favorites)
           if (error.response && error.response.status === 409) {
-          
+
             // Update the UI state to show as favorited
             setIsFavorite(true);
           } else {
@@ -135,14 +135,11 @@ const Product = (props) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-          {props.badge && (
+          {/* {props.badge && (
             <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 shadow-sm">
               New
             </span>
-          )}
-        </div>
-
-        <div className="absolute top-3 right-3 z-10">
+          )} */}
           {discountPercentage > 0 && (
             <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 shadow-sm">
               -{discountPercentage}%
@@ -165,9 +162,8 @@ const Product = (props) => {
 
         {/* Overlay Actions */}
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-4 transform transition-all duration-300 ${
-            isHovered ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-4 transform transition-all duration-300 ${isHovered ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+            }`}
         >
           {/* <div className="flex gap-2">
             <motion.button

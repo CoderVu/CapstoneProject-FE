@@ -25,8 +25,13 @@ const Offer = () => {
       try {
         setLoading(true);
         const [available, user] = await Promise.all([fetchDiscountCodes(), getDiscountCodesForUser()]);
-        setAvailableCodes(available?.data.map((c) => ({ ...c, image: getRandomImage() })) || []);
-        setUserCodes(user?.data.map((c) => ({ ...c, image: getRandomImage() })) || []);
+        const userCodeSet = new Set((user?.data || []).map((c) => c.code));
+        setAvailableCodes(
+          (available?.data || [])
+            .filter((c) => !userCodeSet.has(c.code))
+            .map((c) => ({ ...c, image: getRandomImage() }))
+        );
+        setUserCodes((user?.data || []).map((c) => ({ ...c, image: getRandomImage() })));
       } catch {
         showErrorToast('Không thể tải mã giảm giá.');
       } finally {
@@ -36,11 +41,31 @@ const Offer = () => {
     loadCodes();
   }, []);
 
+  // Thêm hàm loadCodes ra ngoài để tái sử dụng
+  const loadCodes = async () => {
+    try {
+      setLoading(true);
+      const [available, user] = await Promise.all([fetchDiscountCodes(), getDiscountCodesForUser()]);
+      const userCodeSet = new Set((user?.data || []).map((c) => c.code));
+      setAvailableCodes(
+        (available?.data || [])
+          .filter((c) => !userCodeSet.has(c.code))
+          .map((c) => ({ ...c, image: getRandomImage() }))
+      );
+      setUserCodes((user?.data || []).map((c) => ({ ...c, image: getRandomImage() })));
+    } catch {
+      showErrorToast('Không thể tải mã giảm giá.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleApplyCode = async (code) => {
     try {
       setApplying(true);
       await applyDiscountCodeToMe(code);
       showSuccessToast('Áp dụng mã giảm giá thành công!');
+      await loadCodes(); // Gọi lại API để load lại data
     } catch {
       showErrorToast('Áp dụng mã giảm giá thất bại.');
     } finally {
@@ -48,46 +73,69 @@ const Offer = () => {
     }
   };
 
+  // Hàm kiểm tra hết hạn
+  const isExpired = (expiryDate) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const exp = new Date(expiryDate);
+    exp.setHours(0, 0, 0, 0);
+    return exp < today;
+  };
+
   const renderCodes = (codes, isAvailable) =>
-    codes.length ? (
+    codes
+      .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+      .length ? (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {codes.map((code) => (
-          <div
-            key={code.id}
-            className="relative overflow-hidden bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300"
-          >
-            <div className="absolute top-0 right-0 bg-yellow-500 text-xs font-semibold text-white px-2 py-1 rounded-bl-lg">
-              Hết hạn: {formatDate(code.expiryDate)}
-            </div>
-            <div className="flex">
-              <div className="w-1/3">
-                <img
-                  src={code.image}
-                  alt="Discount"
-                  className="h-full w-full object-cover"
-                />
+        {codes
+          .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+          .map((code) => (
+            <div
+              key={code.id}
+              className="relative overflow-hidden bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className={`absolute top-0 right-0 text-xs font-semibold px-2 py-1 rounded-bl-lg ${isExpired(code.expiryDate) ? 'bg-gray-400 text-white' : 'bg-yellow-500 text-white'}`}>
+                {isExpired(code.expiryDate)
+                  ? 'Đã hết hạn'
+                  : `Hết hạn: ${formatDate(code.expiryDate)}`}
               </div>
-              <div className="w-2/3 p-4">
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">{code.code}</h3>
-                    <div className="text-3xl font-extrabold text-red-600 mb-2">{code.discountPercentage}%</div>
-                    <p className="text-sm text-gray-600">Giảm giá cho đơn hàng của bạn</p>
+              <div className="flex">
+                <div className="w-1/3">
+                  <img
+                    src={code.image}
+                    alt="Discount"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="w-2/3 p-4">
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-1">{code.code}</h3>
+                      <div className="text-3xl font-extrabold text-red-600 mb-2">{code.discountPercentage}%</div>
+                      <p className="text-sm text-gray-600">Giảm giá cho đơn hàng của bạn</p>
+                    </div>
+                    {isAvailable ? (
+                      <button
+                        onClick={() => handleApplyCode(code.code)}
+                        disabled={applying || isExpired(code.expiryDate)}
+                        className="mt-3 w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {applying ? 'Đang áp dụng...' : 'Áp dụng ngay'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => window.location.href = '/cart'}
+                        disabled={isExpired(code.expiryDate)}
+                        className="mt-3 w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Mua hàng để áp dụng
+                      </button>
+                    )}
                   </div>
-                  {isAvailable && (
-                    <button
-                      onClick={() => handleApplyCode(code.code)}
-                      disabled={applying}
-                      className="mt-3 w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {applying ? 'Đang áp dụng...' : 'Áp dụng ngay'}
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     ) : (
       <div className="flex flex-col items-center justify-center py-10">
@@ -97,7 +145,6 @@ const Offer = () => {
         <p className="text-gray-500 text-lg">Không có mã giảm giá nào.</p>
       </div>
     );
-
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Mã giảm giá</h2>
@@ -105,21 +152,19 @@ const Offer = () => {
       <div className="flex border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab('available')}
-          className={`px-6 py-3 font-medium text-sm focus:outline-none transition-colors duration-200 ${
-            activeTab === 'available'
-              ? 'text-red-600 border-b-2 border-red-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`px-6 py-3 font-medium text-sm focus:outline-none transition-colors duration-200 ${activeTab === 'available'
+            ? 'text-red-600 border-b-2 border-red-600'
+            : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           Mã khả dụng
         </button>
         <button
           onClick={() => setActiveTab('my-codes')}
-          className={`px-6 py-3 font-medium text-sm focus:outline-none transition-colors duration-200 ${
-            activeTab === 'my-codes'
-              ? 'text-red-600 border-b-2 border-red-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`px-6 py-3 font-medium text-sm focus:outline-none transition-colors duration-200 ${activeTab === 'my-codes'
+            ? 'text-red-600 border-b-2 border-red-600'
+            : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           Mã của tôi
         </button>

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
-import { filterProduct } from "../../redux/actions/productActions";
+import { getAllProducts, filterProductsLocally } from "../../redux/actions/productActions";
 
 const Shop = () => {
   const dispatch = useDispatch();
@@ -13,10 +13,14 @@ const Shop = () => {
   const { products, totalPages, totalElements, loading, error } = useSelector(
     (state) => state.product
   );
+  // CONSOLE LOG
+  console.log(products);
+  
 
   // Pagination & view states
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [page, setPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
   const [isGridView, setIsGridView] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -49,25 +53,38 @@ const Shop = () => {
   useEffect(() => {
     if (location.state?.categoryProduct) {
       setFilters((prev) => ({ ...prev, ...location.state }));
-      setPage(0);
+      setCurrentPage(0);
     }
   }, [location.state]);
+
+  // Fetch all products on mount
+  useEffect(() => {
+    dispatch(getAllProducts());
+  }, [dispatch]);
+
+  // Apply client-side filtering and pagination
+  useEffect(() => {
+    const startIndex = currentPage * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setDisplayedProducts(products.slice(startIndex, endIndex));
+  }, [products, currentPage, itemsPerPage]);
 
   // Dispatch filter action when filters/page/size change (after mount)
   useEffect(() => {
     if (didMountRef.current) {
-      dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
+      dispatch(filterProductsLocally(filters));
     } else {
       didMountRef.current = true;
       // Uncomment to load default products on first mount
       // dispatch(filterProduct({ ...filters, page, size: itemsPerPage }));
     }
-  }, [dispatch, filters, page, itemsPerPage]);
+  }, [dispatch, filters, currentPage, itemsPerPage]);
 
   // Handlers only update state; effect handles dispatch
   const handleFilterChange = (newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-    setPage(0);
+    setFilters(newFilters);
+    setCurrentPage(0); // Reset to first page when filters change
+    dispatch(filterProductsLocally(newFilters));
   };
 
   const handleClearFilter = (key) => {
@@ -77,7 +94,7 @@ const Shop = () => {
         ? { priceMin: "", priceMax: "" }
         : { [key]: "" }),
     }));
-    setPage(0);
+    setCurrentPage(0);
   };
 
   const handleClearAllFilters = () => {
@@ -90,16 +107,16 @@ const Shop = () => {
       colorProduct: "",
       sizeProduct: "",
     });
-    setPage(0);
+    setCurrentPage(0);
   };
 
   const itemsPerPageFromBanner = (count) => {
     setItemsPerPage(count);
-    setPage(0);
+    setCurrentPage(0);
   };
 
   const handlePageChange = (newPage) => {
-    setPage(newPage);
+    setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -241,11 +258,11 @@ const Shop = () => {
 
           {totalElements > 0 ? (
             <ProductBanner
+              products={displayedProducts}
               itemsPerPage={itemsPerPage}
-              page={page}
+              page={currentPage}
               itemsPerPageFromBanner={itemsPerPageFromBanner}
               onViewChange={handleViewChange}
-              products={products}
               loading={loading}
             />
           ) : (
@@ -289,10 +306,10 @@ const Shop = () => {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-between bg-white rounded-xl shadow-md px-6 py-4">
               <div className="flex space-x-1 justify-center items-center mb-4 sm:mb-0">
                 <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 0}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
                   className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
-                    page === 0
+                    currentPage === 0
                       ? "border-gray-200 text-gray-400 cursor-not-allowed"
                       : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
                   }`}
@@ -306,7 +323,7 @@ const Shop = () => {
                       key={i}
                       onClick={() => handlePageChange(i)}
                       className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${
-                        i === page
+                        i === currentPage
                           ? "bg-blue-600 text-white border border-blue-600"
                           : "border border-gray-300 text-gray-600 hover:border-blue-300"
                       }`}
@@ -317,14 +334,14 @@ const Shop = () => {
                 </div>
 
                 <span className="md:hidden text-gray-700 text-sm px-2">
-                  {page + 1} / {totalPages}
+                  {currentPage + 1} / {totalPages}
                 </span>
 
                 <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages - 1}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
                   className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
-                    page === totalPages - 1
+                    currentPage === totalPages - 1
                       ? "border-gray-200 text-gray-400 cursor-not-allowed"
                       : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
                   }`}
@@ -333,7 +350,7 @@ const Shop = () => {
                 </button>
               </div>
               <p className="text-sm text-gray-500">
-                {page * itemsPerPage + 1} - {Math.min((page + 1) * itemsPerPage, totalElements)} trong {totalElements} sản phẩm
+                {currentPage * itemsPerPage + 1} - {Math.min((currentPage + 1) * itemsPerPage, totalElements)} trong {totalElements} sản phẩm
               </p>
             </div>
           )}

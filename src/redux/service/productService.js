@@ -90,11 +90,11 @@ const fetchAllProducts = async (page, size) => {
         throw error; // Ném lỗi ra để các tầng trên xử lý
     }
 };
-const fetchProductByCollection = async (collectionId, page, size) => {
+const fetchProductByCollection = async (name, page, size) => {
     try {
         const response = await axios({
             method: 'GET',
-            url: `/api/v1/public/products/collection/${collectionId}?page=${page}&size=${size}`,
+            url: `/api/v1/public/products/collection/${name}?page=${page}&size=${size}`,
         });
 
         const { data } = response.data;

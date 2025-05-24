@@ -183,6 +183,14 @@ const Cart = () => {
       });
   };
 
+  const isExpired = (expiryDate) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const exp = new Date(expiryDate);
+    exp.setHours(0, 0, 0, 0);
+    return exp < today;
+  };
+
   // Calculate final amount with discount
   const getFinalAmount = () => {
     const discountAmount = calculateDiscountAmount();
@@ -193,7 +201,7 @@ const Cart = () => {
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) return;
 
-    navigate("/proceed-to-checkout", 
+    navigate("/proceed-to-checkout",
       {
         state: {
           totalAmount: totalAmt,
@@ -325,58 +333,69 @@ const Cart = () => {
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Mã giảm giá của bạn:</h4>
                     <div className="space-y-3">
-                      {discountCodes.map((code, index) => (
-                        <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
-                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
-                            <img
-                              src={discountImages[index % discountImages.length]}
-                              alt="Discount"
-                              className="h-full w-full object-cover"
-                            />
-                            <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md">
-                              {code.discountPercentage}%
+                      {discountCodes
+                        .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+                        .map((code, index) => {
+                          const expired = isExpired(code.expiryDate);
+                          const used = code.status === "USED";
+                          return (
+                            <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
+                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
+                                <img
+                                  src={discountImages[index % discountImages.length]}
+                                  alt="Discount"
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md">
+                                  {code.discountPercentage}%
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h5 className="font-medium text-gray-800">{code.code}</h5>
+                                  <span className="text-xs px-2 py-0.5 rounded-full
+                    {code.status === 'UNVAILABLE' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                                    {code.status === "UNVAILABLE" ? "Không khả dụng" : "Khả dụng"}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {expired
+                                    ? "Hết hạn"
+                                    : `Có hiệu lực đến: ${new Date(code.expiryDate).toLocaleDateString("vi-VN", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    })}`}
+                                </p>
+                                <button
+                                  onClick={() => !expired && handleCopyCode(code.code)}
+                                  className={`mt-1 text-xs flex items-center ${expired
+                                      ? "text-gray-400 cursor-not-allowed"
+                                      : "text-blue-600 hover:text-blue-800"
+                                    }`}
+                                  disabled={expired}
+                                >
+                                  {copiedCode === code.code ? (
+                                    <>
+                                      <FaCheck className="mr-1" size={10} />
+                                      Đã sao chép
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaCopy className="mr-1" size={10} />
+                                      {expired ? "Hết hạn" : "Sao chép mã"}
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                          </div>
-
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <h5 className="font-medium text-gray-800">{code.code}</h5>
-                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                                {code.status === "UNVAILABLE" ? "Không khả dụng" : "Khả dụng"}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Có hiệu lực đến: {new Date(code.expiryDate).toLocaleDateString("vi-VN", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                              })}
-                            </p>
-                            <button
-                              onClick={() => handleCopyCode(code.code)}
-                              className="mt-1 text-xs flex items-center text-blue-600 hover:text-blue-800"
-                            >
-                              {copiedCode === code.code ? (
-                                <>
-                                  <FaCheck className="mr-1" size={10} />
-                                  Đã sao chép
-                                </>
-                              ) : (
-                                <>
-                                  <FaCopy className="mr-1" size={10} />
-                                  Sao chép mã
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                          );
+                        })}
                     </div>
                   </div>
                 )}
-
                 {/* Loading State */}
                 {loadingDiscounts && (
                   <div className="mt-3 flex justify-center">
@@ -386,7 +405,7 @@ const Cart = () => {
               </div>
 
               {/* Shop Promotion */}
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6">
+              {/* <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <FaInfoCircle className="text-blue-500" />
@@ -396,7 +415,7 @@ const Cart = () => {
                     <p className="text-sm text-gray-500 mt-1">Mua thêm {formatPrice(1000000 - totalAmt)} VNĐ để được giảm 10%</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Order Status (Toggleable) */}
               <AnimatePresence>
@@ -536,11 +555,10 @@ const Cart = () => {
                   <button
                     onClick={handleProceedToCheckout}
                     disabled={selectedItems.length === 0}
-                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                      selectedItems.length > 0
-                        ? "bg-blue-500 hover:bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    } transition-colors`}
+                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${selectedItems.length > 0
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      } transition-colors`}
                   >
                     <FaCreditCard size={16} />
                     <span>Thanh toán ({selectedItems.length})</span>
@@ -554,11 +572,11 @@ const Cart = () => {
 
               {/* Recently Viewed */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-6">
-                <div className="p-5 border-b border-gray-100">
+                {/* <div className="p-5 border-b border-gray-100">
                   <h3 className="font-medium text-gray-800">Đã xem gần đây</h3>
-                </div>
+                </div> */}
                 <div className="p-5">
-                <ProductRelated limit={3} compact={true} />
+                  <ProductRelated limit={3} compact={true} />
                 </div>
               </div>
             </div>

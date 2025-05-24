@@ -1,10 +1,24 @@
 import axios from "axios";
 
-const findSimilarImages = async (imageUrl) => {
+const findSimilarImages = async (imageData) => {
   try {
-    // const response = await axios.post('http://127.0.0.1:5000/api/find_similar', { url: imageUrl });
-    const response = await axios.post('https://bee9-14-176-208-79.ngrok-free.app/api/find_similar', { url: imageUrl });
-    return response.data; // Assuming the API returns the data in the response body
+    let response;
+    
+    // Check if imageData is FormData (file upload) or URL
+    if (imageData instanceof FormData) {
+      response = await axios.post('http://127.0.0.1:5000/api/find_similar', imageData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else if (typeof imageData === 'string') {
+      // If it's a URL string
+      response = await axios.post('http://127.0.0.1:5000/api/find_similar', { url: imageData });
+    } else {
+      throw new Error('Invalid input: Expected FormData for file upload or string for URL');
+    }
+
+    return response.data;
   } catch (error) {
     console.error("Error finding similar images:", error);
     throw error;

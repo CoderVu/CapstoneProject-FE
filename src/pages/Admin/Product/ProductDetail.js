@@ -39,10 +39,8 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   const product = useSelector((state) => state.productDetail.productDetail);
   const productDescription = useSelector((state) => state.productDescription.productDescription);
-  console.log("productDescription", productDescription);
-
   const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
-  console.log("productCareInstructions", productCareInstructions);
+  const [isLoading, setIsLoading] = useState(true);
   const [variantList, setVariantList] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [careInstructionError, setCareInstructionError] = useState(false);
@@ -67,8 +65,9 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const fetchProductDetail = async () => {
+      setIsLoading(true);
       try {
-        dispatch(getProductDetail(id));
+        await dispatch(getProductDetail(id));
         setCareInstructionError(false);
         setProductDescriptionError(false);
       } catch (error) {
@@ -76,6 +75,8 @@ const ProductDetail = () => {
           setCareInstructionError(true);
           setProductDescriptionError(true);
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -137,10 +138,19 @@ const ProductDetail = () => {
     return acc;
   }, {});
 
-  if (!product || !product.productName) return (
+  if (isLoading) return (
     <div className="flex items-center justify-center h-full">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
+    </div>
+  );
+
+  if (!product || !product.productName) return (
+    <div className="flex items-center justify-center h-full">
+      <div className="flex flex-col items-center gap-2">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <span className="text-gray-600">Không tìm thấy thông tin sản phẩm</span>
+      </div>
     </div>
   );
 

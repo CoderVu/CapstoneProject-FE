@@ -23,6 +23,7 @@ import cartReducer from "./reducers/cartReducer";
 import sizeReducer from "./reducers/sizeReducer";
 import orderReducer from "./reducers/orderReducer";
 import adminReducer from "./reducers/adminReducer";
+import homeReducer from "./reducers/homeReducer";
 
 const rootReducer = combineReducers({
   orebi: orebiReducer,
@@ -40,6 +41,7 @@ const rootReducer = combineReducers({
   cart : cartReducer,
   order : orderReducer,
   admin: adminReducer,
+  home: homeReducer,
 });
 
 const persistConfig = {

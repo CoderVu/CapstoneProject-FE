@@ -1,44 +1,25 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Product from "../Products/Product";
 import SampleNextArrow from "../ButtonSlide/SampleNextArrow";
 import SamplePrevArrow from "../ButtonSlide/SamplePrevArrow";
-import { fetchProductByCollection } from "../../../redux/service/productService";
+import { getBestSellers } from "../../../redux/actions/homeActions";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const BestSellers = ({name = "Best Sellers" }) => {
+  const dispatch = useDispatch();
+  const { products, loading, error, initialized } = useSelector((state) => state.home.bestSellers);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "slider"
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await fetchProductByCollection(collectionId, 0, 20);
-        // Process products to ensure we have proper image handling
-        const processedProducts = data.response.map(product => ({
-          ...product,
-          // Ensure we have a valid mainImage
-          mainImage: product.mainImage || { path: "https://via.placeholder.com/300x400?text=No+Image" },
-          // Make sure images array exists and has at least one item
-          images: product.images && product.images.length > 0
-            ? product.images
-            : [{ path: product.mainImage?.path || "https://via.placeholder.com/300x400?text=No+Image" }]
-        }));
-        setProducts(processedProducts);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [collectionId]);
+    if (!initialized) {
+      dispatch(getBestSellers(name));
+    }
+  }, [dispatch, name, initialized]);
 
   const settings = {
     infinite: true,
@@ -86,7 +67,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
       <div className="w-full pb-16">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold uppercase inline-block relative">
-            SẢN PHẨM NỔI BẬT
+            SẢN PHẨM BEST SELLERS
             <div className="w-full h-1 bg-gray-200 mt-2"></div>
           </h2>
         </div>
@@ -112,12 +93,13 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
       <div className="w-full pb-16">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold uppercase inline-block relative">
-            SẢN PHẨM NỔI BẬT
+            SẢN PHẨM BEST SELLERS
             <div className="w-full h-1 bg-gray-200 mt-2"></div>
           </h2>
         </div>
         <div className="text-center text-gray-500 py-10">
-          <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+          <p>Hiện chưa có sản phẩm nào trong danh mục này.</p>
+          <p>Vui lòng quay lại sau!</p>
         </div>
       </div>
     );
@@ -129,7 +111,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
       <div className="relative text-center mb-10">
         <div className="inline-block">
           <h2 className="text-2xl font-bold uppercase relative">
-            SẢN PHẨM NỔI BẬT
+            SẢN PHẨM BEST SELLERS
             <span className="absolute -top-5 -right-12 bg-yellow-400 text-yellow-800 text-xs font-bold py-1 px-2 rounded-md transform rotate-12 shadow-sm">
               TOP
             </span>
@@ -218,7 +200,7 @@ const BestSellers = ({ collectionId = "7760643a-f67b-4f99-bd52-01239864858b" }) 
       {/* View all button */}
       <div className="flex justify-center mt-8">
         <button
-          onClick={() => navigate("/shop", { state: { collection: collectionId } })}
+          onClick={() => navigate("/shop", { state: { collection: name } })}
           className="group relative bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-medium py-2 px-6 rounded-md overflow-hidden transition-colors duration-300"
         >
           <span className="relative flex items-center">

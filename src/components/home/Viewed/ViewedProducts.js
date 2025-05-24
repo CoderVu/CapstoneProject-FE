@@ -1,34 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { fetchProductViewed } from "../../../redux/service/productService";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getViewedProducts } from "../../../redux/actions/homeActions";
 import Product from "../Products/Product";
 
 const ViewedProducts = () => {
-  const [viewedProducts, setViewedProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { products, loading, error, initialized } = useSelector((state) => state.home.viewedProducts);
 
   useEffect(() => {
-    const fetchViewedProducts = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProductViewed();
-        console.log("Viewed products data:", data); // Debug log
-        if (data && Array.isArray(data)) {
-          setViewedProducts(data);
-        } else {
-          console.error("Invalid data format received:", data);
-          setError(new Error("Invalid data format"));
-        }
-      } catch (error) {
-        console.error("Error fetching viewed products:", error);
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchViewedProducts();
-  }, []);
+    if (!initialized) {
+      dispatch(getViewedProducts());
+    }
+  }, [dispatch, initialized]);
 
   // Enhanced loading state
   if (loading) return (
@@ -58,7 +41,7 @@ const ViewedProducts = () => {
   );
 
   // If no viewed products
-  if (!viewedProducts || viewedProducts.length === 0) {
+  if (!products || products.length === 0) {
     console.log("No viewed products found"); // Debug log
     return (
       <div className="w-full py-8 text-center">
@@ -77,7 +60,7 @@ const ViewedProducts = () => {
 
       {/* Responsive Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {viewedProducts.map((product) => (
+        {products.map((product) => (
           <div key={product.id} className="transform transition duration-300 hover:-translate-y-1 hover:shadow-lg">
             <Product
               id={product.id}
@@ -97,7 +80,7 @@ const ViewedProducts = () => {
       </div>
 
       {/* Empty space filler cards for incomplete rows to maintain grid aesthetics */}
-      {viewedProducts.length % 4 !== 0 && viewedProducts.length < 8 && (
+      {products.length % 4 !== 0 && products.length < 8 && (
         <div className="mt-8 text-center">
           <p className="text-gray-500 text-sm">
             Khám phá thêm sản phẩm để lưu vào danh sách đã xem

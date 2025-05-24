@@ -63,6 +63,27 @@ export const applyDiscountCodeToUser = async (discountCode, userId) => {
         throw error; // Re-throw the error for further handling if needed
     }
 };
+export const deleteDiscountCode = async (discountCode) => {
+    try {
+        const response = await axios({
+            method: 'DELETE',
+            url: '/api/v1/admin/discount-code/delete',
+            params: {
+                discountCode: discountCode
+            }
+        });
+
+        // Show success toast
+        showSuccessToast('Xóa mã giảm giá thành công!');
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting discount code:', error);
+
+        // Show error toast
+        showErrorToast('Xóa mã giảm giá thất bại!');
+        throw error; // Re-throw the error for further handling if needed
+    }
+}
 
 export const applyDiscountCodeToMe = (discountCode) => {
     console.log("discountCode", discountCode)

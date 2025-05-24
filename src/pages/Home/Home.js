@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import Banner from "../../components/Banner/Banner";
 import BestSellers from "../../components/home/BestSellers/BestSellers";
 import NewArrivals from "../../components/home/NewArrivals/NewArrivals";
@@ -6,9 +7,18 @@ import CategorySection from "../../components/home/Category/CategorySection";
 import SpecialOffers from "../../components/home/SpecialOffers/SpecialOffers";
 import YearProduct from "../../components/home/YearProduct/YearProduct";
 import ViewedProducts from "../../components/home/Viewed/ViewedProducts";
-import SurveyAIRecommend from "../../components/pageProps/productDetails/SurveyAIRecommend";
+import { getNewArrivals, getBestSellers, getViewedProducts } from "../../redux/actions/homeActions";
 
 const Home = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Pre-fetch data for home sections
+    dispatch(getNewArrivals());
+    dispatch(getBestSellers());
+    dispatch(getViewedProducts());
+  }, [dispatch]);
+
   return (
     <div className="w-full mx-auto">
       <Banner />

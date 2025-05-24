@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { addDiscountCode, fetchDiscountCodes, applyDiscountCodeToUser } from '../../../redux/service/discountService';
+import { addDiscountCode, fetchDiscountCodes, applyDiscountCodeToUser, deleteDiscountCode } from '../../../redux/service/discountService';
 import { fetchAllUser } from '../../../redux/service/userService';
 
 const AddDiscountCode = () => {
@@ -389,11 +389,10 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`px-2 py-1 rounded-md text-xs ${
-          currentPage === 1
+        className={`px-2 py-1 rounded-md text-xs ${currentPage === 1
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-        }`}
+          }`}
       >
         &laquo;
       </button>
@@ -403,13 +402,12 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
           key={index}
           onClick={() => typeof page === 'number' && onPageChange(page)}
           disabled={page === '...'}
-          className={`px-2 py-1 rounded-md text-xs ${
-            page === currentPage
+          className={`px-2 py-1 rounded-md text-xs ${page === currentPage
               ? 'bg-indigo-600 text-white'
               : page === '...'
                 ? 'bg-white text-gray-500 cursor-default'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
+            }`}
         >
           {page}
         </button>
@@ -418,39 +416,48 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`px-2 py-1 rounded-md text-xs ${
-          currentPage === totalPages
+        className={`px-2 py-1 rounded-md text-xs ${currentPage === totalPages
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
             : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-        }`}
+          }`}
       >
         &raquo;
       </button>
     </div>
   );
 };
-
 const DiscountCodeList = () => {
   const [discountCodes, setDiscountCodes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8); // Increased from 5 to 8 for more compact display
+  const [itemsPerPage] = useState(8);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('ALL'); // Thêm state lọc
 
   useEffect(() => {
-    const fetchCodes = async () => {
-      try {
-        setLoading(true);
-        const response = await fetchDiscountCodes();
-        setDiscountCodes(response.data);
-      } catch (error) {
-        console.error('Lỗi khi lấy danh sách mã giảm giá:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCodes();
   }, []);
+
+  const fetchCodes = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchDiscountCodes();
+      setDiscountCodes(response.data);
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách mã giảm giá:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCode = async (code) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa mã này?')) return;
+    try {
+      await deleteDiscountCode(code);
+      setDiscountCodes(prev => prev.filter(item => item.code !== code));
+    } catch (error) {
+      alert('Xóa mã giảm giá thất bại!');
+    }
+  };
 
   const discountImages = [
     'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
@@ -470,10 +477,15 @@ const DiscountCodeList = () => {
       });
   };
 
+  // Lọc theo trạng thái
+  const filteredCodes = filterStatus === 'ALL'
+    ? discountCodes
+    : discountCodes.filter(code => code.status === filterStatus);
+
   // Get current codes
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCodes = discountCodes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentCodes = filteredCodes.slice(indexOfFirstItem, indexOfLastItem);
 
   // Change page
   const handlePageChange = (pageNumber) => {
@@ -484,8 +496,22 @@ const DiscountCodeList = () => {
     <div className="discount-code-list p-4 md:p-6 bg-white shadow-lg rounded-xl mt-8 border border-gray-100">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl md:text-2xl font-bold text-gray-800">Danh Sách Mã Giảm Giá</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500 text-xs md:text-sm">Lọc:</span>
+          <select
+            value={filterStatus}
+            onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+            className="border border-gray-300 rounded px-2 py-1 text-xs md:text-sm"
+          >
+            <option value="ALL">Tất cả</option>
+            <option value="AVAILABLE">Khả dụng</option>
+            <option value="USED">Đã sử dụng</option>
+            <option value="EXPIRED">Hết hạn</option>
+            <option value="ASSIGNED">Đã gán</option>
+          </select>
+        </div>
         <div className="text-gray-500 text-xs md:text-sm">
-          Hiển thị {discountCodes.length > 0 ? indexOfFirstItem + 1 : 0}-{Math.min(indexOfLastItem, discountCodes.length)} trên {discountCodes.length} mã
+          Hiển thị {filteredCodes.length > 0 ? indexOfFirstItem + 1 : 0}-{Math.min(indexOfLastItem, filteredCodes.length)} trên {filteredCodes.length} mã
         </div>
       </div>
 
@@ -494,16 +520,29 @@ const DiscountCodeList = () => {
           <div className="animate-spin h-8 w-8 border-4 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>
           Đang tải mã giảm giá...
         </div>
-      ) : discountCodes.length > 0 ? (
+      ) : filteredCodes.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {currentCodes.map((code, index) => {
               const isAvailable = code.status === 'AVAILABLE';
+              const isUsed = code.status === 'USED';
+              const isExpired = code.status === 'EXPIRED';
+              const isAssigned = code.status === 'ASSIGNED';
 
               return (
                 <div
                   key={code.code}
-                  className={`p-3 border rounded-lg ${isAvailable ? 'border-gray-200' : 'border-gray-200 bg-gray-100 opacity-70'}`}
+                  className={`p-3 border rounded-lg ${
+                    isAvailable
+                      ? 'border-gray-200'
+                      : isUsed
+                        ? 'border-gray-200 bg-yellow-100 opacity-80'
+                        : isExpired
+                          ? 'border-gray-200 bg-gray-100 opacity-70'
+                          : isAssigned
+                            ? 'border-gray-200 bg-blue-50 opacity-90'
+                            : 'border-gray-200'
+                  }`}
                 >
                   <div className="flex items-start space-x-3">
                     <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg">
@@ -512,7 +551,13 @@ const DiscountCodeList = () => {
                         alt="Giảm Giá"
                         className={`w-full h-full object-cover ${!isAvailable && 'filter grayscale'}`}
                       />
-                      <div className={`absolute top-0 right-0 ${isAvailable ? 'bg-red-500' : 'bg-gray-500'} text-white font-bold text-xs p-1 rounded-bl-lg`}>
+                      <div className={`absolute top-0 right-0 ${
+                        isAvailable ? 'bg-red-500'
+                        : isUsed ? 'bg-yellow-500'
+                        : isExpired ? 'bg-gray-500'
+                        : isAssigned ? 'bg-blue-500'
+                        : 'bg-gray-500'
+                      } text-white font-bold text-xs p-1 rounded-bl-lg`}>
                         {code.discountPercentage}%
                       </div>
                     </div>
@@ -524,19 +569,41 @@ const DiscountCodeList = () => {
                           <p className="text-xs text-gray-600">Giảm: <span className="font-semibold text-green-600">{code.discountPercentage}%</span></p>
                           <p className="text-xs text-gray-600">Hết hạn: <span className="font-semibold">{new Date(code.expiryDate).toLocaleDateString()}</span></p>
                         </div>
-                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {isAvailable ? 'Khả dụng' : 'Hết hạn'}
+                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          isAvailable ? 'bg-green-100 text-green-800'
+                          : isUsed ? 'bg-yellow-100 text-yellow-800'
+                          : isExpired ? 'bg-gray-100 text-gray-800'
+                          : isAssigned ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {isAvailable
+                            ? 'Khả dụng'
+                            : isUsed
+                              ? 'Đã sử dụng'
+                              : isExpired
+                                ? 'Hết hạn'
+                                : isAssigned
+                                  ? 'Đã gán'
+                                  : code.status}
                         </div>
                       </div>
 
-                      {isAvailable && (
+                      <div className="flex gap-2 mt-2">
+                        {isAvailable && (
+                          <button
+                            onClick={() => handleCopyCode(code.code)}
+                            className="px-2 py-1 text-xs text-white rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                          >
+                            Sao Chép
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleCopyCode(code.code)}
-                          className="mt-2 px-2 py-1 text-xs text-white rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                          onClick={() => handleDeleteCode(code.code)}
+                          className="px-2 py-1 text-xs text-white rounded-md bg-red-500 hover:bg-red-600 transition-colors"
                         >
-                          Sao Chép
+                          Xóa
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -546,7 +613,7 @@ const DiscountCodeList = () => {
 
           <div className="mt-4">
             <Pagination
-              totalItems={discountCodes.length}
+              totalItems={filteredCodes.length}
               itemsPerPage={itemsPerPage}
               currentPage={currentPage}
               onPageChange={handlePageChange}
