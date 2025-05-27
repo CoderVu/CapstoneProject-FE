@@ -15,7 +15,7 @@ const Shop = () => {
   );
   // CONSOLE LOG
   console.log(products);
-  
+
 
   // Pagination & view states
   const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -125,34 +125,29 @@ const Shop = () => {
   };
 
   const hasActiveFilters = Object.values(filters).some((val) => !!val);
-
-  return (
-    <div className="max-w-container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <Breadcrumbs title="" gender={filters.gender} />
-        <button
-          className="flex items-center gap-2 py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 md:hidden"
-          onClick={() => setIsMobileFilterOpen((open) => !open)}
+return (
+  <div className="max-w-container mx-auto px-4 py-8">
+    {/* Đưa Breadcrumbs và Show lên riêng biệt, không nằm chung 1 flex-row */}
+    <div className="mb-4">
+      <Breadcrumbs title="" gender={filters.gender} />
+    </div>
+    <div className="mb-6 flex justify-end">
+      <div className="flex items-center gap-2 bg-white p-2 rounded-md shadow-md">
+        <label className="text-gray-700">Show:</label>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => itemsPerPageFromBanner(parseInt(e.target.value, 10))}
+          className="border py-1 px-4 cursor-pointer text-primeColor focus:border-primeColor"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-            />
-          </svg>
-          Bộ lọc
-        </button>
+          {[12, 24, 36, 48, 60].map((num) => (
+            <option key={num} value={num}>
+              {num}
+            </option>
+          ))}
+        </select>
       </div>
-
-      <div className="flex flex-col md:flex-row gap-6 pb-12">
+    </div>
+    <div className="flex flex-col md:flex-row gap-6 pb-12">
         {/* Mobile filter sidebar */}
         {isMobileFilterOpen && (
           <div
@@ -308,11 +303,10 @@ const Shop = () => {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 0}
-                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
-                    currentPage === 0
+                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${currentPage === 0
                       ? "border-gray-200 text-gray-400 cursor-not-allowed"
                       : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
-                  }`}
+                    }`}
                 >
                   <span className="hidden sm:inline mr-1">«</span> Trước
                 </button>
@@ -322,11 +316,10 @@ const Shop = () => {
                     <button
                       key={i}
                       onClick={() => handlePageChange(i)}
-                      className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${
-                        i === currentPage
+                      className={`min-w-[36px] h-[36px] rounded-full py-2 px-3 text-center text-sm transition-all ${i === currentPage
                           ? "bg-blue-600 text-white border border-blue-600"
                           : "border border-gray-300 text-gray-600 hover:border-blue-300"
-                      }`}
+                        }`}
                     >
                       {i + 1}
                     </button>
@@ -340,11 +333,10 @@ const Shop = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages - 1}
-                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${
-                    currentPage === totalPages - 1
+                  className={`rounded-full border py-2 px-3 text-center text-sm transition-all ${currentPage === totalPages - 1
                       ? "border-gray-200 text-gray-400 cursor-not-allowed"
                       : "border-gray-300 text-gray-600 hover:text-white hover:bg-blue-600 hover:border-blue-600"
-                  }`}
+                    }`}
                 >
                   Tiếp <span className="hidden sm:inline ml-1">»</span>
                 </button>

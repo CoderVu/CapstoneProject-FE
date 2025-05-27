@@ -15,7 +15,7 @@ import { RiSearchLine } from 'react-icons/ri';
 import EmojiPicker from 'emoji-picker-react';
 import UserList from './userList';
 import ChatHistory from './ChatHistory';
-
+import { WS_URL } from '../../redux/setup/ws';
 const ChatContent = () => {
     const { showChat, setShowChat, selectedUser, setSelectedUser } = useContext(ChatContext);
     const auth = useSelector((state) => state.auth.auth);
@@ -135,7 +135,8 @@ const ChatContent = () => {
 
         if (showChat) {
           //  chatService.connect("wss//capstoneproject-be-iapt.onrender.com/ws", auth?.id);
-          chatService.connect("ws://localhost:8080/ws", auth?.id);
+
+          chatService.connect(WS_URL, auth?.id);
             if (!listenerAddedRef.current) {
                 chatService.addMessageListener(handleIncomingMessage);
                 listenerAddedRef.current = true;

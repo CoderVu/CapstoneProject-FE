@@ -1,23 +1,22 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { FaStar, FaRegStar, FaSearch, FaUpload, FaCamera, FaImage, FaInfoCircle, FaRobot, FaBrain } from "react-icons/fa";
+import { FaStar, FaRegStar, FaImage, FaInfoCircle } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Slider from "react-slick";
 import Breadcrumbs from "../Breadcrumbs";
 import ProductInfo from "../productDetails/ProductInfo";
-import { getProductDetail } from "../../../redux/actions/productActions";
 import { getRating } from "../../../redux/actions/rateActions";
 import ProductTabs from "./ProductTabs";
 import { postViewedProduct } from "../../../redux/service/productService";
-import ProductRelated from "./ProductRelated";
 import ProductReviewSection from "./ProductReviewSection";
-import AISimilarProducts from "./AISimilarProducts"; // Import the new component
+import AISimilarProducts from "./AISimilarProducts";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { getProductsByImgUrls } from "../../../redux/service/productService";
 import findSimilarImages from "../../../redux/setup/ai";
+import { fetchProductDetail, fetchProductDescription, fetchProductCareInstructions, fetchProductRelated } from "../../../redux/service/productService";
 import { showSuccessToast, showErrorToast } from "../../../components/Toast/ToastNotification";
+
 // Add custom CSS for animations
 const styles = `
   @keyframes scan {
@@ -36,23 +35,23 @@ const styles = `
   .animate-scan {
     animation: scan 2s linear infinite;
   }
+  .animate-reverse {
+    animation-direction: reverse;
+  }
 `;
 
 const ProductDetails = () => {
   const { id } = useParams();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { productDetail, loading, error } = useSelector((state) => state.productDetail);
-  const productDescription = useSelector((state) => state.productDescription.productDescription);
-  const productCareInstructions = useSelector((state) => state.productCareInstructions.productCareInstructions);
-  const ratingState = useSelector((state) => state.rating);
-  const { rating, totalPages, totalElements } = ratingState;
-  const [prevLocation, setPrevLocation] = useState("");
-  const [reviews, setReviews] = useState([]);
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(30);
-  const [hasMore, setHasMore] = useState(true);
 
+  const [productDetail, setProductDetail] = useState(null);
+  const [productDescription, setProductDescription] = useState(null);
+  const [productCareInstructions, setProductCareInstructions] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [prevLocation, setPrevLocation] = useState("");
 
   const [ratingSummary, setRatingSummary] = useState({
     totalReviews: 0,
@@ -64,26 +63,17 @@ const ProductDetails = () => {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [showSimilarProducts, setShowSimilarProducts] = useState(false);
-  const [similarityThreshold, setSimilarityThreshold] = useState(0.5); // Default threshold for similarity
+  const [similarityThreshold, setSimilarityThreshold] = useState(0.5);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadPreview, setUploadPreview] = useState(null);
   const fileInputRef = useRef(null);
   const [showAiPanel, setShowAiPanel] = useState(false);
-  const [productResults, setProductResults] = useState([]); // Add state for actual product data
-  const [errorMessage, setErrorMessage] = useState(""); // Add error message state
+  const [productResults, setProductResults] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getProductDetail(id, page, size));
-      dispatch(getRating(id, 0, size));
-      postViewedProduct(id); // Post the viewed product ID when the component mounts
-    }
-    setPrevLocation(location.pathname);
-  }, [dispatch, id, location, page, size]);
-
-
-  const settings = {
+  // Memoized Settings - Image slider settings are cached to prevent re-renders
+  const settings = useMemo(() => ({
     infinite: true,
     speed: 500,
     slidesToShow: 6,
@@ -113,21 +103,67 @@ const ProductDetails = () => {
         }
       }
     ]
-  };
+  }), []);
+
+  // Parallel Data Loading - Uses Promise.allSettled() for faster concurrent API calls
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    setProductDetail(null);
+    setProductDescription(null);
+    setProductCareInstructions(null);
+    setRelatedProducts([]);
+
+    // Use Promise.allSettled for parallel loading
+    Promise.allSettled([
+      fetchProductDetail(id),
+      fetchProductDescription(id),
+      fetchProductCareInstructions(id),
+      fetchProductRelated(id, 0, 30)
+    ])
+      .then(([detailResult, descriptionResult, careResult, relatedResult]) => {
+        // Handle product detail
+        if (detailResult.status === 'fulfilled') {
+          setProductDetail(detailResult.value);
+        } else {
+          setError(detailResult.reason?.message || "Lỗi tải dữ liệu sản phẩm");
+        }
+
+        // Handle product description (optional, can fail without breaking)
+        if (descriptionResult.status === 'fulfilled') {
+          setProductDescription(descriptionResult.value);
+        }
+
+        // Handle product care instructions (optional, can fail without breaking)
+        if (careResult.status === 'fulfilled') {
+          setProductCareInstructions(careResult.value);
+        }
+
+        // Handle related products (optional, can fail without breaking)
+        if (relatedResult.status === 'fulfilled') {
+          setRelatedProducts(relatedResult.value || []);
+        }
+      })
+      .catch((err) => setError(err.message || "Lỗi tải dữ liệu"))
+      .finally(() => setLoading(false));
+  }, [id, location]);
+
   const handleImageClick = (imagePath) => {
     setSlideDirection(selectedImage ? "left" : "right");
     setSelectedImage(imagePath);
   };
-   const openUploadModal = () => {
+
+  const openUploadModal = () => {
     setShowUploadModal(true);
     setUploadPreview(null);
     setUploadedImage(null);
   };
+
   const handleUploadImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Preview the image
     const reader = new FileReader();
     reader.onload = () => {
       setUploadPreview(reader.result);
@@ -144,7 +180,6 @@ const ProductDetails = () => {
 
   const findSimilarProducts = async (imageUrl) => {
     if (!imageUrl) {
-    
       showErrorToast("Chưa có hình ảnh để tìm kiếm sản phẩm tương tự");
       return;
     }
@@ -155,7 +190,6 @@ const ProductDetails = () => {
       setErrorMessage("");
 
       const data = await findSimilarImages(imageUrl);
-      
 
       if (!data.similar_images || data.similar_images.length === 0) {
         setErrorMessage("Không tìm thấy sản phẩm tương tự");
@@ -166,28 +200,23 @@ const ProductDetails = () => {
 
       setSimilarProducts(data.similar_images);
 
-      // Get image URLs from similar products
       const similarImageUrls = data.similar_images.map((item) => item.filename);
 
-      // Fetch actual product data
       try {
         const resultProducts = await getProductsByImgUrls(similarImageUrls);
 
         if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
-          // Map similarity scores to product data
           const productsWithSimilarity = resultProducts.response.map((product) => {
-            // Find the corresponding similarity score
             const similarityData = data.similar_images.find(img =>
               product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
             );
 
             return {
               ...product,
-              similarity: similarityData ? similarityData.similarity : 1 // Default to 1 (lowest similarity) if not found
+              similarity: similarityData ? similarityData.similarity : 1
             };
           });
 
-          // Sort by similarity (lowest similarity value means highest match)
           const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
 
           setProductResults(sortedProducts);
@@ -238,28 +267,23 @@ const ProductDetails = () => {
 
       setSimilarProducts(data.similar_images);
 
-      // Get image URLs from similar products
       const similarImageUrls = data.similar_images.map((item) => item.filename);
 
-      // Fetch actual product data
       try {
         const resultProducts = await getProductsByImgUrls(similarImageUrls);
 
         if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
-          // Map similarity scores to product data
           const productsWithSimilarity = resultProducts.response.map((product) => {
-            // Find the corresponding similarity score
             const similarityData = data.similar_images.find(img =>
               product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
             );
 
             return {
               ...product,
-              similarity: similarityData ? similarityData.similarity : 1 // Default to 1 (lowest similarity) if not found
+              similarity: similarityData ? similarityData.similarity : 1
             };
           });
 
-          // Sort by similarity (lowest similarity value means highest match)
           const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
 
           setProductResults(sortedProducts);
@@ -289,6 +313,69 @@ const ProductDetails = () => {
     product.similarity <= similarityThreshold
   );
 
+  // Show loading state while fetching data
+  if (loading) {
+    return (
+      <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
+        <div className="max-w-container mx-auto px-4 py-20">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            {/* Loading spinner */}
+            <div className="relative">
+              <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-r-purple-400 rounded-full animate-spin animate-reverse"></div>
+            </div>
+
+            {/* Loading text */}
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Đang tải sản phẩm...</h3>
+              <p className="text-gray-500 mb-4">Vui lòng chờ trong giây lát</p>
+
+              {/* Loading steps
+              <div className="flex justify-center space-x-4 mt-6">
+                <div className="flex items-center text-sm text-gray-600">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                  <span>Thông tin sản phẩm</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse delay-200"></div>
+                  <span>Hình ảnh</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full mr-2 animate-pulse delay-400"></div>
+                  <span>Mô tả</span>
+                </div>
+              </div> */}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
+        <div className="max-w-container mx-auto px-4 py-20">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md w-full text-center">
+              <svg className="mx-auto h-16 w-16 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <h3 className="text-lg font-medium text-red-800 mb-2">Lỗi tải sản phẩm</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
@@ -308,10 +395,11 @@ const ProductDetails = () => {
                 {selectedImage || productDetail?.mainImage?.path ? (
                   <div className="relative">
                     <img
-                      src={selectedImage || productDetail.mainImage.path}
-                      alt={productDetail.productName}
+                      src={selectedImage || productDetail?.mainImage?.path}
+                      alt={productDetail?.productName}
                       onClick={() => postViewedProduct(productDetail.id)}
                       className="w-full h-auto rounded-lg"
+                      loading="lazy" // Lazy Loading - Images load only when needed
                     />
                     {/* AI Floating Button */}
                     <button
@@ -326,7 +414,7 @@ const ProductDetails = () => {
                   </div>
                 ) : (
                   <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
-                    Không Có Hình Ảnh
+                    Đang tải hình ảnh...
                   </div>
                 )}
               </div>
@@ -408,6 +496,7 @@ const ProductDetails = () => {
                 </div>
               </div>
             </div>
+
             <div className="relative mt-2">
               <Slider {...settings}>
                 {productDetail?.images &&
@@ -423,6 +512,7 @@ const ProductDetails = () => {
                           alt={`Product image ${index + 1}`}
                           className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                           onClick={() => postViewedProduct(productDetail.id)}
+                          loading="lazy" // Lazy Loading - Images load only when needed
                         />
                       </div>
                     </div>
@@ -488,7 +578,7 @@ const ProductDetails = () => {
                       AI tiên tiến của chúng tôi sẽ phân tích hình ảnh để tìm những sản phẩm tương tự trong cơ sở dữ liệu,
                       so sánh các đặc điểm như màu sắc, họa tiết, hình dạng và phong cách.
                     </p>
-                </div>
+                  </div>
                 </div>
 
                 {uploadPreview ? (
@@ -497,6 +587,7 @@ const ProductDetails = () => {
                       src={uploadPreview}
                       alt="Xem trước ảnh tải lên"
                       className="w-full h-64 object-contain rounded-xl border-2 border-blue-500 p-1"
+                      loading="lazy" // Lazy Loading - Images load only when needed
                     />
 
                     {/* AI Processing Overlay */}
@@ -640,7 +731,7 @@ const ProductDetails = () => {
         </div>
 
         {/* Sản phẩm liên quan */}
-        <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-4">
+        {/* <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-4">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -648,7 +739,7 @@ const ProductDetails = () => {
             Sản phẩm tương tự
           </h2>
           <ProductRelated />
-        </div>
+        </div> */}
 
         {/* Reviews section with updated design */}
         <div className="w-full bg-gradient-to-r from-white to-blue-50 p-6 rounded-lg shadow-lg mt-4 border border-blue-100">
@@ -756,7 +847,7 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          <ProductReviewSection productId={productDetail.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
+          <ProductReviewSection productId={productDetail?.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
         </div>
       </div>
     </div>

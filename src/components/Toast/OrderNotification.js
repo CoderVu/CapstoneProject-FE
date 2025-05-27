@@ -4,7 +4,7 @@ import orderNotificationService from '../../ws/orderNotificationService';
 import { Bell, X, Volume2, VolumeX } from 'lucide-react';
 import notificationSound from '../../assets/sounds/notification.wav';
 import { useNavigate } from 'react-router-dom';
-
+import {WS_URL_ORDER} from '../../redux/setup/ws';
 const OrderNotification = () => {
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState(() => {
@@ -30,11 +30,7 @@ const OrderNotification = () => {
     }, [isMuted]);
 
     useEffect(() => {
-        // Connect to WebSocket when component mounts
-        //const wsUrl = `wss://capstoneproject-be-iapt.onrender.com/ws/orders`;
-        const wsUrl = `ws://localhost:8080/ws/orders`;
-        orderNotificationService.connect(wsUrl, 'admin');
-
+        orderNotificationService.connect(WS_URL_ORDER, 'admin');
         // Add message listener
         const handleNewOrder = (message) => {
             if (message.type === 'newOrder') {

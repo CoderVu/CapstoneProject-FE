@@ -232,7 +232,7 @@ const AISimilarProducts = ({
                   {/* Nhãn độ khớp - Sử dụng lớp động dựa trên phần trăm khớp */}
                   <div className="absolute top-3 right-3 z-10">
                     <span className={`bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
-                      Giống {((1 - product.similarity) * 100).toFixed(0)}%
+                      {((1 - product.similarity) * 100).toFixed(0)}%
                     </span>
                   </div>
 
@@ -310,7 +310,7 @@ const AISimilarProducts = ({
                   </div>
 
                   {/* Điểm tương đồng - Cập nhật với các lớp màu động */}
-                  <div className="mt-1">
+                  {/* <div className="mt-1">
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className={`h-2 rounded-full bg-gradient-to-r ${getProgressBarClass(product.similarity)}`}
@@ -321,7 +321,7 @@ const AISimilarProducts = ({
                       <span className="text-xs text-gray-500">Độ tương đồng</span>
                       <span className="text-xs font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
             ))}
