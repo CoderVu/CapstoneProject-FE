@@ -18,6 +18,8 @@ const findSimilarImages = async (imageData) => {
       throw new Error('Invalid input: Expected FormData for file upload or string for URL');
     }
 
+    console.log("Response from findSimilarImages:", response.data);
+
     return response.data;
   } catch (error) {
     console.error("Error finding similar images:", error);

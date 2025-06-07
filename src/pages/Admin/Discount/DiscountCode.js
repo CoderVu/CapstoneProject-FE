@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { addDiscountCode, fetchDiscountCodes, applyDiscountCodeToUser, deleteDiscountCode } from '../../../redux/service/discountService';
 import { fetchAllUser } from '../../../redux/service/userService';
+import { Gift, User, Percent, Calendar, Loader2, CheckCircle, XCircle, Copy, Trash2, Users, Search, BadgePercent } from 'lucide-react';
 
 const AddDiscountCode = () => {
   const [discountPercentage, setDiscountPercentage] = useState('');
@@ -54,48 +55,59 @@ const AddDiscountCode = () => {
   };
 
   return (
-    <div className="add-discount-code p-4 bg-white shadow-md rounded-lg border border-gray-100 max-w-md">
-      <h2 className="text-lg font-bold mb-3 text-gray-800">Thêm Mã Giảm Giá</h2>
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+      <div className="flex items-center mb-4 gap-2">
+        <Gift className="h-6 w-6 text-indigo-500" />
+        <h2 className="text-lg font-bold text-gray-800">Thêm Mã Giảm Giá</h2>
+      </div>
       {addSuccess && (
-        <div className="mb-3 p-2 bg-green-100 text-green-700 rounded-md text-sm">
-          Thêm mã giảm giá thành công!
+        <div className="mb-3 flex items-center gap-2 p-2 bg-green-50 text-green-700 rounded-md text-sm border border-green-200">
+          <CheckCircle className="h-4 w-4" /> Thêm mã giảm giá thành công!
         </div>
       )}
       {errorMessage && (
-        <div className="mb-3 p-2 bg-red-100 text-red-700 rounded-md text-sm">
-          {errorMessage}
+        <div className="mb-3 flex items-center gap-2 p-2 bg-red-50 text-red-700 rounded-md text-sm border border-red-200">
+          <XCircle className="h-4 w-4" /> {errorMessage}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="mb-2">
-          <label htmlFor="discountPercentage" className="block text-xs font-medium text-gray-700 mb-1">Phần Trăm Giảm Giá:</label>
-          <input
-            type="number"
-            id="discountPercentage"
-            value={discountPercentage}
-            onChange={(e) => setDiscountPercentage(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Nhập phần trăm giảm giá"
-          />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="discountPercentage" className="block text-xs font-medium text-gray-700 mb-1">Phần Trăm Giảm Giá</label>
+          <div className="relative">
+            <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="number"
+              id="discountPercentage"
+              value={discountPercentage}
+              onChange={(e) => setDiscountPercentage(e.target.value)}
+              required
+              min={1}
+              max={100}
+              className="pl-9 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Nhập phần trăm giảm giá"
+            />
+          </div>
         </div>
-        <div className="mb-2">
-          <label htmlFor="expiryDate" className="block text-xs font-medium text-gray-700 mb-1">Ngày Hết Hạn:</label>
-          <input
-            type="datetime-local"
-            id="expiryDate"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+        <div>
+          <label htmlFor="expiryDate" className="block text-xs font-medium text-gray-700 mb-1">Ngày Hết Hạn</label>
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="datetime-local"
+              id="expiryDate"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              required
+              className="pl-9 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
         </div>
         <button
           type="submit"
-          className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors"
+          className="w-full flex justify-center items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors disabled:opacity-60"
           disabled={loading}
         >
-          {loading ? 'Đang xử lý...' : 'Thêm Mã'}
+          {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <BadgePercent className="h-4 w-4" />} Thêm Mã
         </button>
       </form>
     </div>
@@ -197,25 +209,26 @@ const ApplyDiscountToUser = () => {
   };
 
   return (
-    <div className="apply-discount p-4 bg-white shadow-md rounded-lg border border-gray-100 max-w-md mt-4">
-      <h2 className="text-lg font-bold mb-3 text-gray-800">Gán Mã Giảm Giá Cho Người Dùng</h2>
-
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+      <div className="flex items-center mb-4 gap-2">
+        <Users className="h-6 w-6 text-green-500" />
+        <h2 className="text-lg font-bold text-gray-800">Gán Mã Giảm Giá Cho Người Dùng</h2>
+      </div>
       {applySuccess && (
-        <div className="mb-3 p-2 bg-green-100 text-green-700 rounded-md text-sm">
-          Áp dụng mã giảm giá thành công!
+        <div className="mb-3 flex items-center gap-2 p-2 bg-green-50 text-green-700 rounded-md text-sm border border-green-200">
+          <CheckCircle className="h-4 w-4" /> Áp dụng mã giảm giá thành công!
         </div>
       )}
-
       {errorMessage && (
-        <div className="mb-3 p-2 bg-red-100 text-red-700 rounded-md text-sm">
-          {errorMessage}
+        <div className="mb-3 flex items-center gap-2 p-2 bg-red-50 text-red-700 rounded-md text-sm border border-red-200">
+          <XCircle className="h-4 w-4" /> {errorMessage}
         </div>
       )}
-
-      <form onSubmit={handleApplyDiscount} className="space-y-3">
-        <div className="mb-2 relative">
-          <label htmlFor="searchUser" className="block text-xs font-medium text-gray-700 mb-1">Tìm Người Dùng:</label>
+      <form onSubmit={handleApplyDiscount} className="space-y-4">
+        <div className="relative">
+          <label htmlFor="searchUser" className="block text-xs font-medium text-gray-700 mb-1">Tìm Người Dùng</label>
           <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               id="searchUser"
@@ -227,7 +240,7 @@ const ApplyDiscountToUser = () => {
               }}
               onFocus={handleSearchFocus}
               placeholder="Nhập tên, email hoặc số điện thoại"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="pl-9 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
             />
             {selectedUser && (
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 flex justify-between items-center">
@@ -240,16 +253,15 @@ const ApplyDiscountToUser = () => {
                   }}
                   className="text-blue-500 hover:text-blue-700"
                 >
-                  ✕
+                  <XCircle className="h-4 w-4" />
                 </button>
               </div>
             )}
           </div>
-
           {showUserTable && searchTerm && (
-            <div className="absolute z-10 mt-1 w-full md:w-[450px] bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-y-auto">
+            <div className="absolute z-20 mt-1 w-full md:w-[450px] bg-white border border-gray-300 rounded-xl shadow-lg max-h-80 overflow-y-auto">
               {loading ? (
-                <div className="p-3 text-center text-gray-500">Đang tải...</div>
+                <div className="p-3 text-center text-gray-500 flex items-center justify-center gap-2"><Loader2 className="animate-spin h-4 w-4" /> Đang tải...</div>
               ) : currentUsers.length > 0 ? (
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -262,19 +274,15 @@ const ApplyDiscountToUser = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentUsers.map(user => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {user.fullName || '—'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {user.email || user.phoneNumber || '—'}
-                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{user.fullName || '—'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{user.email || user.phoneNumber || '—'}</td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                           <button
                             type="button"
                             onClick={() => handleSelectUser(user)}
-                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            className="text-green-600 hover:text-green-900 font-medium flex items-center gap-1"
                           >
-                            Chọn
+                            <User className="h-4 w-4" /> Chọn
                           </button>
                         </td>
                       </tr>
@@ -284,7 +292,6 @@ const ApplyDiscountToUser = () => {
               ) : (
                 <div className="p-3 text-center text-gray-500">Không tìm thấy người dùng</div>
               )}
-
               {filteredUsers.length > usersPerPage && (
                 <div className="p-2 border-t border-gray-200 bg-gray-50">
                   <Pagination
@@ -295,7 +302,6 @@ const ApplyDiscountToUser = () => {
                   />
                 </div>
               )}
-
               <div className="p-2 border-t border-gray-200 bg-gray-50 text-right">
                 <button
                   type="button"
@@ -308,31 +314,29 @@ const ApplyDiscountToUser = () => {
             </div>
           )}
         </div>
-
-        <div className="mb-2">
-          <label htmlFor="selectedCode" className="block text-xs font-medium text-gray-700 mb-1">Chọn Mã Giảm Giá:</label>
+        <div>
+          <label htmlFor="selectedCode" className="block text-xs font-medium text-gray-700 mb-1">Chọn Mã Giảm Giá</label>
           <select
             id="selectedCode"
             value={selectedCode}
             onChange={(e) => setSelectedCode(e.target.value)}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
           >
             <option key="default-code" value="">-- Chọn mã giảm giá --</option>
             {discountCodes.map(code => (
               <option key={code.id || code.code} value={code.code}>
-                {code.code} - Giảm {code.discountPercentage}%
+                {code.code} - Giảm {code.discountPercentage}% {code.status === 'AVAILABLE' ? '🟢' : code.status === 'ASSIGNED' ? '🔵' : code.status === 'USED' ? '🟡' : '⚪'}
               </option>
             ))}
           </select>
         </div>
-
         <button
           type="submit"
-          className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-green-500 transition-colors"
+          className="w-full flex justify-center items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-green-500 transition-colors disabled:opacity-60"
           disabled={loading || applying || !selectedUser || !selectedCode}
         >
-          {applying ? 'Đang áp dụng...' : 'Áp Dụng Mã'}
+          {applying ? <Loader2 className="animate-spin h-4 w-4" /> : <BadgePercent className="h-4 w-4" />} Áp Dụng Mã
         </button>
       </form>
     </div>
@@ -426,6 +430,7 @@ const Pagination = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => 
     </div>
   );
 };
+
 const DiscountCodeList = () => {
   const [discountCodes, setDiscountCodes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -493,9 +498,12 @@ const DiscountCodeList = () => {
   };
 
   return (
-    <div className="discount-code-list p-4 md:p-6 bg-white shadow-lg rounded-xl mt-8 border border-gray-100">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">Danh Sách Mã Giảm Giá</h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <BadgePercent className="h-6 w-6 text-indigo-500" />
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">Danh Sách Mã Giảm Giá</h2>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-gray-500 text-xs md:text-sm">Lọc:</span>
           <select
@@ -514,10 +522,9 @@ const DiscountCodeList = () => {
           Hiển thị {filteredCodes.length > 0 ? indexOfFirstItem + 1 : 0}-{Math.min(indexOfLastItem, filteredCodes.length)} trên {filteredCodes.length} mã
         </div>
       </div>
-
       {loading ? (
-        <div className="py-8 text-center text-gray-500">
-          <div className="animate-spin h-8 w-8 border-4 border-indigo-500 rounded-full border-t-transparent mx-auto mb-2"></div>
+        <div className="py-8 text-center text-gray-500 flex flex-col items-center gap-2">
+          <Loader2 className="animate-spin h-8 w-8 text-indigo-500" />
           Đang tải mã giảm giá...
         </div>
       ) : filteredCodes.length > 0 ? (
@@ -528,89 +535,85 @@ const DiscountCodeList = () => {
               const isUsed = code.status === 'USED';
               const isExpired = code.status === 'EXPIRED';
               const isAssigned = code.status === 'ASSIGNED';
-
               return (
                 <div
                   key={code.code}
-                  className={`p-3 border rounded-lg ${
+                  className={`p-4 border rounded-xl shadow-sm flex items-start gap-4 transition-all duration-200 hover:shadow-md relative bg-white ${
                     isAvailable
-                      ? 'border-gray-200'
+                      ? 'border-green-200'
                       : isUsed
-                        ? 'border-gray-200 bg-yellow-100 opacity-80'
+                        ? 'border-yellow-200 bg-yellow-50'
                         : isExpired
-                          ? 'border-gray-200 bg-gray-100 opacity-70'
+                          ? 'border-gray-200 bg-gray-50'
                           : isAssigned
-                            ? 'border-gray-200 bg-blue-50 opacity-90'
+                            ? 'border-blue-200 bg-blue-50'
                             : 'border-gray-200'
                   }`}
                 >
-                  <div className="flex items-start space-x-3">
-                    <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg">
-                      <img
-                        src={discountImages[(indexOfFirstItem + index) % discountImages.length]}
-                        alt="Giảm Giá"
-                        className={`w-full h-full object-cover ${!isAvailable && 'filter grayscale'}`}
-                      />
-                      <div className={`absolute top-0 right-0 ${
-                        isAvailable ? 'bg-red-500'
+                  <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100">
+                    <img
+                      src={discountImages[(indexOfFirstItem + index) % discountImages.length]}
+                      alt="Giảm Giá"
+                      className={`w-full h-full object-cover ${!isAvailable && 'filter grayscale'}`}
+                    />
+                    <div className={`absolute top-0 right-0 px-2 py-1 rounded-bl-lg text-xs font-bold text-white ${
+                      isAvailable ? 'bg-green-500'
                         : isUsed ? 'bg-yellow-500'
                         : isExpired ? 'bg-gray-500'
                         : isAssigned ? 'bg-blue-500'
                         : 'bg-gray-500'
-                      } text-white font-bold text-xs p-1 rounded-bl-lg`}>
-                        {code.discountPercentage}%
+                    }`}>
+                      {code.discountPercentage}%
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-base font-bold text-gray-900 truncate flex items-center gap-1">
+                          <BadgePercent className="h-4 w-4 text-indigo-500" /> {code.code}
+                        </p>
+                        <p className="text-xs text-gray-600">Giảm: <span className="font-semibold text-green-600">{code.discountPercentage}%</span></p>
+                        <p className="text-xs text-gray-600">Hết hạn: <span className="font-semibold">{new Date(code.expiryDate).toLocaleDateString()}</span></p>
+                      </div>
+                      <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${
+                        isAvailable ? 'bg-green-100 text-green-800'
+                        : isUsed ? 'bg-yellow-100 text-yellow-800'
+                        : isExpired ? 'bg-gray-100 text-gray-800'
+                        : isAssigned ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {isAvailable
+                          ? <><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>Khả dụng</>
+                          : isUsed
+                            ? <><span className="w-2 h-2 rounded-full bg-yellow-500 inline-block"></span>Đã sử dụng</>
+                            : isExpired
+                              ? <><span className="w-2 h-2 rounded-full bg-gray-400 inline-block"></span>Hết hạn</>
+                              : isAssigned
+                                ? <><span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>Đã gán</>
+                                : code.status}
                       </div>
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 truncate">{code.code}</p>
-                          <p className="text-xs text-gray-600">Giảm: <span className="font-semibold text-green-600">{code.discountPercentage}%</span></p>
-                          <p className="text-xs text-gray-600">Hết hạn: <span className="font-semibold">{new Date(code.expiryDate).toLocaleDateString()}</span></p>
-                        </div>
-                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          isAvailable ? 'bg-green-100 text-green-800'
-                          : isUsed ? 'bg-yellow-100 text-yellow-800'
-                          : isExpired ? 'bg-gray-100 text-gray-800'
-                          : isAssigned ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {isAvailable
-                            ? 'Khả dụng'
-                            : isUsed
-                              ? 'Đã sử dụng'
-                              : isExpired
-                                ? 'Hết hạn'
-                                : isAssigned
-                                  ? 'Đã gán'
-                                  : code.status}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 mt-2">
-                        {isAvailable && (
-                          <button
-                            onClick={() => handleCopyCode(code.code)}
-                            className="px-2 py-1 text-xs text-white rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors"
-                          >
-                            Sao Chép
-                          </button>
-                        )}
+                    <div className="flex gap-2 mt-3">
+                      {isAvailable && (
                         <button
-                          onClick={() => handleDeleteCode(code.code)}
-                          className="px-2 py-1 text-xs text-white rounded-md bg-red-500 hover:bg-red-600 transition-colors"
+                          onClick={() => handleCopyCode(code.code)}
+                          className="px-2 py-1 text-xs text-white rounded-md bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1"
                         >
-                          Xóa
+                          <Copy className="h-4 w-4" /> Sao Chép
                         </button>
-                      </div>
+                      )}
+                      <button
+                        onClick={() => handleDeleteCode(code.code)}
+                        className="px-2 py-1 text-xs text-white rounded-md bg-red-500 hover:bg-red-600 transition-colors flex items-center gap-1"
+                      >
+                        <Trash2 className="h-4 w-4" /> Xóa
+                      </button>
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-
           <div className="mt-4">
             <Pagination
               totalItems={filteredCodes.length}
@@ -621,7 +624,8 @@ const DiscountCodeList = () => {
           </div>
         </>
       ) : (
-        <div className="py-8 text-center text-gray-500">
+        <div className="py-8 text-center text-gray-500 flex flex-col items-center gap-2">
+          <Gift className="h-8 w-8 text-gray-300" />
           Chưa có mã giảm giá nào. Hãy tạo mã mới ở trên!
         </div>
       )}
@@ -632,7 +636,9 @@ const DiscountCodeList = () => {
 const DiscountCodeManager = () => {
   return (
     <div className="container mx-auto p-4 max-w-6xl">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Quản Lý Mã Giảm Giá</h1>
+      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 flex items-center justify-center gap-2">
+        <BadgePercent className="h-8 w-8 text-indigo-500" /> Quản Lý Mã Giảm Giá
+      </h1>
       <div className="grid gap-8 lg:grid-cols-[350px_1fr] grid-cols-1">
         <div className="space-y-4">
           <AddDiscountCode />

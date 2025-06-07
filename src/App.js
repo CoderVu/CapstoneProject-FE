@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import './utils/imagePolyfill';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -42,6 +43,7 @@ import BuyNowPage from "./components/pageProps/BuyNowPage";
 import Statistics from "./pages/Admin/Statistics/Statistics";
 import VerifyOtpPage from "./pages/Account/VerifyOtpPage";
 import Customers from "./pages/Admin/Customers/Customers";
+import FeatureExtraction from "./pages/Admin/FeatureExtraction/FeatureExtraction";
 
 
 const Layout = () => {
@@ -98,7 +100,7 @@ const router = createBrowserRouter(
           <Route path="customers" element={<Customers />} />
           <Route path="shipping" element={<div className="text-2xl font-bold">Quản Lý Vận Chuyển</div>} />
           <Route path="settings" element={<div className="text-2xl font-bold">Cài Đặt Hệ Thống</div>} />
-      
+          <Route path="feature-extraction" element={<FeatureExtraction />} />
         </Route>
       </Route>
     </Route>

@@ -4,6 +4,43 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import AIMatchExplainer from "./AIMatchExplainer"; // Import the component
 
+// Reusable rating stars component
+const RatingStars = ({ rating, size = "sm", showCount = true, totalRate }) => {
+  return (
+    <div className="flex items-center">
+      <div className="flex">
+        {Array.from({ length: 5 }).map((_, index) =>
+          index < Math.floor(rating) ? (
+            <FaStar
+              key={index}
+              className={`text-yellow-400 ${size === "sm" ? "text-xs" : "text-sm"}`}
+            />
+          ) : (
+            <FaRegStar
+              key={index}
+              className={`text-gray-300 ${size === "sm" ? "text-xs" : "text-sm"}`}
+            />
+          )
+        )}
+      </div>
+      {showCount && totalRate > 0 && (
+        <span className="ml-1.5 text-xs text-gray-500">({totalRate})</span>
+      )}
+    </div>
+  );
+};
+
+// Format price with thousands separator
+const formatPrice = (price) => {
+  if (!price) return "0";
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+// Get unique colors for display
+const getUniqueColors = (colors) => {
+  return colors ? [...new Set(colors)] : [];
+};
+
 /**
  * Component hiển thị kết quả tìm kiếm sản phẩm tương tự bằng AI
  */
@@ -15,68 +52,45 @@ const AISimilarProducts = ({
   similarityThreshold,
   setSimilarityThreshold,
   productResults = [], // Mảng sản phẩm mặc định rỗng
-  errorMessage = "" // Thông báo lỗi mặc định rỗng
+  errorMessage = "", // Thông báo lỗi mặc định rỗng
+  onProductClick
 }) => {
   const navigate = useNavigate();
 
-  // Định dạng giá với dấu phân cách hàng nghìn
-  const formatPrice = (price) => {
-    if (!price) return "0";
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-
   // Hàm điều hướng đến trang chi tiết sản phẩm
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+  const handleProductClick = (product) => {
+    // Sử dụng productId thay vì id
+    const productId = product.productId || product.id;
+    navigate(`/product/${productId}`, {
+      state: {
+        item: product,
+      },
+    });
   };
 
-  // Logic nâng cao: Ghép sản phẩm với filteredSimilarProducts dựa trên đường dẫn hình ảnh
-  // QUAN TRỌNG: Tất cả hooks phải được gọi trước bất kỳ lệnh return điều kiện nào
-  const enhancedProductResults = useMemo(() => {
-    if (!productResults?.length || !filteredSimilarProducts?.length) {
-      return productResults;
-    }
+  // Chỉ xử lý dữ liệu từ server
+  const processedProducts = useMemo(() => {
+    if (!productResults) return [];
 
     return productResults.map(product => {
-      // Lấy tất cả đường dẫn hình ảnh từ sản phẩm (mainImage và các hình khác)
-      const productImagePaths = [
-        product.mainImage?.path,
-        ...(product.images?.map(img => img.path) || [])
-      ].filter(Boolean); // Loại bỏ giá trị null/undefined
-
-      // Tìm nếu bất kỳ hình ảnh nào của sản phẩm khớp với filteredSimilarProducts
-      const matchingSimilarProduct = filteredSimilarProducts.find(similarProduct =>
-        productImagePaths.some(imagePath =>
-          imagePath === similarProduct.url ||
-          // Cũng kiểm tra nếu phần tên file khớp
-          imagePath.includes(similarProduct.filename?.split('.')[0])
-        )
-      );
-
-      // Nếu có sự khớp, sử dụng điểm tương đồng từ filteredSimilarProducts
-      if (matchingSimilarProduct) {
-        return {
-          ...product,
-          similarity: matchingSimilarProduct.similarity,
-          matchedImage: matchingSimilarProduct.url
-        };
+      // Xử lý matchedImage để đảm bảo lấy đúng URL
+      let matchedImageUrl = '';
+      if (product.matchedImage) {
+        if (typeof product.matchedImage === 'string') {
+          matchedImageUrl = product.matchedImage;
+        } else if (typeof product.matchedImage === 'object' && product.matchedImage.path) {
+          matchedImageUrl = product.matchedImage.path;
+        }
       }
 
-      // Nếu không khớp, giữ nguyên sản phẩm gốc với điểm tương đồng của nó
-      return product;
+      return {
+        ...product,
+        matchedImageUrl, // Thêm URL đã xử lý
+        displayPrice: product.discountPrice || product.price,
+        originalPrice: product.discountPrice ? product.price : null
+      };
     });
-  }, [productResults, filteredSimilarProducts]);
-
-  // Lọc kết quả sản phẩm dựa trên ngưỡng tương đồng
-  const filteredProductResults = useMemo(() => {
-    return enhancedProductResults.filter(
-      product => product.similarity <= similarityThreshold
-    ).sort((a, b) => a.similarity - b.similarity); // Sắp xếp theo tương đồng, kết quả tốt nhất đầu tiên
-  }, [enhancedProductResults, similarityThreshold]);
-
-  // Ghi log kết quả sản phẩm đã xử lý
-  console.log("Kết quả sản phẩm đã xử lý:", enhancedProductResults);
-  console.log("Kết quả sản phẩm đã lọc:", filteredProductResults);
+  }, [productResults]);
 
   // Lấy class CSS phù hợp cho nhãn phần trăm tương đồng
   const getMatchBadgeClass = (similarity) => {
@@ -96,27 +110,6 @@ const AISimilarProducts = ({
     return "from-gray-500 to-gray-400";
   };
 
-  // Hàm hiển thị đánh giá sao
-  const renderRating = (rating, totalRate) => {
-    // Lấy giá trị đánh giá thực tế, đầu tiên kiểm tra product.rate.rating, sau đó là product.rating
-    const ratingValue = typeof rating === 'object' ? (rating?.rating || 0) : (rating || 0);
-
-    return (
-      <div className="flex items-center">
-        {Array.from({ length: 5 }).map((_, idx) => (
-          idx < Math.floor(ratingValue) ? (
-            <FaStar key={idx} className="text-yellow-400 text-xs" />
-          ) : (
-            <FaRegStar key={idx} className="text-gray-300 text-xs" />
-          )
-        ))}
-        {totalRate > 0 && (
-          <span className="ml-1.5 text-xs text-gray-500">({totalRate})</span>
-        )}
-      </div>
-    );
-  };
-
   // Nếu component không nên hiển thị, trả về null
   // QUAN TRỌNG: Lệnh return điều kiện này phải đến SAU tất cả các lệnh gọi hook
   if (!showSimilarProducts) return null;
@@ -132,7 +125,7 @@ const AISimilarProducts = ({
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Kết Quả Tìm Kiếm Ảnh AI</h2>
-            <p className="text-gray-500 text-sm">Tìm thấy {filteredProductResults.length || filteredSimilarProducts.length || 0} sản phẩm tương tự về mặt hình ảnh</p>
+            <p className="text-gray-500 text-sm">Tìm thấy {processedProducts.length || filteredSimilarProducts.length || 0} sản phẩm tương tự về mặt hình ảnh</p>
           </div>
         </div>
         <div className="flex items-center space-x-4 w-full md:w-auto">
@@ -192,136 +185,131 @@ const AISimilarProducts = ({
             <p className="text-gray-500 text-sm">Đang xử lý hình ảnh và tính toán mức độ tương đồng</p>
           </div>
         </div>
-      ) : filteredProductResults.length > 0 ? (
+      ) : processedProducts.length > 0 ? (
         <div>
           <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  AI đã phân tích hình ảnh và tìm thấy {filteredProductResults.length} sản phẩm tương tự về mặt hình ảnh. Nhấp vào bất kỳ sản phẩm nào để xem chi tiết.
+                  AI đã phân tích hình ảnh và tìm thấy {processedProducts.length} sản phẩm tương tự về mặt hình ảnh.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {filteredProductResults.map((product, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {processedProducts.map((product) => (
               <motion.div
-                key={product.id || index}
+                key={product.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="group relative bg-white rounded-xl overflow-hidden shadow hover:shadow-md transition-all duration-300 border border-gray-200"
-                onClick={() => handleProductClick(product.id)}
+                transition={{ duration: 0.3 }}
+                className="group relative bg-white dark:bg-gray-800 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full cursor-pointer"
+                onClick={() => handleProductClick(product)}
               >
-                {/* Phần hình ảnh sản phẩm */}
+                {/* Product Image Container */}
                 <div className="relative overflow-hidden aspect-[3/4]">
-                  {/* Sử dụng hình ảnh khớp nếu có, nếu không sử dụng hình ảnh sản phẩm thông thường */}
-                  <img
-                    src={product.matchedImage || product.mainImage?.path || (product.images && product.images.length > 0 ? product.images[0].path : '')}
-                    alt={product.productName || `Sản phẩm tương tự ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full h-full"
+                  >
+                    <img
+                      src={product.matchedImageUrl || product.mainImage?.path || product.images?.[0]?.path}
+                      alt={product.productName}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        if (e.target.src === product.matchedImageUrl) {
+                          e.target.src = product.mainImage?.path || product.images?.[0]?.path || '';
+                        }
+                      }}
+                    />
+                  </motion.div>
 
-                  {/* Nhãn độ khớp - Sử dụng lớp động dựa trên phần trăm khớp */}
-                  <div className="absolute top-3 right-3 z-10">
-                    <span className={`bg-gradient-to-r ${getMatchBadgeClass(product.similarity)} text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm`}>
-                      {((1 - product.similarity) * 100).toFixed(0)}%
-                    </span>
+                  {/* Similarity Badge */}
+                  <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
+                    {Math.round(product.similarity * 100)}% tương đồng
                   </div>
 
-                  {/* Nhãn sản phẩm */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {/* {product.newProduct && (
-                      <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md">Mới</span>
-                    )}
-                    {product.bestSeller && (
-                      <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-md">Bán Chạy</span>
-                    )}
-                    {product.onSale && (
-                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">Giảm Giá</span>
-                    )} */}
-                  </div>
-
-                  {/* Lớp phủ hành động */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent p-4 flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-full flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Logic thêm vào giỏ hàng nếu cần
-                        }}
-                        className="flex-1 bg-white text-gray-900 py-1.5 text-xs font-medium rounded-md hover:bg-gray-100 transition flex items-center justify-center gap-1"
-                      >
-                        <FaShoppingCart className="text-xs" />
-                        <span>Thêm vào giỏ</span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleProductClick(product.id);
-                        }}
-                        className="flex-1 bg-blue-600 text-white py-1.5 text-xs font-medium rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-1"
-                      >
-                        <FaEye className="text-xs" />
-                        <span>Xem chi tiết</span>
-                      </button>
+                  {/* Secondary Image Badge */}
+                  {product.isMainImage === false && (
+                    <div className="absolute top-3 left-3 z-20 px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-md shadow-sm">
+                      Hình phụ
                     </div>
-                  </div>
-                </div>
-
-                {/* Thông tin sản phẩm */}
-                <div className="p-4 flex flex-col gap-2">
-                  {/* Tên thương hiệu nếu có */}
-                  {product.brandName && (
-                    <span className="text-xs text-gray-500 font-medium">{product.brandName}</span>
                   )}
 
-                  {/* Tên sản phẩm */}
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
-                    {product.productName || 'Sản phẩm'}
-                  </h3>
+                  {/* Discount Badge */}
+                  {product.discountPrice && (
+                    <div className="absolute top-3 left-3 z-10 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-md shadow-sm">
+                      -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                    </div>
+                  )}
+                </div>
 
-                  {/* Đánh giá - Đã sửa để xử lý đúng cấu trúc đối tượng đánh giá */}
-                  {product.rate && renderRating(product.rate.rating, product.rate.totalRate)}
+                {/* Product Info */}
+                <div className="p-4 flex flex-col gap-2 h-[180px]">
+                  {/* Product Name */}
+                  <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors h-10">
+                    {product.productName}
+                  </h2>
 
-                  {/* Giá & Giảm giá */}
-                  <div className="mt-1 flex items-baseline gap-2">
+                  {/* Colors */}
+                  {product.colors && getUniqueColors(product.colors).length > 0 && (
+                    <div className="flex items-center gap-1.5 h-6">
+                      {getUniqueColors(product.colors).slice(0, 3).map((color, index) => (
+                        <div key={index} className="flex flex-col items-center">
+                          <span
+                            className="inline-block w-4 h-4 border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          ></span>
+                        </div>
+                      ))}
+                      {getUniqueColors(product.colors).length > 3 && (
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 ml-0.5">
+                          +{getUniqueColors(product.colors).length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Rating Stars */}
+                  <div className="h-5">
+                    <RatingStars rating={product.rating} totalRate={product.totalRate} />
+                  </div>
+
+                  {/* Price */}
+                  <div className="h-6 flex items-baseline gap-2">
                     {product.discountPrice ? (
                       <>
                         <span className="text-xs text-gray-400 line-through font-normal">
                           {formatPrice(product.price)}đ
                         </span>
-                        <span className="text-sm font-bold text-red-600">
+                        <span className="text-sm font-bold text-red-600 dark:text-red-500">
                           {formatPrice(product.discountPrice)}đ
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm font-bold text-gray-900">
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                         {formatPrice(product.price)}đ
                       </span>
                     )}
                   </div>
 
-                  {/* Điểm tương đồng - Cập nhật với các lớp màu động */}
-                  {/* <div className="mt-1">
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-2 rounded-full bg-gradient-to-r ${getProgressBarClass(product.similarity)}`}
-                        style={{ width: `${(1 - product.similarity) * 100}%` }}
-                      />
+                  {/* Sales Info */}
+                  {product.totalSold > 0 && (
+                    <div className="h-5 flex items-center justify-between">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Đã bán: {product.totalSold}
+                      </span>
                     </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-xs text-gray-500">Độ tương đồng</span>
-                      <span className="text-xs font-semibold text-gray-700">{((1 - product.similarity) * 100).toFixed(0)}%</span>
-                    </div>
-                  </div> */}
+                  )}
                 </div>
               </motion.div>
             ))}

@@ -389,11 +389,12 @@ const getProductsByImgUrls = async (imgUrls) => {
 
         // Send the GET request with the constructed query string
         const response = await axios.get(
-            `/api/v1/public/products/images?${params.toString()}`,
+            `/api/v1/public/search/products/images?${params.toString()}`,
         );
 
         // Extract and return the data
         const { data } = response.data;
+        console.log("Fetched products by image URLs:", data);
         return data;
     } catch (error) {
         console.error("Error fetching products by image URLs:", error);

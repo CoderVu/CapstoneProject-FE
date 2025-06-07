@@ -190,6 +190,11 @@ const ProductDetails = () => {
       setErrorMessage("");
 
       const data = await findSimilarImages(imageUrl);
+      console.log("=== AI RESPONSE ===");
+      console.log("Similar images from AI:", data.similar_images.map(img => ({
+        url: img.url,
+        similarity: img.similarity
+      })));
 
       if (!data.similar_images || data.similar_images.length === 0) {
         setErrorMessage("Không tìm thấy sản phẩm tương tự");
@@ -200,24 +205,104 @@ const ProductDetails = () => {
 
       setSimilarProducts(data.similar_images);
 
-      const similarImageUrls = data.similar_images.map((item) => item.filename);
+      // Extract URLs from the similar_images response
+      const similarImageUrls = data.similar_images.map((item) => item.url);
+      console.log("URLs sent to server:", similarImageUrls);
 
       try {
         const resultProducts = await getProductsByImgUrls(similarImageUrls);
+        console.log("=== SERVER RESPONSE ===");
+        console.log("Products from server:", resultProducts.response.map(product => ({
+          id: product.id,
+          name: product.name,
+          images: product.images?.map(img => img.path) || [],
+          mainImage: product.mainImage?.path
+        })));
 
         if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
-          const productsWithSimilarity = resultProducts.response.map((product) => {
-            const similarityData = data.similar_images.find(img =>
-              product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
-            );
+          // Tạo map để dễ dàng tìm kiếm điểm tương đồng theo URL
+          const similarityMap = new Map(
+            data.similar_images.map(item => [item.url, item.similarity])
+          );
 
-            return {
-              ...product,
-              similarity: similarityData ? similarityData.similarity : 1
-            };
-          });
+          console.log("=== MATCHING PROCESS ===");
+          // Xử lý sản phẩm và gán điểm tương đồng
+          const productsWithSimilarity = resultProducts.response
+            .map((product) => {
+              console.log("\nChecking product:", {
+                id: product.id,
+                name: product.name,
+                mainImage: product.mainImage?.path,
+                allImages: product.images?.map(img => img.path) || []
+              });
 
-          const sortedProducts = productsWithSimilarity.sort((a, b) => a.similarity - b.similarity);
+              // Kiểm tra tất cả hình ảnh của sản phẩm (bao gồm mainImage và images)
+              const allImages = [
+                product.mainImage,
+                ...(product.images || [])
+              ].filter(img => img && img.path);
+
+              // Tìm hình ảnh có điểm tương đồng cao nhất
+              let maxSimilarity = 0;
+              let matchedImage = null;
+
+              for (const image of allImages) {
+                const similarity = similarityMap.get(image.path);
+                console.log("Checking image:", {
+                  path: image.path,
+                  similarity: similarity,
+                  inSimilarityMap: similarity !== undefined
+                });
+                
+                if (similarity !== undefined && similarity > maxSimilarity) {
+                  maxSimilarity = similarity;
+                  matchedImage = image;
+                }
+              }
+
+              // Nếu không tìm thấy hình ảnh nào khớp
+              if (maxSimilarity === 0) {
+                console.log("No matching image found for product");
+                return null;
+              }
+
+              console.log("Found match:", {
+                productId: product.id,
+                matchedImage: matchedImage.path,
+                similarity: maxSimilarity,
+                isMainImage: matchedImage === product.mainImage
+              });
+
+              return {
+                ...product,
+                similarity: maxSimilarity,
+                matchedImage: matchedImage
+              };
+            })
+            .filter(product => product !== null);
+
+          console.log("\n=== FINAL RESULTS ===");
+          console.log("Products with similarity scores:", productsWithSimilarity.map(p => ({
+            id: p.id,
+            name: p.name,
+            matchedImage: p.matchedImage.path,
+            similarity: p.similarity
+          })));
+
+          if (productsWithSimilarity.length === 0) {
+            setErrorMessage("Không tìm thấy sản phẩm tương ứng với hình ảnh tương tự");
+            setProductResults([]);
+            return;
+          }
+
+          // Sắp xếp theo điểm tương đồng giảm dần (cao nhất lên đầu)
+          const sortedProducts = productsWithSimilarity.sort((a, b) => b.similarity - a.similarity);
+          console.log("Sorted products:", sortedProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            matchedImage: p.matchedImage.path,
+            similarity: p.similarity
+          })));
 
           setProductResults(sortedProducts);
           showSuccessToast(`Đã tìm thấy ${sortedProducts.length} sản phẩm tương tự về hình ảnh`);
@@ -267,7 +352,8 @@ const ProductDetails = () => {
 
       setSimilarProducts(data.similar_images);
 
-      const similarImageUrls = data.similar_images.map((item) => item.filename);
+      // Extract URLs from the similar_images response
+      const similarImageUrls = data.similar_images.map((item) => item.url);
 
       try {
         const resultProducts = await getProductsByImgUrls(similarImageUrls);
@@ -275,7 +361,7 @@ const ProductDetails = () => {
         if (resultProducts && resultProducts.response && resultProducts.response.length > 0) {
           const productsWithSimilarity = resultProducts.response.map((product) => {
             const similarityData = data.similar_images.find(img =>
-              product.mainImage && img.filename.includes(product.mainImage.path.split('/').pop())
+              product.mainImage && img.url === product.mainImage.path
             );
 
             return {

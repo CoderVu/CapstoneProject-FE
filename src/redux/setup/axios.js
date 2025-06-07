@@ -1,14 +1,15 @@
 import axios from "axios";
 
 const instance = axios.create({
- baseURL: 'https://capstoneproject-be-iapt.onrender.com',
-   // baseURL: 'http://20.3.131.196:8080',
-    withCredentials: true, 
+    //baseURL: 'https://capstoneproject-be-iapt.onrender.com',
+    // baseURL: 'http://20.3.131.196:8080',
+    baseURL: 'http://localhost:8080',
+    withCredentials: true,
 });
 
 // Thêm interceptor cho request
 instance.interceptors.request.use(function (config) {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
