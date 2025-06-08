@@ -11,14 +11,14 @@ const findSimilarImages = async (imageData) => {
     
     // Check if imageData is FormData (file upload) or URL
     if (imageData instanceof FormData) {
-      response = await axios.post('http://127.0.0.1:5000/api/find_similar', imageData, {
+      response = await axios.post('http://20.3.131.196:5000/api/find_similar', imageData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
     } else if (typeof imageData === 'string') {
       // If it's a URL string
-      response = await axios.post('http://127.0.0.1:5000/api/find_similar', { url: imageData });
+      response = await axios.post('http://20.3.131.196:5000/api/find_similar', { url: imageData });
     } else {
       throw new Error('Invalid input: Expected FormData for file upload or string for URL');
     }

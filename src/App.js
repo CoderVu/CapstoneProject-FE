@@ -44,6 +44,8 @@ import Statistics from "./pages/Admin/Statistics/Statistics";
 import VerifyOtpPage from "./pages/Account/VerifyOtpPage";
 import Customers from "./pages/Admin/Customers/Customers";
 import FeatureExtraction from "./pages/Admin/FeatureExtraction/FeatureExtraction";
+import ForgotPassword from "./pages/Account/ForgotPassword";
+import VerifyForgotPassword from "./pages/Account/VerifyForgotPassword";
 
 
 const Layout = () => {
@@ -81,9 +83,11 @@ const router = createBrowserRouter(
 
       {/* Route đăng nhập & đăng ký */}
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/verify-otp" element={<VerifyOtpPage />}  />
-      {/* <Route path="/oauth2/callback" element={<OAuth2Callback />} /> */}
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-forgot-password" element={<VerifyForgotPassword />} />
       <Route path="/signin" element={<SignIn />} />
+      {/* <Route path="/oauth2/callback" element={<OAuth2Callback />} /> */}
 
       {/* Route Admin cần bảo vệ */}
       <Route path="/admin" element={<AdminRoute />}>

@@ -27,38 +27,38 @@ const CategorySection = () => {
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {categories.map((category) => (
           <div
             key={category.id}
-            className="group bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105"
+            className="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer"
             onClick={() => handleCategorySelect(category.name)}
           >
-            <div className="relative h-64">
+            <div className="relative aspect-[4/3] overflow-hidden">
               <Image
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 imgSrc={category.imageUrl}
                 alt={category.name}
               />
-              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <button className="bg-white text-gray-900 py-2 px-6 rounded-full hover:bg-gray-900 hover:text-white">
-                  Khám phá
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center p-6">
+                <button className="bg-white text-gray-900 py-2.5 px-8 rounded-full font-medium transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-gray-900 hover:text-white">
+                  Khám phá ngay
                 </button>
               </div>
             </div>
-            <div className="p-4">
-              <h3 className="text-xl font-bold">{category.name}</h3>
-              <p className="text-gray-600">{category.description}</p>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{category.name}</h3>
+              <p className="text-gray-600 text-sm line-clamp-2">{category.description}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* CTA Section */}
-      <div className="mt-14 text-center">
+      <div className="mt-16 text-center">
         <Link
           to="/shop"
-          className="bg-gray-900 text-white py-3 px-8 rounded-full hover:bg-gray-800 transition"
+          className="inline-block bg-gray-900 text-white py-3.5 px-10 rounded-full hover:bg-gray-800 transition-colors duration-300 font-medium shadow-lg hover:shadow-xl"
         >
           Xem tất cả sản phẩm
         </Link>

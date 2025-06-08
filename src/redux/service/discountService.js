@@ -28,7 +28,7 @@ export const fetchDiscountCodes = async () => {
     try {
         const response = await axios({
             method: 'GET',
-            url: '/api/v1/public/discount-code/get-all',
+            url: '/api/v1/public/discount-codes/get-all',
         });
         return response.data;
 

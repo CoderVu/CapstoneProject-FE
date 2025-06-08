@@ -13,8 +13,8 @@ const AIMatchExplainer = ({ isOpen: initialIsOpen = false }) => {
         onClick={() => setIsOpen(true)}
         className="mb-4 flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
       >
-        <FaLightbulb className="mr-1" />
-        <span>AI nhận diện hình ảnh hoạt động như thế nào?</span>
+        {/* <FaLightbulb className="mr-1" />
+        <span>AI nhận diện hình ảnh hoạt động như thế nào?</span> */}
       </button>
     );
   }

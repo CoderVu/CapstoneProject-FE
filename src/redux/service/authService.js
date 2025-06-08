@@ -16,22 +16,6 @@ const registerUserService = async ({ fullName, email, password, phoneNumber, add
       throw error;
     }
   };
-  const verifyOtpService = async (email, code) => {
-    try {
-        const response = await axios({
-            method: 'POST',
-            url: '/api/v1/auth/register/verify',
-            params: { 
-                email,  // Truyền trực tiếp email và code
-                code    // Không sử dụng ký tự không hợp lệ như []
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching verify OTP:", error);
-        throw error;
-    }
-};
 
 const loginUserService = async (phoneNumber, password) => {
     try {
@@ -67,6 +51,60 @@ const fetchUserData = async (token) => {
         throw error;
     }
 };
+
+const logoutUserService = async () => {
+    try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        console.log("User logged out successfully");
+    } catch (error) {
+        console.error("Error logging out user:", error);
+        throw error;
+    }
+};
+
+const verifyOtpService = async (email, code) => {
+  try {
+    const response = await axios({
+      method: 'POST',
+      url: '/api/v1/auth/register/verify',
+      params: { 
+        email,
+        code
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const forgotPasswordService = async (email) => {
+  try {
+    const response = await axios.post(`/api/v1/auth/forgot-password?email=${email}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const verifyForgotPasswordService = async (email, code, newPassword) => {
+  try {
+    const response = await axios({
+      method: 'POST',
+      url: `/api/v1/auth/forget-password/verify`,
+      params: {
+        email,
+        code,
+        newPassword
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const fetchAddress = async (token) => {
     try {
         const response = await axios({
@@ -99,6 +137,7 @@ const updateAddress = async (address, token) => {
         throw error;
     }
 };
+
 const deleteAddress = async (addressId, token) => {
     try {
         const response = await axios({
@@ -115,19 +154,6 @@ const deleteAddress = async (addressId, token) => {
     }
 };
 
-
-
-const logoutUserService = () => {
-    try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        console.log("User logged out successfully");
-    } catch (error) {
-        console.error("Error logging out user:", error);
-        throw error;
-    }
-};
-
 export {
     loginUserService,
     verifyOtpService,
@@ -137,4 +163,6 @@ export {
     updateAddress,
     deleteAddress,
     registerUserService,
+    forgotPasswordService,
+    verifyForgotPasswordService,
 };

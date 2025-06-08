@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUserService } from "../../redux/service/authService";
 import { showErrorToast } from "../../components/Toast/ToastNotification";
-import { useNavigate } from "react-router-dom";
-
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -33,25 +31,25 @@ const SignUp = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!form.fullName) newErrors.fullName = "Enter your name";
-    if (!form.email) newErrors.email = "Enter your email";
-    else if (!validateEmail(form.email)) newErrors.email = "Enter a valid email";
+    if (!form.fullName) newErrors.fullName = "Vui lòng nhập họ tên";
+    if (!form.email) newErrors.email = "Vui lòng nhập email";
+    else if (!validateEmail(form.email)) newErrors.email = "Email không hợp lệ";
 
-    if (!form.phone) newErrors.phone = "Enter your phone number";
+    if (!form.phone) newErrors.phone = "Vui lòng nhập số điện thoại";
     else if (form.phone.length < 10 || !form.phone.startsWith("0"))
-      newErrors.phone = "Enter a valid phone number";
+      newErrors.phone = "Số điện thoại không hợp lệ";
 
-    if (!form.password) newErrors.password = "Create a password";
+    if (!form.password) newErrors.password = "Vui lòng nhập mật khẩu";
     else if (form.password.length < 8)
-      newErrors.password = "Passwords must be at least 8 characters";
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
 
     if (!form.confirmPassword)
-      newErrors.confirmPassword = "Confirm your password";
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
     else if (form.password !== form.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Mật khẩu không khớp";
 
-    if (!form.address) newErrors.address = "Enter your address";
-    if (!checked) newErrors.terms = "You must accept the terms";
+    if (!form.address) newErrors.address = "Vui lòng nhập địa chỉ";
+    if (!checked) newErrors.terms = "Vui lòng đồng ý với điều khoản";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,7 +70,7 @@ const SignUp = () => {
 
       setSuccessMsg(response.message);
       navigate("/verify-otp", {
-        state: { email: form.email }  // Gửi email để trang OTP có thể dùng
+        state: { email: form.email }
       });
       setForm({
         fullName: "",
@@ -84,95 +82,101 @@ const SignUp = () => {
       });
       setChecked(false);
     } catch (error) {
-      const msg = error?.response?.data?.message || "Registration failed";
+      const msg = error?.response?.data?.message || "Đăng ký thất bại";
       showErrorToast(msg);
     }
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-full lgl:w-[500px] h-full flex flex-col justify-center">
-        {successMsg ? (
-          <div className="w-[500px]">
-            <p className="w-full px-4 py-10 text-green-500 font-medium font-titleFont">
-              {successMsg}
-            </p>
-            <Link to="/signin">
-              <button className="w-full h-10 bg-primeColor rounded-md text-gray-200 font-semibold hover:bg-black hover:text-white duration-300">
-                Sign in
-              </button>
-            </Link>
-          </div>
-        ) : (
-          <form className="w-full h-screen flex items-center justify-center">
-            <div className="px-6 py-4 w-full h-[96%] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-primeColor">
-              <h1 className="font-titleFont underline underline-offset-4 text-2xl font-semibold mb-4">
-                Create your account
-              </h1>
+    <div className="w-full min-h-screen bg-[#f5f5f5] flex items-center justify-center py-10">
+      <div className="w-[400px] bg-white rounded-sm shadow-sm">
+        {/* Header */}
+        <div className="bg-[#ee4d2d] p-4">
+          <h2 className="text-white text-xl font-medium text-center">Đăng Ký</h2>
+        </div>
 
+        {/* Content */}
+        <div className="p-8">
+          {successMsg ? (
+            <div className="flex flex-col items-center">
+              <p className="text-green-500 font-medium text-center mb-4">
+                {successMsg}
+              </p>
+              <Link to="/signin" className="w-full">
+                <button className="w-full h-10 bg-[#ee4d2d] text-white rounded-sm hover:bg-[#f05d40] transition duration-300">
+                  Đăng Nhập
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSignUp} className="flex flex-col gap-4">
               {[
-                { label: "Full Name", name: "fullName", type: "text", placeholder: "eg. John Doe" },
-                { label: "Work Email", name: "email", type: "email", placeholder: "john@workemail.com" },
-                { label: "Phone Number", name: "phone", type: "text", placeholder: "0123456789" },
-                { label: "Password", name: "password", type: "password", placeholder: "Create password" },
-                { label: "Confirm Password", name: "confirmPassword", type: "password", placeholder: "Confirm password" },
-                { label: "Address", name: "address", type: "text", placeholder: "road-001, house-115, example area" }
+                { label: "Họ tên", name: "fullName", type: "text", placeholder: "Nhập họ tên" },
+                { label: "Email", name: "email", type: "email", placeholder: "Nhập email" },
+                { label: "Số điện thoại", name: "phone", type: "tel", placeholder: "Nhập số điện thoại" },
+                { label: "Mật khẩu", name: "password", type: "password", placeholder: "Nhập mật khẩu" },
+                { label: "Xác nhận mật khẩu", name: "confirmPassword", type: "password", placeholder: "Nhập lại mật khẩu" },
+                { label: "Địa chỉ", name: "address", type: "text", placeholder: "Nhập địa chỉ" }
               ].map(({ label, name, type, placeholder }) => (
-                <div key={name} className="flex flex-col gap-0.5 mb-3">
-                  <p className="text-base font-semibold text-gray-600">{label}</p>
+                <div key={name} className="flex flex-col gap-1">
                   <input
                     name={name}
                     type={type}
                     value={form[name]}
                     onChange={handleChange}
                     placeholder={placeholder}
-                    className="w-full h-8 px-4 text-base font-medium rounded-md border border-gray-400 outline-none placeholder:text-sm"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-sm outline-none focus:border-[#ee4d2d]"
                   />
-
+                  {errors[name] && (
+                    <p className="text-[#ee4d2d] text-sm">
+                      {errors[name]}
+                    </p>
+                  )}
                 </div>
               ))}
 
-              {/* Checkbox */}
-              <div className="flex items-start gap-2 mb-3">
+              {/* Terms Checkbox */}
+              <div className="flex items-start gap-2">
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => setChecked(!checked)}
                   className="w-4 h-4 mt-1 cursor-pointer"
                 />
-                <p className="text-sm text-primeColor">
-                  I agree to the Clothes{" "}
-                  <span className="text-blue-500">Terms of Service</span> and{" "}
-                  <span className="text-blue-500">Privacy Policy</span>.
+                <p className="text-sm text-gray-600">
+                  Tôi đồng ý với{" "}
+                  <span className="text-[#ee4d2d] cursor-pointer">Điều khoản dịch vụ</span> và{" "}
+                  <span className="text-[#ee4d2d] cursor-pointer">Chính sách bảo mật</span>
                 </p>
               </div>
               {errors.terms && (
-                <p className="text-sm text-red-500 font-semibold px-4 mb-2">
-                  <span className="font-bold italic mr-1">!</span>
+                <p className="text-[#ee4d2d] text-sm">
                   {errors.terms}
                 </p>
               )}
 
               {/* Submit Button */}
               <button
-                onClick={handleSignUp}
-                className={`w-full h-10 rounded-md text-gray-200 font-medium duration-300 ${checked
-                    ? "bg-primeColor hover:bg-black hover:text-white cursor-pointer"
-                    : "bg-gray-500 cursor-not-allowed"
-                  }`}
+                type="submit"
+                disabled={!checked}
+                className={`w-full h-10 rounded-sm text-white transition duration-300 ${
+                  checked
+                    ? "bg-[#ee4d2d] hover:bg-[#f05d40] cursor-pointer"
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
               >
-                Create Account
+                Đăng Ký
               </button>
 
-              <p className="text-sm text-center mt-4 font-medium">
-                Already have an Account?{" "}
-                <Link to="/signin">
-                  <span className="hover:text-blue-600 duration-300">Sign in</span>
+              <div className="flex items-center justify-center gap-2 text-sm mt-4">
+                <span className="text-gray-500">Bạn đã có tài khoản?</span>
+                <Link to="/signin" className="text-[#ee4d2d] hover:underline">
+                  Đăng nhập
                 </Link>
-              </p>
-            </div>
-          </form>
-        )}
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

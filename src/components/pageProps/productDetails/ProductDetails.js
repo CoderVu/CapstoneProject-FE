@@ -511,12 +511,12 @@ const ProductDetails = () => {
               <div className="h-full flex flex-col text-white p-6">
                 <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center mr-2 animate-pulse">
+                    {/* <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center mr-2 animate-pulse">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold">Tìm Kiếm Sản Phẩm Tương Tự</h3>
+                    <h3 className="text-lg font-semibold">Tìm ki</h3>  */}
                   </div>
                   <button
                     onClick={() => setShowAiPanel(false)}
@@ -570,7 +570,7 @@ const ProductDetails = () => {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-6">
+                {/* <div className="mt-auto pt-6">
                   <div className="bg-blue-800 bg-opacity-50 rounded-lg p-3 text-xs">
                     <div className="flex items-center mb-2">
                       <div className="w-3 h-3 rounded-full bg-green-400 mr-2 animate-pulse"></div>
@@ -579,7 +579,7 @@ const ProductDetails = () => {
                     <p className="text-gray-300">AI của chúng tôi phân tích các đặc điểm hình ảnh để tìm những sản phẩm tương tự nhất trong danh mục</p>
                     <p className="text-gray-300">AI tiên tiến của chúng tôi sẽ phân tích hình ảnh để tìm những sản phẩm tương tự trong cơ sở dữ liệu, so sánh các đặc điểm như màu sắc, họa tiết, hình dạng và phong cách.</p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 

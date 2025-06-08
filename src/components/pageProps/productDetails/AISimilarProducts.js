@@ -187,7 +187,7 @@ const AISimilarProducts = ({
         </div>
       ) : processedProducts.length > 0 ? (
         <div>
-          <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+          {/* <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
@@ -200,7 +200,7 @@ const AISimilarProducts = ({
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {processedProducts.map((product) => (

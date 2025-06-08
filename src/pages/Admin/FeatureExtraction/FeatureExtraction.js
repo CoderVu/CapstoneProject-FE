@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://20.3.131.196:5000/api';
 
 const FeatureExtraction = () => {
   // States
@@ -202,7 +202,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://localhost:5000/api/extraction/update_single', {
+          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -293,7 +293,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of imagesToUpdate) {
         try {
-          const response = await fetch('http://localhost:5000/api/extraction/update_single', {
+          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -370,13 +370,12 @@ const FeatureExtraction = () => {
         await fetchProducts();
       }
 
-      // Thu thập tất cả ảnh cần cập nhật từ tất cả sản phẩm
+      // Thu thập tất cả ảnh từ tất cả sản phẩm, bỏ qua điều kiện vectorFeatures
       const allImagesToUpdate = products.products.flatMap(product => {
         return product.images
           .filter(img => {
             const hasValidPath = img.path || img.url;
-            const needsUpdate = !img.vectorFeatures || !img.vectorFeatures.trim();
-            return hasValidPath && needsUpdate;
+            return hasValidPath; // Chỉ kiểm tra có đường dẫn hợp lệ
           })
           .map(img => ({
             ...img,
@@ -385,7 +384,7 @@ const FeatureExtraction = () => {
       });
 
       if (allImagesToUpdate.length === 0) {
-        setSuccess('Không có ảnh nào cần cập nhật');
+        setSuccess('Không có ảnh nào để xử lý');
         return;
       }
 
@@ -396,25 +395,22 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://localhost:5000/api/extraction/update_single', {
+          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               path: img.path || img.url,
-              id: img.id
+              id: img.id,
+              forceUpdate: true // Thêm flag để báo hiệu cập nhật lại
             }),
           });
 
           const result = await response.json();
 
           if (response.ok) {
-            if (result.status === 'skipped') {
-              // Ảnh đã có vector features, bỏ qua
-            } else {
-              successCount++;
-            }
+            successCount++;
           } else {
             failedCount++;
             failedImages.push({
@@ -445,16 +441,16 @@ const FeatureExtraction = () => {
 
       // Cập nhật UI
       if (successCount > 0) {
-        setSuccess(`Đã cập nhật thành công ${successCount} ảnh${failedCount > 0 ? `, ${failedCount} ảnh thất bại` : ''}`);
+        setSuccess(`Đã trích xuất lại thành công ${successCount} ảnh${failedCount > 0 ? `, ${failedCount} ảnh thất bại` : ''}`);
       } else if (failedCount > 0) {
-        setError(`Cập nhật thất bại ${failedCount} ảnh`);
+        setError(`Trích xuất lại thất bại ${failedCount} ảnh`);
       }
 
       // Refresh data
       await Promise.all([fetchStats(), fetchProducts()]);
 
     } catch (error) {
-      setError('Lỗi khi cập nhật tất cả ảnh: ' + error.message);
+      setError('Lỗi khi trích xuất lại toàn bộ ảnh: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -514,19 +510,6 @@ const FeatureExtraction = () => {
 
   return (
     <div className="p-8 max-w-8xl mx-auto">
-      {/* Debug Info */}
-      {/* <div className="mb-6 p-6 bg-gray-100 rounded-lg">
-        <h3 className="text-xl font-medium mb-3">Debug Info:</h3>
-        <pre className="text-base">
-          {JSON.stringify({
-            hasProducts: !!products,
-            totalProducts: products?.total_products,
-            productsLength: products?.products?.length,
-            error: error,
-            loading: loading
-          }, null, 2)}
-        </pre>
-      </div> */}
 
       {/* Error Alert */}
       {error && (
