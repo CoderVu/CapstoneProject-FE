@@ -22,5 +22,5 @@ instance.interceptors.response.use(function (response) {
 }, function (error) {
     return Promise.reject(error);
 });
-
+//npm run build:dev   
 export default instance;
