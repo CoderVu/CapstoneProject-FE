@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiRefreshCw, FiAlertCircle, FiInfo } from 'react-icons/fi';
+import { BiImageAdd } from 'react-icons/bi';
+import { MdOutlineAutoFixHigh } from 'react-icons/md';
+import { Tooltip } from 'react-tooltip';
 
-const API_BASE_URL = 'http://20.3.131.196:5000/api';
+const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
 const FeatureExtraction = () => {
   // States
@@ -202,7 +206,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
+          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -293,7 +297,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of imagesToUpdate) {
         try {
-          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
+          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -395,7 +399,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://20.3.131.196:5000/api/extraction/update_single', {
+          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -552,46 +556,88 @@ const FeatureExtraction = () => {
             )}
           </div>
           <div className="flex flex-col justify-center items-end space-y-4">
-            {/* <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className="px-6 py-3 text-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Làm mới thống kê"
-            >
-              Làm mới
-            </button> */}
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 w-full">
               {!status?.is_running ? (
                 <>
-                  <div className="flex space-x-4">
-                  </div>
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={handleProcessNew}
-                      disabled={loading}
-                      className="px-6 py-3 text-lg bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                      title="Xử lý và trích xuất đặc trưng cho ảnh mới từ shop"
-                    >
-                      Xử lý ảnh mới
-                    </button>
-                  
-                    <button
-                      onClick={handleReExtractAll}
-                      disabled={loading}
-                      className="px-6 py-3 text-lg bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50"
-                    >
-                      Trích xuất lại toàn bộ
-                    </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:border-blue-200 transition-all">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <BiImageAdd className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800">Xử lý ảnh mới</h3>
+                          <p className="text-sm text-gray-500">Tự động phát hiện và xử lý ảnh mới từ shop</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <FiInfo className="w-4 h-4" />
+                          <span>Chỉ xử lý những ảnh chưa có vector đặc trưng</span>
+                        </div>
+                        <button
+                          onClick={handleProcessNew}
+                          disabled={loading}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                          data-tooltip-id="process-new-tooltip"
+                          data-tooltip-content="Bắt đầu xử lý và trích xuất đặc trưng cho ảnh mới từ shop"
+                        >
+                          <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                          <span>Bắt đầu</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100 hover:border-yellow-200 transition-all">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="p-3 bg-yellow-50 rounded-lg">
+                          <MdOutlineAutoFixHigh className="w-8 h-8 text-yellow-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800">Trích xuất lại toàn bộ</h3>
+                          <p className="text-sm text-gray-500">Cập nhật lại vector đặc trưng cho tất cả ảnh</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <FiAlertCircle className="w-4 h-4" />
+                          <span>Cảnh báo: Quá trình này có thể mất nhiều thời gian</span>
+                        </div>
+                        <button
+                          onClick={handleReExtractAll}
+                          disabled={loading}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                          data-tooltip-id="re-extract-tooltip"
+                          data-tooltip-content="Trích xuất lại vector đặc trưng cho tất cả ảnh trong hệ thống"
+                        >
+                          <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                          <span>Bắt đầu trích xuất</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </>
               ) : (
-                <button
-                  onClick={handleStop}
-                  disabled={loading}
-                  className="px-6 py-3 text-lg bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  Dừng trích xuất
-                </button>
+                <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-red-50 rounded-lg">
+                        <FiAlertCircle className="w-6 h-6 text-red-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">Đang xử lý</h3>
+                        <p className="text-sm text-gray-500">Quá trình trích xuất đang được thực hiện</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleStop}
+                      disabled={loading}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    >
+                      <span>Dừng xử lý</span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -889,6 +935,10 @@ const FeatureExtraction = () => {
           </div>
         </div>
       )}
+
+      {/* Add Tooltips */}
+      <Tooltip id="process-new-tooltip" place="top" />
+      <Tooltip id="re-extract-tooltip" place="top" />
     </div>
   );
 };
