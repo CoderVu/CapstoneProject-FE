@@ -526,7 +526,7 @@ const FeatureExtraction = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-              Thống kê trích xuất đặc trưng
+              THỐNG KÊ TRÍCH XUẤT ĐẶC TRƯNG
             </h2>
             {stats && (
               <div className="space-y-4">

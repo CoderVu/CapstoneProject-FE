@@ -173,8 +173,6 @@ const OrderList = () => {
         detail.productName && detail.productName.toLowerCase().includes(searchTerm.toLowerCase())
       ));
 
-
-
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
     let matchesDate = true; 
@@ -318,7 +316,6 @@ const OrderList = () => {
             onChange={handleStatusFilterChange}
             className="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-
             <option value="all">Tất cả trạng thái</option>
             {Object.entries(ORDER_STATUS).map(([key, { text }]) => (
               key !== "DEFAULT" && (
@@ -328,7 +325,6 @@ const OrderList = () => {
               )
             ))}
           </select>
-
         </div>
       </div>
 
@@ -351,38 +347,6 @@ const OrderList = () => {
         </button>
       </div>
 
-      {/* Search and Filters */}
-      <div className="p-5 border-b border-gray-200">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-grow relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder="Tìm kiếm theo mã đơn, tên khách hàng..."
-              className="pl-10 p-2.5 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-            className="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            {Object.entries(ORDER_STATUS).map(([key, { text }]) => (
-              key !== "DEFAULT" && (
-                <option key={key} value={key}>
-                  {text}
-                </option>
-              )
-            ))}
-          </select>
-        </div>
-      </div>
-
       {/* Order List */}
       <div className="p-5">
         {loading ? (
@@ -391,120 +355,189 @@ const OrderList = () => {
             <span className="ml-3 text-gray-500">Đang tải...</span>
           </div>
         ) : filteredOrders.length > 0 ? (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <div key={order.orderCode} className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-800">Đơn hàng #{order.orderCode}</h3>
-                <p className="text-gray-500">Khách hàng: {order.userName}</p>
-                <p className="text-gray-500">Giờ đặt hàng: {new Date(order.orderDate).toLocaleString("vi-VN")}</p>
-                <p className="text-gray-500">Tổng tiền: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(order.totalAmount)}</p>
-
-                {order.orderDetails.map((detail, index) => (
-                  <div key={index} className="p-3 flex items-start gap-3">
-                    <div className="w-16 h-16 flex-shrink-0">
-                      <img
-                        src={detail.imgUrl}
-                        alt={detail.productName}
-                        className="w-full h-full object-cover rounded"
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      {/* <h6 className="font-medium text-gray-800">{detail.productName}</h6> */}
-                      {/* <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
-                        <p>Số lượng: {detail.quantity}</p>
-                        <p>Đơn giá: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(detail.totalPrice)}</p>
-                        <p>Kích thước: {detail.size || "N/A"}</p>
-                        <p>Màu sắc: {detail.color || "N/A"}</p>
-                      </div> */}
-                    </div>
-                  </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mã đơn hàng
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Khách hàng
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ngày đặt
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tổng tiền
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredOrders.map((order) => (
+                  <tr key={order.orderCode} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      #{order.orderCode}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {order.userName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(order.orderDate).toLocaleString("vi-VN")}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(order.totalAmount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${ORDER_STATUS[order.status]?.color}`}>
+                        {ORDER_STATUS[order.status]?.text}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => toggleOrderDetails(order.orderCode)}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Xem chi tiết
+                        </button>
+                        <button
+                          onClick={() => openStatusDialog(order)}
+                          className="text-green-600 hover:text-green-800 font-medium"
+                        >
+                          Cập nhật trạng thái
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-
-                <button
-                  onClick={() => toggleOrderDetails(order.orderCode)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  {expandedOrderId === order.orderCode ? "Ẩn chi tiết" : "Xem chi tiết"}
-                </button>
-                {expandedOrderId === order.orderCode && (
-                  <div className="mt-4 bg-gray-50 border-t border-gray-200 p-4 rounded-b-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      {/* Thông tin giao hàng */}
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">Thông tin giao hàng</h5>
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          <p className="text-gray-700 text-sm"><span className="font-medium">Người nhận:</span> {order.receiverName || order.userName}</p>
-                          <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Số điện thoại:</span> {order.deliveryPhone}</p>
-                          <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Địa chỉ:</span> {order.deliveryAddress}</p>
-                          <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Ghi chú:</span> {order.note || "Không có"}</p>
-                        </div>
-                      </div>
-                      {/* Thông tin thanh toán */}
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">Thanh toán</h5>
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          <p className="text-gray-700 text-sm"><span className="font-medium">Phương thức thanh toán:</span> {order.paymentMethod}</p>
-                          <p className="text-gray-700 text-sm mt-1">
-                            <span className="font-medium">Trạng thái thanh toán:</span>{' '}
-                            <span className={order.status === 'PAID' ? "text-green-600" : "text-yellow-600"}>{order.status === 'PAID' ? "Đã thanh toán" : "Chưa thanh toán"}</span>
-                          </p>
-                          <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Tổng tiền hàng:</span> {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(order.subtotal || (order.totalAmount - (order.shippingFee || 0)))}</p>
-                          <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Phí vận chuyển:</span> {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(order.shippingFee || 0)}</p>
-                          <p className="text-gray-700 font-medium mt-1"><span className="font-medium">Tổng thanh toán:</span> <span className="text-blue-600">{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(order.totalAmount)}</span></p>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Chi tiết sản phẩm */}
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Chi tiết sản phẩm</h5>
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                      {order.orderDetails && order.orderDetails.length > 0 ? (
-                        <div className="divide-y divide-gray-200">
-                          {order.orderDetails.map((detail, index) => (
-                            <div key={index} className="p-3 flex items-start gap-3">
-                              <div className="w-16 h-16 flex-shrink-0">
-                                <img
-                                  src={detail.imgUrl}
-                                  alt={detail.productName}
-                                  className="w-full h-full object-cover rounded"
-                                />
-                              </div>
-                              <div className="flex-grow">
-                                <h6 className="font-medium text-gray-800">{detail.productName}</h6>
-                                <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
-                                  <p>Số lượng: {detail.quantity}</p>
-                                  <p>Đơn giá: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(detail.totalPrice)}</p>
-                                  <p>Kích thước: {detail.size || "N/A"}</p>
-                                  <p>Màu sắc: {detail.color || "N/A"}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="p-4 text-gray-500 text-center">Không có chi tiết sản phẩm</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-between items-center mt-4">
-                  <div className={`px-3 py-1 rounded-full ${ORDER_STATUS[order.status]?.color}`}>
-                    <span className={`text-sm font-medium ${ORDER_STATUS[order.status]?.text}`}>{ORDER_STATUS[order.status]?.text}</span>
-                  </div>
-                  <button
-                    onClick={() => openStatusDialog(order)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Cập nhật trạng thái
-                  </button>
-                </div>
-
-              </div>
-            ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           <p className="text-center text-gray-500">Không tìm thấy đơn hàng nào.</p>
         )}
       </div>
+
+      {/* Order Details Modal */}
+      {expandedOrderId && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                      Chi tiết đơn hàng #{expandedOrderId}
+                    </h3>
+                    {filteredOrders.find(order => order.orderCode === expandedOrderId) && (
+                      <div className="mt-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          {/* Thông tin giao hàng */}
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-700 mb-2">Thông tin giao hàng</h5>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                              <p className="text-gray-700 text-sm"><span className="font-medium">Người nhận:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).receiverName || filteredOrders.find(order => order.orderCode === expandedOrderId).userName}</p>
+                              <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Số điện thoại:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).deliveryPhone}</p>
+                              <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Địa chỉ:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).deliveryAddress}</p>
+                              <p className="text-gray-700 text-sm mt-1"><span className="font-medium">Ghi chú:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).note || "Không có"}</p>
+                            </div>
+                          </div>
+                          {/* Thông tin thanh toán */}
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-700 mb-2">Thanh toán</h5>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                              <p className="text-gray-700 text-sm"><span className="font-medium">Phương thức thanh toán:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).paymentMethod}</p>
+                              <p className="text-gray-700 text-sm mt-1">
+                                <span className="font-medium">Trạng thái thanh toán:</span>{' '}
+                                <span className={filteredOrders.find(order => order.orderCode === expandedOrderId).status === 'PAID' ? "text-green-600" : "text-yellow-600"}>
+                                  {filteredOrders.find(order => order.orderCode === expandedOrderId).status === 'PAID' ? "Đã thanh toán" : "Chưa thanh toán"}
+                                </span>
+                              </p>
+                              <p className="text-gray-700 text-sm mt-1">
+                                <span className="font-medium">Tổng tiền hàng:</span>{' '}
+                                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+                                  filteredOrders.find(order => order.orderCode === expandedOrderId).subtotal || 
+                                  (filteredOrders.find(order => order.orderCode === expandedOrderId).totalAmount - 
+                                  (filteredOrders.find(order => order.orderCode === expandedOrderId).shippingFee || 0))
+                                )}
+                              </p>
+                              <p className="text-gray-700 text-sm mt-1">
+                                <span className="font-medium">Phí vận chuyển:</span>{' '}
+                                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+                                  filteredOrders.find(order => order.orderCode === expandedOrderId).shippingFee || 0
+                                )}
+                              </p>
+                              <p className="text-gray-700 font-medium mt-1">
+                                <span className="font-medium">Tổng thanh toán:</span>{' '}
+                                <span className="text-blue-600">
+                                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+                                    filteredOrders.find(order => order.orderCode === expandedOrderId).totalAmount
+                                  )}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Chi tiết sản phẩm */}
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Chi tiết sản phẩm</h5>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                          {filteredOrders.find(order => order.orderCode === expandedOrderId).orderDetails && 
+                           filteredOrders.find(order => order.orderCode === expandedOrderId).orderDetails.length > 0 ? (
+                            <div className="divide-y divide-gray-200">
+                              {filteredOrders.find(order => order.orderCode === expandedOrderId).orderDetails.map((detail, index) => (
+                                <div key={index} className="p-3 flex items-start gap-3">
+                                  <div className="w-16 h-16 flex-shrink-0">
+                                    <img
+                                      src={detail.imgUrl}
+                                      alt={detail.productName}
+                                      className="w-full h-full object-cover rounded"
+                                    />
+                                  </div>
+                                  <div className="flex-grow">
+                                    <h6 className="font-medium text-gray-800">{detail.productName}</h6>
+                                    <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
+                                      <p>Số lượng: {detail.quantity}</p>
+                                      {/* <p>Đơn giá: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(detail.totalPrice)}</p> */}
+                                      <p>Kích thước: {detail.size || "N/A"}</p>
+                                      <p>Màu sắc: {detail.color || "N/A"}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="p-4 text-gray-500 text-center">Không có chi tiết sản phẩm</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => setExpandedOrderId(null)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pagination */}
       <Pagination
