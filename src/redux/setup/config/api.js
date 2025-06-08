@@ -1,0 +1,20 @@
+// API Configuration
+const API_CONFIG = {
+  BASE_URL: 'http://127.0.0.1:5000/api',
+  
+  // AI Endpoints
+  AI: {
+    FIND_SIMILAR: '/find_similar',
+    EXTRACTION: {
+      STATS: '/extraction/stats',
+      STATUS: '/extraction/status',
+      PRODUCTS: '/extraction/products',
+      START: '/extraction/start',
+      STOP: '/extraction/stop',
+      PROCESS_NEW: '/extraction/process_new',
+      UPDATE_SINGLE: '/extraction/update_single'
+    }
+  }
+};
+
+export default API_CONFIG; 

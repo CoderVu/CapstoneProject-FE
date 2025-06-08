@@ -4,8 +4,7 @@ import { FiRefreshCw, FiAlertCircle, FiInfo } from 'react-icons/fi';
 import { BiImageAdd } from 'react-icons/bi';
 import { MdOutlineAutoFixHigh } from 'react-icons/md';
 import { Tooltip } from 'react-tooltip';
-
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+import API_CONFIG from '../../../redux/setup/config/api';
 
 const FeatureExtraction = () => {
   // States
@@ -24,7 +23,7 @@ const FeatureExtraction = () => {
   // Fetch extraction stats
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/extraction/stats`);
+      const response = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.STATS}`);
       setStats(response.data);
       setError(null);
     } catch (err) {
@@ -35,7 +34,7 @@ const FeatureExtraction = () => {
   // Fetch extraction status
   const fetchStatus = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/extraction/status`);
+      const response = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.STATUS}`);
       setStatus(response.data);
       setError(null);
     } catch (err) {
@@ -46,7 +45,7 @@ const FeatureExtraction = () => {
   // Fetch products data
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/extraction/products`);
+      const response = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.PRODUCTS}`);
       
       if (!response.data?.products) {
         setError('Dữ liệu sản phẩm không hợp lệ');
@@ -129,7 +128,7 @@ const FeatureExtraction = () => {
       }
 
       // Gọi API để bắt đầu trích xuất
-      const response = await axios.post(`${API_BASE_URL}/extraction/start`, { 
+      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.START}`, { 
         process_all: processAll,
         images: allImagesToProcess.map(img => ({
           id: img.id,
@@ -151,7 +150,7 @@ const FeatureExtraction = () => {
   const handleStop = async () => {
     setLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/extraction/stop`);
+      await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.STOP}`);
       fetchStatus();
     } catch (err) {
       setError(err.response?.data?.error || 'Không thể kết nối đến server');
@@ -206,7 +205,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
+          const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -297,7 +296,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of imagesToUpdate) {
         try {
-          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
+          const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -399,7 +398,7 @@ const FeatureExtraction = () => {
       // Xử lý từng ảnh
       for (const img of allImagesToUpdate) {
         try {
-          const response = await fetch('http://127.0.0.1:5000/api/extraction/update_single', {
+          const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -407,7 +406,7 @@ const FeatureExtraction = () => {
             body: JSON.stringify({
               path: img.path || img.url,
               id: img.id,
-              forceUpdate: true // Thêm flag để báo hiệu cập nhật lại
+              forceUpdate: true
             }),
           });
 
@@ -465,7 +464,7 @@ const FeatureExtraction = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_BASE_URL}/extraction/process_new`);
+      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.PROCESS_NEW}`);
       
       if (response.data.results) {
         const { total, success, failed, failed_images } = response.data.results;
