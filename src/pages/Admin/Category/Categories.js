@@ -7,13 +7,14 @@ import { addSize, updateSize } from "../../../redux/service/sizeService";
 import { getAllSizes } from "../../../redux/actions/sizeAction";
 import { addColor, updateColor } from "../../../redux/service/colorService";
 import { getAllColors } from "../../../redux/actions/colorAction";
+import { fetchAllBrands, createBrand, updateBrand, deleteBrand } from "../../../redux/service/brandService";
 import { motion, AnimatePresence } from "framer-motion";
 import namer from "color-namer";
 import {
     Tag, Plus, Edit, Trash2, Save, X, Search,
     AlertCircle, Check, RefreshCw, FileText,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    Palette
+    Palette, Building2
 } from "lucide-react";
 
 const Categories = () => {
@@ -26,9 +27,9 @@ const Categories = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(null);
-    const [deleteType, setDeleteType] = useState(null); // 'category', 'size', or 'color'
+    const [deleteType, setDeleteType] = useState(null); // 'category', 'size', 'color', or 'brand'
     const [successMessage, setSuccessMessage] = useState({ show: false, message: "" });
-    const [activeSection, setActiveSection] = useState("category"); // 'category', 'size', or 'color'
+    const [activeSection, setActiveSection] = useState("category"); // 'category', 'size', 'color', or 'brand'
 
     // Category states
     const [newCategory, setNewCategory] = useState({ name: "", description: "", image: null });
@@ -48,6 +49,13 @@ const Categories = () => {
     const [editColor, setEditColor] = useState({ id: null, color: "", colorCode: "" });
     const [currentColorPage, setCurrentColorPage] = useState(1);
     const [colorsPerPage, setColorsPerPage] = useState(5);
+
+    // Brand states
+    const [brands, setBrands] = useState([]);
+    const [newBrand, setNewBrand] = useState({ brandName: "" });
+    const [editBrand, setEditBrand] = useState({ id: null, brandName: "" });
+    const [currentBrandPage, setCurrentBrandPage] = useState(1);
+    const [brandsPerPage, setBrandsPerPage] = useState(5);
 
     // Filtered categories based on search - Với đầy đủ kiểm tra null
     const filteredCategories = Array.isArray(categories)
@@ -76,11 +84,22 @@ const Categories = () => {
             color.color.toLowerCase().includes((searchTerm || "").toLowerCase())
         )
         : [];
+
+    // Filtered brands based on search
+    const filteredBrands = Array.isArray(brands)
+        ? brands.filter(brand =>
+            brand &&
+            typeof brand.brandName === 'string' &&
+            brand.brandName.toLowerCase().includes((searchTerm || "").toLowerCase())
+        )
+        : [];
+
     // Load data on mount
     useEffect(() => {
         loadCategories();
         loadSizes();
         loadColors();
+        loadBrands();
     }, [dispatch]);
 
     // Calculate pagination for categories
@@ -101,6 +120,12 @@ const Categories = () => {
         setCurrentColorPage(prev => (prev > Math.ceil(filteredColors.length / colorsPerPage) ? 1 : prev));
     }, [filteredColors, colorsPerPage]);
 
+    // Calculate pagination for brands
+    useEffect(() => {
+        setTotalBrandPages(Math.ceil(filteredBrands.length / brandsPerPage));
+        setCurrentBrandPage(prev => (prev > Math.ceil(filteredBrands.length / brandsPerPage) ? 1 : prev));
+    }, [filteredBrands, brandsPerPage]);
+
     // Calculate current items for categories
     const [totalPages, setTotalPages] = useState(1);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -118,6 +143,12 @@ const Categories = () => {
     const indexOfLastColor = currentColorPage * colorsPerPage;
     const indexOfFirstColor = indexOfLastColor - colorsPerPage;
     const currentColors = filteredColors.slice(indexOfFirstColor, indexOfLastColor);
+
+    // Calculate current items for brands
+    const [totalBrandPages, setTotalBrandPages] = useState(1);
+    const indexOfLastBrand = currentBrandPage * brandsPerPage;
+    const indexOfFirstBrand = indexOfLastBrand - brandsPerPage;
+    const currentBrands = filteredBrands.slice(indexOfFirstBrand, indexOfLastBrand);
 
     // Show success message with auto-dismiss
     const showSuccess = (message) => {
@@ -158,6 +189,19 @@ const Categories = () => {
             await dispatch(getAllColors());
         } catch (error) {
             console.error("Failed to load colors:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Load brands with loading state
+    const loadBrands = async () => {
+        setIsLoading(true);
+        try {
+            const data = await fetchAllBrands();
+            setBrands(data);
+        } catch (error) {
+            console.error("Failed to load brands:", error);
         } finally {
             setIsLoading(false);
         }
@@ -379,6 +423,61 @@ const Categories = () => {
         setEditColor({ id: null, color: "", colorCode: "" });
     };
 
+    // Brand functions
+    const handleAddBrand = async (e) => {
+        e.preventDefault();
+        if (!newBrand?.brandName?.trim()) return;
+
+        setIsLoading(true);
+        try {
+            await createBrand({ brandName: newBrand.brandName.trim() });
+            setNewBrand({ brandName: '' });
+            await loadBrands();
+            showSuccess('Thêm thương hiệu thành công!');
+        } catch (error) {
+            console.error("Failed to add brand:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUpdateBrand = async (e) => {
+        e.preventDefault();
+        if (!editBrand?.brandName?.trim()) return;
+
+        setIsLoading(true);
+        try {
+            await updateBrand(editBrand.id, { brandName: editBrand.brandName.trim() });
+            setEditBrand({ id: null, brandName: '' });
+            await loadBrands();
+            showSuccess('Cập nhật thương hiệu thành công!');
+        } catch (error) {
+            console.error("Failed to update brand:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteBrand = async (brandId) => {
+        setIsLoading(true);
+        try {
+            await deleteBrand(brandId);
+            await loadBrands();
+            setConfirmDelete(null);
+            setDeleteType(null);
+            showSuccess('Đã xóa thương hiệu thành công!');
+        } catch (error) {
+            console.error("Failed to delete brand:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Cancel edit mode for brands
+    const cancelBrandEdit = () => {
+        setEditBrand({ id: null, brandName: '' });
+    };
+
     // Handle pagination for categories
     const handleItemsPerPageChange = (e) => {
         const value = parseInt(e.target.value);
@@ -400,6 +499,13 @@ const Categories = () => {
         setCurrentColorPage(1); // Reset to first page when changing items per page
     };
 
+    // Handle pagination for brands
+    const handleBrandsPerPageChange = (e) => {
+        const value = parseInt(e.target.value);
+        setBrandsPerPage(value);
+        setCurrentBrandPage(1); // Reset to first page when changing items per page
+    };
+
     // Handle item delete confirmation
     const showDeleteConfirm = (id, type) => {
         setConfirmDelete(id);
@@ -414,18 +520,20 @@ const Categories = () => {
             handleDeleteSize(confirmDelete);
         } else if (deleteType === 'color') {
             handleDeleteColor(confirmDelete);
+        } else if (deleteType === 'brand') {
+            handleDeleteBrand(confirmDelete);
         }
     };
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="p-6">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 flex items-center">
                         <Tag className="mr-2 h-6 w-6 text-blue-500" />
-                        Quản lý danh mục, kích thước và màu sắc
+                        Quản lý danh mục, kích thước, màu sắc và thương hiệu
                     </h1>
-                    <p className="text-gray-500 mt-1">Quản lý danh mục, kích thước và màu sắc sản phẩm trong cửa hàng của bạn</p>
+                    <p className="text-gray-500 mt-1">Quản lý danh mục, kích thước, màu sắc và thương hiệu sản phẩm trong cửa hàng của bạn</p>
                 </div>
 
                 <div className="flex gap-2">
@@ -448,10 +556,17 @@ const Categories = () => {
                         Màu sắc
                     </button>
                     <button
+                        onClick={() => setActiveSection("brand")}
+                        className={`px-4 py-2 rounded-md transition-colors ${activeSection === "brand" ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
+                    >
+                        Thương hiệu
+                    </button>
+                    <button
                         onClick={() => {
                             if (activeSection === "category") loadCategories();
                             else if (activeSection === "size") loadSizes();
-                            else loadColors();
+                            else if (activeSection === "color") loadColors();
+                            else if (activeSection === "brand") loadBrands();
                         }}
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-md hover:bg-blue-50"
                         disabled={isLoading}
@@ -483,20 +598,20 @@ const Categories = () => {
             {activeSection === "category" && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {/* Add new category form */}
-                    <div className="p-5 border-b border-gray-200 bg-gray-50">
+                    <div className="p-6 border-b border-gray-200 bg-gray-50">
                         <h2 className="text-lg font-medium text-gray-800 mb-4">Thêm danh mục mới</h2>
-                        <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-2">
-                            <div className="flex-grow relative">
+                        <form onSubmit={handleAddCategory} className="flex flex-col lg:flex-row gap-3">
+                            <div className="flex-1">
                                 <input
                                     type="text"
                                     value={newCategory.name}
                                     onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                                     placeholder="Nhập tên danh mục mới..."
-                                    className="w-full p-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     disabled={isLoading}
                                 />
                             </div>
-                            <div className="flex-grow relative">
+                            <div className="flex-1">
                                 <input
                                     type="text"
                                     value={newCategory.description}
@@ -944,9 +1059,7 @@ const Categories = () => {
                                                                 </div>
                                                             </form>
                                                         ) : (
-                                                            <>
-                                                                <span className="text-gray-700 font-medium">{size.name}</span>
-                                                            </>
+                                                            <span className="text-gray-700 font-medium">{size.name}</span>
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
@@ -1239,9 +1352,7 @@ const Categories = () => {
                                                                 </div>
                                                             </form>
                                                         ) : (
-                                                            <>
-                                                                <span className="text-gray-700 font-medium">{color.color}</span>
-                                                            </>
+                                                            <span className="text-gray-700 font-medium">{color.color}</span>
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3">
@@ -1408,6 +1519,268 @@ const Categories = () => {
                 </div>
             )}
 
+            {/* Brand Management Section */}
+            {activeSection === "brand" && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Add new brand form */}
+                    <div className="p-5 border-b border-gray-200 bg-gray-50">
+                        <h2 className="text-lg font-medium text-gray-800 mb-4">Thêm thương hiệu mới</h2>
+                        <form onSubmit={handleAddBrand} className="flex flex-col sm:flex-row gap-2">
+                            <div className="flex-grow relative">
+                                <input
+                                    type="text"
+                                    value={newBrand.brandName}
+                                    onChange={(e) => setNewBrand({ ...newBrand, brandName: e.target.value })}
+                                    placeholder="Nhập tên thương hiệu mới..."
+                                    className="w-full p-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 disabled:opacity-70 disabled:cursor-not-allowed"
+                                disabled={!newBrand?.brandName?.trim() || isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Đang thêm...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="h-4 w-4" />
+                                        <span>Thêm thương hiệu</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Search and brand list */}
+                    <div className="p-5">
+                        <div className="mb-4 relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm thương hiệu..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 p-2.5 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
+                        {isLoading && filteredBrands.length === 0 ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                            </div>
+                        ) : filteredBrands.length > 0 ? (
+                            <div className="overflow-hidden rounded-lg border border-gray-200">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tên thương hiệu
+                                            </th>
+                                            <th scope="col" className="px-4 py-3.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                                                Hành động
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        <AnimatePresence>
+                                            {currentBrands.map((brand) => (
+                                                <motion.tr
+                                                    key={brand.brandId}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="hover:bg-gray-50"
+                                                >
+                                                    <td className="px-4 py-3">
+                                                        {editBrand.id === brand.brandId ? (
+                                                            <form onSubmit={handleUpdateBrand} className="flex items-center gap-2">
+                                                                <div className="relative flex-grow">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editBrand.brandName}
+                                                                        onChange={(e) => setEditBrand({ ...editBrand, brandName: e.target.value })}
+                                                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                        autoFocus
+                                                                    />
+                                                                    {editBrand.brandName && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setEditBrand({ ...editBrand, brandName: "" })}
+                                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                                        >
+                                                                            <X className="h-4 w-4" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex gap-1">
+                                                                    <button
+                                                                        type="submit"
+                                                                        className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                                                                        disabled={!editBrand?.brandName?.trim() || isLoading}
+                                                                        title="Lưu"
+                                                                    >
+                                                                        <Save className="h-4 w-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={cancelBrandEdit}
+                                                                        className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                                                        title="Hủy"
+                                                                    >
+                                                                        <X className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        ) : (
+                                                            <span className="text-gray-700 font-medium">{brand.brandName}</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        {editBrand.id !== brand.brandId && (
+                                                            <div className="flex justify-end space-x-2">
+                                                                <button
+                                                                    onClick={() => setEditBrand({ id: brand.brandId, brandName: brand.brandName })}
+                                                                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => showDeleteConfirm(brand.brandId, 'brand')}
+                                                                    className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </motion.tr>
+                                            ))}
+                                        </AnimatePresence>
+                                    </tbody>
+                                </table>
+
+                                {/* Pagination Controls for Brands */}
+                                {filteredBrands.length > 0 && (
+                                    <div className="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between">
+                                        <div className="flex-1 flex justify-between sm:hidden">
+                                            <button
+                                                onClick={() => setCurrentBrandPage(prev => Math.max(prev - 1, 1))}
+                                                disabled={currentBrandPage === 1}
+                                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Trước
+                                            </button>
+                                            <button
+                                                onClick={() => setCurrentBrandPage(prev => Math.min(prev + 1, totalBrandPages))}
+                                                disabled={currentBrandPage === totalBrandPages}
+                                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Sau
+                                            </button>
+                                        </div>
+                                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                            <div className="flex items-center">
+                                                <label htmlFor="brandsPerPage" className="mr-2 text-sm text-gray-600">Hiển thị:</label>
+                                                <select
+                                                    id="brandsPerPage"
+                                                    className="border border-gray-300 rounded-md text-sm p-1"
+                                                    value={brandsPerPage}
+                                                    onChange={handleBrandsPerPageChange}
+                                                >
+                                                    <option value="5">5</option>
+                                                    <option value="10">10</option>
+                                                    <option value="25">25</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-700">
+                                                    Hiển thị <span className="font-medium">{indexOfFirstBrand + 1}</span> đến <span className="font-medium">{Math.min(indexOfLastBrand, filteredBrands.length)}</span> trong số <span className="font-medium">{filteredBrands.length}</span> thương hiệu
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                                    <button
+                                                        onClick={() => setCurrentBrandPage(1)}
+                                                        disabled={currentBrandPage === 1}
+                                                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="sr-only">Trang đầu</span>
+                                                        <ChevronsLeft className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setCurrentBrandPage(prev => Math.max(prev - 1, 1))}
+                                                        disabled={currentBrandPage === 1}
+                                                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="sr-only">Trang trước</span>
+                                                        <ChevronLeft className="h-5 w-5" />
+                                                    </button>
+
+                                                    {/* Page numbers */}
+                                                    {[...Array(totalBrandPages)].map((_, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => setCurrentBrandPage(index + 1)}
+                                                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentBrandPage === index + 1
+                                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            {index + 1}
+                                                        </button>
+                                                    ))}
+
+                                                    <button
+                                                        onClick={() => setCurrentBrandPage(prev => Math.min(prev + 1, totalBrandPages))}
+                                                        disabled={currentBrandPage === totalBrandPages}
+                                                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="sr-only">Trang sau</span>
+                                                        <ChevronRight className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setCurrentBrandPage(totalBrandPages)}
+                                                        disabled={currentBrandPage === totalBrandPages}
+                                                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <span className="sr-only">Trang cuối</span>
+                                                        <ChevronsRight className="h-5 w-5" />
+                                                    </button>
+                                                </nav>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                <Building2 className="h-16 w-16 text-gray-300 mb-4" />
+                                {searchTerm ? (
+                                    <>
+                                        <p className="text-lg font-medium mb-1">Không tìm thấy thương hiệu nào</p>
+                                        <p className="text-gray-400">Không có thương hiệu nào phù hợp với "{searchTerm}"</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-lg font-medium mb-1">Chưa có thương hiệu nào</p>
+                                        <p className="text-gray-400">Hãy thêm thương hiệu đầu tiên của bạn</p>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Delete Confirmation Modal */}
             <AnimatePresence>
                 {confirmDelete && (
@@ -1431,7 +1804,9 @@ const Categories = () => {
                                     <h3 className="text-lg font-medium text-gray-900">Xác nhận xóa</h3>
                                     <p className="mt-1 text-sm text-gray-500">
                                         Bạn có chắc chắn muốn xóa
-                                        {deleteType === 'category' ? ' danh mục' : deleteType === 'size' ? ' kích thước' : ' màu sắc'}
+                                        {deleteType === 'category' ? ' danh mục' : 
+                                         deleteType === 'size' ? ' kích thước' : 
+                                         deleteType === 'color' ? ' màu sắc' : ' thương hiệu'}
                                         này? Hành động này không thể hoàn tác.
                                     </p>
                                 </div>
