@@ -40,206 +40,6 @@ const styles = `
   .animate-reverse {
     animation-direction: reverse;
   }
-  
-  /* Enhanced Image zoom effect */
-  .image-zoom-container {
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
-  }
-  
-  .image-zoom-container img {
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 100%;
-    height: auto;
-  }
-  
-  /* AI Analysis Effects */
-  .ai-analysis-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: 12px;
-    overflow: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-  
-  .ai-analysis-overlay.active {
-    opacity: 1;
-  }
-  
-  /* Scanning line animation */
-  .scanning-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-    animation: scan 2s linear infinite;
-    z-index: 5;
-  }
-  
-  @keyframes scan {
-    0% {
-      top: 0;
-      opacity: 0.8;
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      top: 100%;
-      opacity: 0.8;
-    }
-  }
-  
-  /* Feature detection points */
-  .feature-point {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #3b82f6;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    animation: pulse 1.5s ease-in-out infinite;
-    z-index: 6;
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 0.8;
-    }
-    50% {
-      transform: scale(1.5);
-      opacity: 1;
-    }
-  }
-  
-  /* Object detection boxes */
-  .detection-box {
-    position: absolute;
-    border: 2px solid #10b981;
-    border-radius: 4px;
-    background: rgba(16, 185, 129, 0.1);
-    animation: detect 2s ease-in-out infinite;
-    z-index: 4;
-  }
-  
-  @keyframes detect {
-    0%, 100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.02);
-    }
-  }
-  
-  /* Analysis grid */
-  .analysis-grid {
-    position: absolute;
-    inset: 0;
-    background-image: 
-      linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.3;
-    z-index: 3;
-  }
-  
-  /* Processing indicator */
-  .processing-indicator {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 7;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
-  
-  .processing-indicator.active {
-    opacity: 1;
-  }
-  
-  .processing-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid #3b82f6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .image-zoom-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease-in-out;
-    pointer-events: none;
-    border-radius: 12px;
-  }
-  
-  /* Thumbnail hover effects */
-  .thumbnail-container {
-    position: relative;
-    overflow: hidden;
-    border-radius: 8px;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .thumbnail-container:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  }
-  
-  .thumbnail-container img {
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  .thumbnail-container:hover img {
-    transform: scale(1.05);
-  }
-  
-  /* Smooth transitions */
-  .smooth-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Card hover effects */
-  .card-hover {
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Compact layout for viewport */
-  .compact-layout {
-    max-height: 90vh;
-    overflow-y: auto;
-  }
 `;
 
 const ProductDetails = () => {
@@ -275,8 +75,6 @@ const ProductDetails = () => {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [productResults, setProductResults] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
 
   // Helper function to get color code by color name
   const getColorCode = (colorName) => {
@@ -406,33 +204,11 @@ const ProductDetails = () => {
     }
 
     try {
-      setIsAnalyzing(true);
-      setAnalysisProgress(0);
+      setLoadingSimilar(true);
       setShowSimilarProducts(true);
       setErrorMessage("");
 
-      // Simulate AI analysis progress
-      const progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + Math.random() * 15;
-        });
-      }, 200);
-
       const data = await findSimilarImages(imageUrl);
-      
-      clearInterval(progressInterval);
-      setAnalysisProgress(100);
-      
-      // Wait a bit to show completion
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        setAnalysisProgress(0);
-      }, 500);
-
       console.log("=== AI RESPONSE ===");
       console.log("Similar images from AI:", data.similar_images.map(img => ({
         url: img.url,
@@ -565,8 +341,7 @@ const ProductDetails = () => {
       setProductResults([]);
       showErrorToast("Không thể tìm thấy sản phẩm tương tự. Vui lòng thử một hình ảnh khác.");
     } finally {
-      setIsAnalyzing(false);
-      setAnalysisProgress(0);
+      setLoadingSimilar(false);
     }
   };
 
@@ -708,280 +483,171 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="w-full mx-auto border-b border-gray-300 border-t rounded-lg">
       {/* Inject the custom CSS */}
       <style>{styles}</style>
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="mb-3">
+      <div className="max-w-container mx-auto px-4">
+        <div className="xl:-mt-10 -mt-7">
           <Breadcrumbs title="" prevLocation={prevLocation} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-            {/* Hình ảnh sản phẩm */}
-            <div className="space-y-3">
-              {/* Ảnh chính với zoom effect */}
-              <div className="image-zoom-container bg-gray-50 border border-gray-200">
+        <div className="w-full grid grid-cols-1 md:grid-cols-5 gap-4 h-full -mt-5 xl:-mt-8 pb-10 bg-gray-100 p-4">
+          {/* Hình ảnh chiếm 40% */}
+          <div className="w-full md:col-span-2 xl:col-span-2 object-cover rounded-lg">
+            <div className="image-container relative">
+              <div className={`image-slide ${slideDirection === "left" ? "slide-left" : "slide-right"}`}>
                 {selectedImage || productDetail?.mainImage?.path ? (
                   <div className="relative">
                     <img
                       src={selectedImage || productDetail?.mainImage?.path}
                       alt={productDetail?.productName}
                       onClick={() => postViewedProduct(productDetail.id)}
-                      className="w-full h-auto"
-                      loading="lazy"
-                      onMouseMove={(e) => {
-                        const magnifier = e.target.parentElement.querySelector('.magnifier');
-                        if (magnifier) {
-                          const rect = e.target.getBoundingClientRect();
-                          const x = e.clientX - rect.left;
-                          const y = e.clientY - rect.top;
-                          
-                          // Calculate position for magnifier
-                          const magnifierSize = 150;
-                          const magnifierX = x - magnifierSize / 2;
-                          const magnifierY = y - magnifierSize / 2;
-                          
-                          // Constrain magnifier within image bounds
-                          const constrainedX = Math.max(0, Math.min(magnifierX, rect.width - magnifierSize));
-                          const constrainedY = Math.max(0, Math.min(magnifierY, rect.height - magnifierSize));
-                          
-                          // Set magnifier position
-                          magnifier.style.left = `${constrainedX}px`;
-                          magnifier.style.top = `${constrainedY}px`;
-                          
-                          // Calculate background position for zoom effect (3x zoom)
-                          const imgWidth = e.target.offsetWidth;
-                          const imgHeight = e.target.offsetHeight;
-                          const zoomLevel = 3;
-                          
-                          // Calculate the position in the original image
-                          const originalX = (x / imgWidth) * 100;
-                          const originalY = (y / imgHeight) * 100;
-                          
-                          // Set background image and position for 3x zoom
-                          magnifier.style.backgroundImage = `url(${e.target.src})`;
-                          magnifier.style.backgroundSize = `${imgWidth * zoomLevel}px ${imgHeight * zoomLevel}px`;
-                          magnifier.style.backgroundPosition = `${-x * zoomLevel + magnifierSize / 2}px ${-y * zoomLevel + magnifierSize / 2}px`;
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        const magnifier = document.querySelector('.magnifier');
-                        if (magnifier) {
-                          magnifier.style.display = 'none';
-                        }
-                      }}
-                      onMouseEnter={() => {
-                        const magnifier = document.querySelector('.magnifier');
-                        if (magnifier) {
-                          magnifier.style.display = 'block';
-                        }
-                      }}
+                      className="w-full h-auto rounded-lg"
+                      loading="lazy" // Lazy Loading - Images load only when needed
                     />
-                    
-                    {/* AI Analysis Overlay - Only for current image analysis */}
-                    <div className={`ai-analysis-overlay ${isAnalyzing ? 'active' : ''}`}>
-                      {/* Analysis Grid */}
-                      <div className="analysis-grid"></div>
-                      
-                      {/* Scanning Line */}
-                      <div className="scanning-line"></div>
-                      
-                      {/* Feature Detection Points */}
-                      {isAnalyzing && (
-                        <>
-                          <div className="feature-point" style={{ top: '20%', left: '25%' }}></div>
-                          <div className="feature-point" style={{ top: '35%', left: '60%' }}></div>
-                          <div className="feature-point" style={{ top: '50%', left: '15%' }}></div>
-                          <div className="feature-point" style={{ top: '65%', left: '70%' }}></div>
-                          <div className="feature-point" style={{ top: '80%', left: '40%' }}></div>
-                        </>
-                      )}
-                      
-                      {/* Object Detection Boxes */}
-                      {isAnalyzing && (
-                        <>
-                          <div className="detection-box" style={{ top: '15%', left: '20%', width: '30%', height: '25%' }}></div>
-                          <div className="detection-box" style={{ top: '45%', left: '55%', width: '25%', height: '20%' }}></div>
-                        </>
-                      )}
-                      
-                      {/* Processing Indicator */}
-                      <div className={`processing-indicator ${isAnalyzing ? 'active' : ''}`}>
-                        <div className="processing-spinner"></div>
-                        <span>Phân tích hình ảnh... {Math.round(analysisProgress)}%</span>
-                      </div>
-                    </div>
-                    
-                    {/* Magnifier */}
-                    <div className="magnifier"></div>
+                    {/* AI Floating Button */}
+                    <button
+                      onClick={() => setShowAiPanel(!showAiPanel)}
+                      className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300 z-10"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" />
+                        <path d="M10.3 15.29a1 1 0 001.4 1.42l4-4a1 1 0 000-1.42l-4-4a1 1 0 00-1.4 1.42L13.58 12l-3.3 3.29z" />
+                      </svg>
+                    </button>
                   </div>
                 ) : (
-                  <div className="w-full h-[250px] flex items-center justify-center text-gray-500 bg-gray-100">
-                    <div className="text-center">
-                      <svg className="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="text-xs">Đang tải hình ảnh...</p>
-                    </div>
+                  <div className="w-full h-[400px] flex items-center justify-center text-gray-500 bg-gray-200 rounded-lg">
+                    Đang tải hình ảnh...
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Thumbnail images */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-gray-900 flex items-center gap-1">
-                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Hình ảnh khác
-                  </h3>
-                  
-                  {/* AI Button */}
+            {/* AI Panel - Slides in from the side */}
+            <div className={`fixed inset-y-0 right-0 w-72 bg-gradient-to-br from-blue-900 to-purple-900 shadow-2xl transform ${showAiPanel ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out z-50 overflow-hidden`}>
+              <div className="h-full flex flex-col text-white p-6">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex items-center">
+                    {/* <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center mr-2 animate-pulse">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold">Tìm ki</h3>  */}
+                  </div>
                   <button
-                    onClick={() => setShowAiPanel(!showAiPanel)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                    onClick={() => setShowAiPanel(false)}
+                    className="text-white hover:text-gray-300"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" />
-                      <path d="M10.3 15.29a1 1 0 001.4 1.42l4-4a1 1 0 000-1.42l-4-4a1 1 0 00-1.4 1.42L13.58 12l-3.3 3.29z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    AI Tìm kiếm
                   </button>
                 </div>
-                <div className="grid grid-cols-8 gap-1">
-                  {productDetail?.images &&
-                    productDetail?.images.map((image, index) => {
-                      const colorCode = image.color ? getColorCode(image.color) : "#FFFFFF";
-                      
-                      return (
-                        <div
-                          key={index}
-                          className={`thumbnail-container cursor-pointer ${
-                            selectedImage === image.path 
-                              ? "ring-1 ring-blue-500 ring-offset-1 scale-105" 
-                              : "hover:ring-1 hover:ring-gray-300"
-                          }`}
-                          onClick={() => handleImageClick(image.path)}
-                        >
-                          <div className="aspect-square w-full bg-gray-50 border border-gray-200">
-                            <img
-                              src={image.path}
-                              alt={`Product image ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              onClick={() => postViewedProduct(productDetail.id)}
-                              loading="lazy"
-                            />
-                          </div>
-                          
+
+                <div className="space-y-6">
+                  <div className="relative">
+                    <div className="absolute -left-3 top-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <span className="text-xs font-bold">1</span>
+                    </div>
+                    <button
+                      onClick={() => findSimilarProducts(selectedImage || productDetail.mainImage.path)}
+                      className="w-full bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-filter backdrop-blur-sm rounded-xl p-4 transition-all duration-300 transform hover:translate-y-[-2px] border border-white border-opacity-20 flex items-center"
+                    >
+                      <div className="mr-3 bg-gradient-to-br from-blue-400 to-purple-500 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
+                        </svg>
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-medium">Tìm Kiếm Thị Giác AI</h4>
+                        <p className="text-xs text-gray-300">Tìm sản phẩm tương tự</p>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute -left-3 top-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                      <span className="text-xs font-bold">2</span>
+                    </div>
+                    <button
+                      onClick={openUploadModal}
+                      className="w-full bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-filter backdrop-blur-sm rounded-xl p-4 transition-all duration-300 transform hover:translate-y-[-2px] border border-white border-opacity-20 flex items-center"
+                    >
+                      <div className="mr-3 bg-gradient-to-br from-purple-400 to-pink-500 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-medium">Tải Lên & Tìm Kiếm</h4>
+                        <p className="text-xs text-gray-300">Tìm kiếm bằng hình ảnh của bạn</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* <div className="mt-auto pt-6">
+                  <div className="bg-blue-800 bg-opacity-50 rounded-lg p-3 text-xs">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 rounded-full bg-green-400 mr-2 animate-pulse"></div>
+                      <p className="font-medium">AI Thị Giác Đang Hoạt Động</p>
+                    </div>
+                    <p className="text-gray-300">AI của chúng tôi phân tích các đặc điểm hình ảnh để tìm những sản phẩm tương tự nhất trong danh mục</p>
+                    <p className="text-gray-300">AI tiên tiến của chúng tôi sẽ phân tích hình ảnh để tìm những sản phẩm tương tự trong cơ sở dữ liệu, so sánh các đặc điểm như màu sắc, họa tiết, hình dạng và phong cách.</p>
+                  </div>
+                </div> */}
+              </div>
+            </div>
+
+            <div className="relative mt-2">
+              <Slider {...settings}>
+                {productDetail?.images &&
+                  productDetail?.images.map((image, index) => {
+                    // Lấy color code cho hình ảnh này
+                    const colorCode = image.color ? getColorCode(image.color) : "#FFFFFF";
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`thumbnail ${selectedImage === image.path ? "border-2 border-blue-500" : "border border-gray-300"} rounded-lg cursor-pointer p-1 mx-1`}
+                        onClick={() => handleImageClick(image.path)}
+                      >
+                        <div className="aspect-square w-full overflow-hidden rounded-lg relative">
+                          <img
+                            src={image.path}
+                            alt={`Product image ${index + 1}`}
+                            className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                            onClick={() => postViewedProduct(productDetail.id)}
+                            loading="lazy" // Lazy Loading - Images load only when needed
+                          />
                           {/* Color indicator */}
                           {image.color && (
                             <div 
-                              className="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-white shadow-sm"
+                              className="absolute bottom-2 right-2 w-4 h-4 rounded-full border border-white shadow-md"
                               style={{ backgroundColor: colorCode }}
                               title={image.color}
                             ></div>
                           )}
                         </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
-
-            {/* Thông tin sản phẩm */}
-            <div className="flex flex-col justify-start">
-              <ProductInfo 
-                productInfo={productDetail} 
-                onImageClick={handleImageClick}
-                getColorCode={getColorCode}
-                getColorName={getColorName}
-                colors={colors}
-              />
+                      </div>
+                    );
+                  })}
+              </Slider>
             </div>
           </div>
-        </div>
 
-        {/* AI Panel - Slides in from the side */}
-        <div className={`fixed inset-y-0 right-0 w-80 bg-gradient-to-br from-blue-900 to-purple-900 shadow-2xl transform ${showAiPanel ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out z-50 overflow-hidden`}>
-          <div className="h-full flex flex-col text-white p-6">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">AI Thị Giác</h3>
-                  <p className="text-sm text-blue-200">Tìm sản phẩm tương tự</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowAiPanel(false)}
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <div className="absolute -left-3 top-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                  <span className="text-xs font-bold">1</span>
-                </div>
-                <button
-                  onClick={() => findSimilarProducts(selectedImage || productDetail.mainImage.path)}
-                  className="w-full bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-filter backdrop-blur-sm rounded-xl p-4 transition-all duration-300 transform hover:translate-y-[-2px] border border-white border-opacity-20 flex items-center"
-                >
-                  <div className="mr-3 bg-gradient-to-br from-blue-400 to-purple-500 p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-medium">Tìm Kiếm Thị Giác AI</h4>
-                    <p className="text-xs text-gray-300">Tìm sản phẩm tương tự</p>
-                  </div>
-                </button>
-              </div>
-
-              <div className="relative">
-                <div className="absolute -left-3 top-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
-                  <span className="text-xs font-bold">2</span>
-                </div>
-                <button
-                  onClick={openUploadModal}
-                  className="w-full bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-filter backdrop-blur-sm rounded-xl p-4 transition-all duration-300 transform hover:translate-y-[-2px] border border-white border-opacity-20 flex items-center"
-                >
-                  <div className="mr-3 bg-gradient-to-br from-purple-400 to-pink-500 p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-medium">Tải Lên & Tìm Kiếm</h4>
-                    <p className="text-xs text-gray-300">Tìm kiếm bằng hình ảnh của bạn</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-auto pt-6">
-              <div className="bg-blue-800 bg-opacity-50 rounded-xl p-4 text-sm">
-                <div className="flex items-center mb-2">
-                  <div className="w-3 h-3 rounded-full bg-green-400 mr-2 animate-pulse"></div>
-                  <p className="font-medium">AI Thị Giác Đang Hoạt Động</p>
-                </div>
-                <p className="text-gray-300 text-xs leading-relaxed">
-                  AI của chúng tôi phân tích các đặc điểm hình ảnh để tìm những sản phẩm tương tự nhất trong danh mục
-                </p>
-              </div>
-            </div>
+          {/* Chi tiết sản phẩm chiếm 60% */}
+          <div className="h-full w-full md:col-span-3 xl:col-span-3 xl:p-14 flex flex-col gap-6 justify-center">
+            <ProductInfo 
+              productInfo={productDetail} 
+              onImageClick={handleImageClick}
+              getColorCode={getColorCode}
+              getColorName={getColorName}
+              colors={colors}
+            />
           </div>
         </div>
 
@@ -1178,9 +844,9 @@ const ProductDetails = () => {
         />
 
         {/* ProductTabs - with updated styling */}
-        <div className="w-full bg-white p-4 rounded-lg shadow-lg mt-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Thông tin sản phẩm

@@ -2,7 +2,7 @@ import types from "../types";
 import { fetchAllColors } from "../service/colorService";
 
 export const getAllColors = () => async (dispatch) => {
-  dispatch({ type: types.FETCH_CATEGORY_REQUEST });
+  dispatch({ type: types.FETCH_COLOR_REQUEST });
   try {
     const colors= await fetchAllColors()
     dispatch({
