@@ -22,10 +22,23 @@ jobs:
           username: vunguyen2901
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Generate Docker tag
+        id: docker_tag
+        run: |
+          # Use commit SHA for unique tag
+          echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "short_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
       - name: Build and push Frontend Docker image
         run: |
-          docker build -t vunguyen2901/capstone-frontend:latest .
+          # Build with unique tag and latest tag
+          docker build --no-cache -t vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }} -t vunguyen2901/capstone-frontend:latest .
+          
+          # Push both tags
+          docker push vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}
           docker push vunguyen2901/capstone-frontend:latest
+          
+          echo "Built and pushed image: vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}"
 
       - name: Deploy frontend Docker on remote server
         uses: appleboy/ssh-action@v1.0.3
@@ -65,10 +78,10 @@ jobs:
             echo "Removing old image if exists..."
             docker rmi vunguyen2901/capstone-frontend:latest || echo "No old image to remove"
             
-            # Pull image mới từ DockerHub
+            # Pull image mới từ DockerHub với tag cụ thể
             echo "Pulling new image from DockerHub..."
-            if docker pull vunguyen2901/capstone-frontend:latest; then
-              echo "Image pulled successfully"
+            if docker pull vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}; then
+              echo "Image pulled successfully: vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}"
             else
               echo "ERROR: Failed to pull image from DockerHub"
               echo "Please check:"
@@ -91,13 +104,14 @@ jobs:
             docker run -d --name capstone-frontend \
               --network dockervu \
               -p 3000:80 \
-              vunguyen2901/capstone-frontend:latest
+              vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}
             
             # Kiểm tra container đã chạy thành công
             if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
               echo "Container started successfully"
               echo "Container status:"
               docker ps -f name=capstone-frontend
+              echo "Deployed version: ${{ steps.docker_tag.outputs.short_tag }}"
             else
               echo "ERROR: Container failed to start"
               echo "Container logs:"
