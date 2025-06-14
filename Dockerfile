@@ -14,8 +14,8 @@ FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom nginx config if needed
-# COPY nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx config for React SPA
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
