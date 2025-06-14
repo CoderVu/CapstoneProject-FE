@@ -21,7 +21,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: vunguyen2901
-          password: ${{ secrets.DOCKERHUB_USERNAME_FE }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Frontend Docker image
         run: |
@@ -35,28 +35,75 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "Starting deployment process..."
+            
             # Tạo Docker network dockervu nếu chưa có
             docker network inspect dockervu >/dev/null 2>&1 || docker network create dockervu
             echo "Docker network 'dockervu' checked/created successfully"
             
-            # Login to DockerHub
-            echo ${{ secrets.DOCKERHUB_USERNAME_FE }} | docker login -u vunguyen2901 --password-stdin
+            # Login to DockerHub with better error handling
+            echo "Logging in to DockerHub..."
+            if echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u vunguyen2901 --password-stdin; then
+              echo "DockerHub login successful"
+            else
+              echo "ERROR: DockerHub login failed"
+              echo "Please check your DOCKERHUB_TOKEN secret has proper scopes (Read & Write)"
+              exit 1
+            fi
             
             # Stop và remove container frontend cũ nếu đang chạy
+            echo "Stopping old container if exists..."
             if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
               docker stop capstone-frontend
+              echo "Old container stopped"
             fi
             if [ "$(docker ps -a -q -f name=capstone-frontend)" ]; then
               docker rm capstone-frontend
+              echo "Old container removed"
             fi
 
+            # Xóa image cũ nếu có
+            echo "Removing old image if exists..."
+            docker rmi vunguyen2901/capstone-frontend:latest || echo "No old image to remove"
+            
             # Pull image mới từ DockerHub
-            docker pull vunguyen2901/capstone-frontend:latest
+            echo "Pulling new image from DockerHub..."
+            if docker pull vunguyen2901/capstone-frontend:latest; then
+              echo "Image pulled successfully"
+            else
+              echo "ERROR: Failed to pull image from DockerHub"
+              echo "Please check:"
+              echo "1. DOCKERHUB_TOKEN has proper scopes (Read & Write)"
+              echo "2. Image was pushed successfully in previous step"
+              echo "3. Repository name is correct: vunguyen2901/capstone-frontend"
+              exit 1
+            fi
+            
+            # Kiểm tra image đã pull thành công
+            if docker images | grep -q "vunguyen2901/capstone-frontend"; then
+              echo "Image verified successfully"
+            else
+              echo "ERROR: Image not found after pull"
+              exit 1
+            fi
             
             # Chạy container frontend mới trong network 'dockervu'
+            echo "Starting new container..."
             docker run -d --name capstone-frontend \
               --network dockervu \
               -p 3000:3000 \
               vunguyen2901/capstone-frontend:latest
+            
+            # Kiểm tra container đã chạy thành công
+            if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
+              echo "Container started successfully"
+              echo "Container status:"
+              docker ps -f name=capstone-frontend
+            else
+              echo "ERROR: Container failed to start"
+              echo "Container logs:"
+              docker logs capstone-frontend
+              exit 1
+            fi
             
             echo "Frontend Docker container deployed successfully!" 
