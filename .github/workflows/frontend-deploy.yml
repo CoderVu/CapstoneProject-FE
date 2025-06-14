@@ -1,0 +1,62 @@
+name: Build and Deploy Frontend Docker to Azure VM
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Frontend Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/capstone-frontend:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/capstone-frontend:latest
+
+      - name: Deploy frontend Docker on remote server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 20.3.131.196
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Tạo Docker network dockervu nếu chưa có
+            docker network inspect dockervu >/dev/null 2>&1 || docker network create dockervu
+            echo "Docker network 'dockervu' checked/created successfully"
+            
+            # Login to DockerHub
+            echo ${{ secrets.DOCKERHUB_USERNAME_FE }} | docker login -u vunguyen2901 --password-stdin
+            
+            # Stop và remove container frontend cũ nếu đang chạy
+            if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
+              docker stop capstone-frontend
+            fi
+            if [ "$(docker ps -a -q -f name=capstone-frontend)" ]; then
+              docker rm capstone-frontend
+            fi
+
+            # Pull image mới từ DockerHub
+            docker pull vunguyen2901/capstone-frontend:latest
+            
+            # Chạy container frontend mới trong network 'dockervu'
+            docker run -d --name capstone-frontend \
+              --network dockervu \
+              -p 3000:3000 \
+              vunguyen2901/capstone-frontend:latest
+            
+            echo "Frontend Docker container deployed successfully!" 
