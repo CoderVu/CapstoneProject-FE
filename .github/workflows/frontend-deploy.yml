@@ -20,13 +20,13 @@ jobs:
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: vunguyen2901
+          password: ${{ secrets.DOCKERHUB_TOKEN_FE }}
 
       - name: Build and push Frontend Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/capstone-frontend:latest .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/capstone-frontend:latest
+          docker build -t vunguyen2901/capstone-frontend:latest .
+          docker push vunguyen2901/capstone-frontend:latest
 
       - name: Deploy frontend Docker on remote server
         uses: appleboy/ssh-action@v1.0.3
