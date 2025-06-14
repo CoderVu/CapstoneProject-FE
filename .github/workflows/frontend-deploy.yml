@@ -21,7 +21,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: vunguyen2901
-          password: ${{ secrets.DOCKERHUB_TOKEN_FE }}
+          password: ${{ secrets.DOCKERHUB_USERNAME_FE }}
 
       - name: Build and push Frontend Docker image
         run: |
