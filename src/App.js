@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import './utils/imagePolyfill';
 import {
   createBrowserRouter,
   RouterProvider,

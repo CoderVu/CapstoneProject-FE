@@ -28,9 +28,9 @@ const Home = () => {
           {/* <SurveyAIRecommend /> */}
         </div>
         {/* Category section */}
-        <div className="py-10">
+        {/* <div className="py-10">
           <CategorySection />
-        </div>
+        </div> */}
 
         {/* New Arrivals section */}
         <div className="py-10 border-t border-gray-200">

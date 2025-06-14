@@ -514,15 +514,6 @@ const FeatureExtraction = () => {
   return (
     <div className="p-8 max-w-8xl mx-auto">
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mb-5 p-6 bg-red-50 border-2 border-red-200 rounded-lg">
-          <div className="flex items-center text-red-700 text-lg">
-            <span className="font-medium">Lỗi:</span>
-            <span className="ml-3">{error}</span>
-          </div>
-        </div>
-      )}
 
       {/* Main Stats Card */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
@@ -570,10 +561,6 @@ const FeatureExtraction = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          <FiInfo className="w-4 h-4" />
-                          <span>Chỉ xử lý những ảnh chưa có vector đặc trưng</span>
-                        </div>
                         <button
                           onClick={handleProcessNew}
                           disabled={loading}
@@ -598,10 +585,6 @@ const FeatureExtraction = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          <FiAlertCircle className="w-4 h-4" />
-                          <span>Cảnh báo: Quá trình này có thể mất nhiều thời gian</span>
-                        </div>
                         <button
                           onClick={handleReExtractAll}
                           disabled={loading}
@@ -610,7 +593,7 @@ const FeatureExtraction = () => {
                           data-tooltip-content="Trích xuất lại vector đặc trưng cho tất cả ảnh trong hệ thống"
                         >
                           <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                          <span>Bắt đầu trích xuất</span>
+                          <span>Bắt đầu</span>
                         </button>
                       </div>
                     </div>
