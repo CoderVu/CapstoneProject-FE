@@ -556,9 +556,9 @@ const UserProfile = () => {
                       <button className="px-4 py-2 border border-blue-500 text-blue-600 hover:bg-blue-50 font-medium rounded-md transition-colors">
                         Thiết lập
                       </button>
-                      <Link to="/admin/dashboard" className="ml-2 text-sm text-blue-500 hover:underline">
+                      {/* <Link to="/admin/dashboard" className="ml-2 text-sm text-blue-500 hover:underline">
                         Quản lý
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                 </div>
