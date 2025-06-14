@@ -90,7 +90,7 @@ jobs:
             echo "Starting new container..."
             docker run -d --name capstone-frontend \
               --network dockervu \
-              -p 3000:3000 \
+              -p 3000:80 \
               vunguyen2901/capstone-frontend:latest
             
             # Kiểm tra container đã chạy thành công
