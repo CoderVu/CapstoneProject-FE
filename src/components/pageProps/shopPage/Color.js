@@ -13,6 +13,8 @@ const Color = ({ onChange, selectedColor, setSelectedColor }) => {
     dispatch(getAllColors());
   }, [dispatch]);
 
+  console.log(colors);
+
   const handleColorChange = (color) => {
     if (selectedColor === color.id) {
       setSelectedColor(null);

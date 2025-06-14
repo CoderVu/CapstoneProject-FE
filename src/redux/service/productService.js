@@ -310,6 +310,24 @@ const addProductDescription = async (productId, descriptionData) => {
         throw error;
     }
 };
+const deleteProduct = async (productId) => {
+    try {
+        const response = await axios.delete(
+            `/api/v1/admin/products/${productId}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        showSuccessToast(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        showErrorToast(error.response?.data?.message || "An unexpected error occurred.");
+        throw error;
+    }
+};
 
 const updateProductDescription = async (productId, descriptionData) => {
     try {
@@ -419,6 +437,7 @@ export {
     updateVariantProduct,
     deleteVariantProduct,
     addProductDescription,
+    deleteProduct,
     updateProductDescription,
     addProductCareInstructions,
     updateProductCareInstructions,

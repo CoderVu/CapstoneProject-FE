@@ -898,7 +898,7 @@ const BuyNowPage = () => {
 
             <div className="flex justify-center space-x-4">
               <Link
-                to="/order-history"
+                to="/orders"
                 className="px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150"
               >
                 Xem đơn hàng

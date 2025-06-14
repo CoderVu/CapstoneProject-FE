@@ -253,7 +253,7 @@ const ProductDetails = () => {
                   similarity: similarity,
                   inSimilarityMap: similarity !== undefined
                 });
-                
+
                 if (similarity !== undefined && similarity > maxSimilarity) {
                   maxSimilarity = similarity;
                   matchedImage = image;
@@ -816,125 +816,7 @@ const ProductDetails = () => {
           <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
 
-        {/* Sản phẩm liên quan */}
-        {/* <div className="w-full bg-white p-6 rounded-lg shadow-lg mt-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            Sản phẩm tương tự
-          </h2>
-          <ProductRelated />
-        </div> */}
-
-        {/* Reviews section with updated design */}
-        <div className="w-full bg-gradient-to-r from-white to-blue-50 p-6 rounded-lg shadow-lg mt-4 border border-blue-100">
-          <div className="flex items-center mb-4">
-            <div className="bg-blue-500 p-2 rounded-lg mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </div>
-
-            {/* AI Powered Badge */}
-            {ratingSummary.totalReviews > 0 && (
-              <div className="ml-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clipRule="evenodd" />
-                </svg>
-                Phân Tích Cảm Xúc AI
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center border border-blue-100">
-              <div className="text-4xl font-bold text-blue-600 mb-2">{ratingSummary.averageRating || 0}<span className="text-xl text-gray-500">/5</span></div>
-              <div className="flex items-center mb-2">
-                {Array.from({ length: 5 }).map((_, index) =>
-                  index < Math.round(ratingSummary.averageRating) ? (
-                    <FaStar key={index} className="text-yellow-400 text-xl" />
-                  ) : (
-                    <FaRegStar key={index} className="text-gray-300 text-xl" />
-                  )
-                )}
-              </div>
-              <div className="text-sm text-gray-600 mb-3">Dựa trên {ratingSummary.totalReviews} đánh giá</div>
-
-              {ratingSummary.totalReviews > 0 && (
-                <div className="w-full bg-blue-50 rounded-lg p-3 text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm font-medium text-blue-800">Phân Tích AI</span>
-                  </div>
-                  <p className="text-xs text-blue-600">
-                    {ratingSummary.averageRating >= 4.5
-                      ? "Sản phẩm có đánh giá xuất sắc"
-                      : ratingSummary.averageRating >= 4
-                        ? "Người dùng rất hài lòng với sản phẩm này"
-                        : ratingSummary.averageRating >= 3
-                          ? "Sản phẩm có chất lượng khá tốt"
-                          : "Sản phẩm cần cải thiện"}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white rounded-xl shadow-md p-6 border border-blue-100">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Phân bố đánh giá</h3>
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((star) => (
-                  <div key={star} className="flex items-center">
-                    <div className="flex items-center w-16">
-                      <span className="text-sm font-medium text-gray-700">{star} sao</span>
-                    </div>
-                    <div className="w-full mx-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${star > 3 ? 'bg-green-500' : star > 2 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
-                          style={{ width: `${ratingSummary.totalReviews > 0 ? (ratingSummary.starCounts[star - 1] / ratingSummary.totalReviews) * 100 : 0}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-600 w-10 text-right">{ratingSummary.starCounts[star - 1]}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-md p-6 border border-blue-100">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Biểu đồ đánh giá</h3>
-              <div className="w-full h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={ratingSummary.starCounts.map((count, index) => ({ star: `${5 - index} sao`, count }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="star" fontSize={12} />
-                    <YAxis allowDecimals={false} fontSize={12} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '0.5rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      }}
-                    />
-                    <Bar
-                      dataKey="count"
-                      fill="#3b82f6"
-                      radius={[4, 4, 0, 0]}
-                      background={{ fill: '#f3f4f6', radius: [4, 4, 0, 0] }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          <ProductReviewSection productId={productDetail?.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
-        </div>
+        <ProductReviewSection productId={productDetail?.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
       </div>
     </div>
   );
