@@ -1,5 +1,4 @@
 name: Build and Deploy Frontend Docker to Azure VM
-
 on:
   push:
     branches:
