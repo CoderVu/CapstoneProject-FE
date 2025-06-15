@@ -124,7 +124,7 @@ const ProductInfo = ({ productInfo, onImageClick, getColorCode, getColorName, co
     };
     
     // Debug output
-    console.log('Buy Now Product Info:', productInfoForOrder);
+   // console.log('Buy Now Product Info:', productInfoForOrder);
 
     // Navigate to buy now page with product info
     navigate('/buy-now', { state: { product: productInfoForOrder } });
