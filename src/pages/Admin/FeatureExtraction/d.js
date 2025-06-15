@@ -19,13 +19,6 @@ const FeatureExtraction = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [vectorDimensions, setVectorDimensions] = useState(null);
-  // Config states
-  const [config, setConfig] = useState(null);
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [selectedDimension, setSelectedDimension] = useState(2048);
-  const [modalManuallyClosed, setModalManuallyClosed] = useState(false);
-  const [pendingReExtract, setPendingReExtract] = useState(false);
 
   // Fetch extraction stats
   const fetchStats = async () => {
@@ -35,28 +28,6 @@ const FeatureExtraction = () => {
       setError(null);
     } catch (err) {
       setError('Không thể kết nối đến server');
-    }
-  };
-
-  // Fetch config
-  const fetchConfig = async () => {
-    try {
-      const res = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.CONFIG}`);
-      setConfig(res.data);
-      setSelectedDimension(res.data.vector_dimensions);
-    } catch (e) {
-      setError('Không thể lấy cấu hình vector');
-    }
-  };
-
-  // Fetch vector dimensions info
-  const fetchVectorDimensions = async () => {
-    try {
-      const response = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.VECTOR_DIMENSIONS}`);
-      setVectorDimensions(response.data);
-      setError(null);
-    } catch (err) {
-      console.warn('Không thể lấy thông tin chiều vector:', err.message);
     }
   };
 
@@ -111,8 +82,6 @@ const FeatureExtraction = () => {
     fetchStats();
     fetchStatus();
     fetchProducts();
-    fetchVectorDimensions();
-    fetchConfig();
   }, []);
 
   // Add debug logging for products state
@@ -195,7 +164,6 @@ const FeatureExtraction = () => {
     fetchStats();
     fetchStatus();
     fetchProducts();
-    fetchVectorDimensions();
   };
 
   // Update vector features for all images
@@ -292,7 +260,7 @@ const FeatureExtraction = () => {
       }
 
       // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+      await Promise.all([fetchStats(), fetchProducts()]);
 
     } catch (error) {
       setError('Lỗi khi cập nhật tất cả ảnh: ' + error.message);
@@ -383,7 +351,7 @@ const FeatureExtraction = () => {
       }
 
       // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+      await Promise.all([fetchStats(), fetchProducts()]);
 
     } catch (error) {
       setError('Lỗi khi cập nhật sản phẩm: ' + error.message);
@@ -482,7 +450,7 @@ const FeatureExtraction = () => {
       }
 
       // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+      await Promise.all([fetchStats(), fetchProducts()]);
 
     } catch (error) {
       setError('Lỗi khi trích xuất lại toàn bộ ảnh: ' + error.message);
@@ -509,49 +477,9 @@ const FeatureExtraction = () => {
       }
       
       // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+      await Promise.all([fetchStats(), fetchProducts()]);
     } catch (err) {
       setError(err.response?.data?.error || 'Lỗi khi xử lý ảnh mới');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add function to fix inconsistent vector dimensions
-  const handleFixDimensions = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setUpdateStatus(null);
-    
-    try {
-      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.FIX_DIMENSIONS}`);
-      
-      if (response.data) {
-        const { fixed_count, failed_count, inconsistent_found } = response.data;
-        
-        if (inconsistent_found === 0) {
-          setSuccess('Không có ảnh nào có chiều vector không nhất quán');
-        } else if (fixed_count > 0) {
-          setSuccess(`Đã sửa chữa thành công ${fixed_count} ảnh${failed_count > 0 ? `, ${failed_count} ảnh thất bại` : ''}`);
-        } else if (failed_count > 0) {
-          setError(`Sửa chữa thất bại ${failed_count} ảnh`);
-        }
-        
-        // Update status with results
-        setUpdateStatus({
-          total_images: response.data.total_checked,
-          success_count: fixed_count,
-          failed_count: failed_count,
-          failed_images: response.data.failed_images || [],
-          current_image: 'Hoàn thành sửa chữa'
-        });
-      }
-      
-      // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi sửa chữa chiều vector');
     } finally {
       setLoading(false);
     }
@@ -583,93 +511,9 @@ const FeatureExtraction = () => {
     }
   }, [products, itemsPerPage]);
 
-  // Handle config submit
-  const handleConfigSubmit = async () => {
-    setLoading(true);
-    try {
-      let needUpdate = selectedDimension !== config.vector_dimensions;
-      let res = null;
-      if (needUpdate) {
-        res = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.CONFIG}`, {
-          vector_dimensions: selectedDimension
-        });
-        setConfig(res.data);
-        setSuccess('Đã cập nhật cấu hình chiều vector!');
-        await fetchVectorDimensions();
-      }
-      setShowConfigModal(false);
-      setModalManuallyClosed(true);
-      if (pendingReExtract) {
-        setPendingReExtract(false);
-        await handleReExtractAll();
-      } else if (res && res.data?.needs_re_extraction) {
-        setSuccess('Đã đổi chiều vector, hệ thống sẽ trích xuất lại toàn bộ!');
-        await handleReExtractAll();
-      }
-    } catch (e) {
-      setError(e.response?.data?.error || 'Lỗi khi cập nhật cấu hình');
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="p-8 max-w-8xl mx-auto">
 
-      {/* Config Modal */}
-      {showConfigModal && config && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800">Chọn số chiều vector để trích xuất</h2>
-              <button
-                onClick={() => {
-                  setShowConfigModal(false);
-                  setModalManuallyClosed(true);
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <select
-              className="w-full p-3 border rounded-lg mb-6"
-              value={selectedDimension}
-              onChange={e => setSelectedDimension(Number(e.target.value))}
-            >
-              {config?.available_dimensions?.map(dim => (
-                <option key={dim} value={dim}>{dim} chiều</option>
-              ))}
-            </select>
-            <button
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
-              onClick={handleConfigSubmit}
-              disabled={loading}
-            >
-              Xác nhận & bắt đầu trích xuất
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <FiAlertCircle className="w-5 h-5 text-red-600 mr-3" />
-            <div className="text-red-800">{error}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <FiInfo className="w-5 h-5 text-green-600 mr-3" />
-            <div className="text-green-800">{success}</div>
-          </div>
-        </div>
-      )}
 
       {/* Main Stats Card */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
@@ -742,11 +586,7 @@ const FeatureExtraction = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <button
-                          onClick={() => {
-                            setShowConfigModal(true);
-                            setPendingReExtract(true);
-                            setModalManuallyClosed(false);
-                          }}
+                          onClick={handleReExtractAll}
                           disabled={loading}
                           className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
                           data-tooltip-id="re-extract-tooltip"
@@ -785,109 +625,6 @@ const FeatureExtraction = () => {
           </div>
         </div>
       </div>
-
-      {/* Vector Dimensions Info Card */}
-      {vectorDimensions && (
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              THÔNG TIN CHIỀU VECTOR
-            </h2>
-            <div className={`px-4 py-2 rounded-lg text-white font-medium ${
-              vectorDimensions.is_system_consistent 
-                ? 'bg-green-600' 
-                : 'bg-red-600'
-            }`}>
-              {vectorDimensions.is_system_consistent ? 'HỆ THỐNG NHẤT QUÁN' : 'KHÔNG NHẤT QUÁN'}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{vectorDimensions.expected_dimensions}</div>
-                <div className="text-sm text-gray-600">Chiều vector mong đợi</div>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{vectorDimensions.images_with_features}</div>
-                <div className="text-sm text-gray-600">Ảnh có vector features</div>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{vectorDimensions.inconsistent_dimensions.length}</div>
-                <div className="text-sm text-gray-600">Ảnh không nhất quán</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Dimension Statistics */}
-          {Object.keys(vectorDimensions.dimension_stats).length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Thống kê chiều vector:</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(vectorDimensions.dimension_stats).map(([dim, count]) => (
-                  <div key={dim} className={`p-3 rounded-lg border-2 ${
-                    parseInt(dim) === vectorDimensions.expected_dimensions 
-                      ? 'border-green-500 bg-green-50' 
-                      : 'border-red-500 bg-red-50'
-                  }`}>
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{dim} chiều</div>
-                      <div className="text-sm text-gray-600">{count} ảnh</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Inconsistent Images */}
-          {vectorDimensions.inconsistent_dimensions.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-red-600">
-                  Ảnh có chiều vector không nhất quán:
-                </h3>
-                <button
-                  onClick={handleFixDimensions}
-                  disabled={loading}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-                  data-tooltip-id="fix-dimensions-tooltip"
-                  data-tooltip-content="Sửa chữa chiều vector không nhất quán cho tất cả ảnh"
-                >
-                  <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  <span>Sửa chữa</span>
-                </button>
-              </div>
-              <div className="max-h-60 overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase">ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase">Chiều hiện tại</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase">Chiều mong đợi</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase">Sản phẩm</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {vectorDimensions.inconsistent_dimensions.map((img, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{img.id}</td>
-                        <td className="px-4 py-3 text-sm text-red-600 font-medium">{img.actual_dimensions}</td>
-                        <td className="px-4 py-3 text-sm text-green-600 font-medium">{img.expected_dimensions}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{img.productId}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Update Status Card */}
       {updateStatus && (
@@ -1019,105 +756,72 @@ const FeatureExtraction = () => {
                     Tiến độ
                   </th>
                   <th className="px-8 py-5 text-center text-base font-medium text-gray-500 uppercase tracking-wider">
-                    Chiều vector
-                  </th>
-                  <th className="px-8 py-5 text-center text-base font-medium text-gray-500 uppercase tracking-wider">
                     Thao tác
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {getCurrentPageProducts().map((product) => {
-                  // Get vector dimension info for this product
-                  const productDimensionInfo = vectorDimensions?.product_dimensions?.find(
-                    p => p.productId === product.id
-                  );
-                  
-                  return (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        {product.images && product.images.length > 0 && (
-                          <div className="flex space-x-4">
-                            {product.images.slice(0, 3).map((img, index) => (
-                              <div key={index} className="relative w-24 h-24">
-                                <img
-                                  src={img.url || img.path}
-                                  alt={`${product.productName || 'Product'} ${index + 1}`}
-                                  className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://via.placeholder.com/96?text=No+Image';
-                                  }}
-                                  title={img.url || img.path}
-                                />
-                                {index === 2 && product.images.length > 3 && (
-                                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center text-white text-base">
-                                    +{product.images.length - 3}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap">
-                        <div className="text-lg font-medium text-gray-900">
-                          {product.productName || 'Chưa có tên'}
-                        </div>
-                        {/* <div className="text-base text-gray-500">
-                          ID: {product.id}
-                        </div> */}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-lg text-gray-500 text-right">
-                        {product.total_images}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-lg text-green-600 text-right">
-                        {product.with_features}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-lg text-orange-600 text-right">
-                        {product.without_features}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-lg text-blue-600 text-right">
-                        {product.completion_percentage.toFixed(1)}%
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-center">
-                        {productDimensionInfo ? (
-                          <div className="space-y-1">
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              productDimensionInfo.is_consistent 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {productDimensionInfo.dimensions.length > 0 
-                                ? productDimensionInfo.dimensions.join(', ') + ' chiều'
-                                : 'Chưa có'
-                              }
+                {getCurrentPageProducts().map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-8 py-6 whitespace-nowrap">
+                      {product.images && product.images.length > 0 && (
+                        <div className="flex space-x-4">
+                          {product.images.slice(0, 3).map((img, index) => (
+                            <div key={index} className="relative w-24 h-24">
+                              <img
+                                src={img.url || img.path}
+                                alt={`${product.productName || 'Product'} ${index + 1}`}
+                                className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'https://via.placeholder.com/96?text=No+Image';
+                                }}
+                                title={img.url || img.path}
+                              />
+                              {index === 2 && product.images.length > 3 && (
+                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center text-white text-base">
+                                  +{product.images.length - 3}
+                                </div>
+                              )}
                             </div>
-                            {!productDimensionInfo.is_consistent && (
-                              <div className="text-xs text-red-600">
-                                Không nhất quán
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-gray-500 text-sm">Chưa có dữ liệu</div>
-                        )}
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-lg text-center">
-                        {product.without_features > 0 && (
-                          <button
-                            onClick={() => handleUpdateProduct(product)}
-                            disabled={loading}
-                            className="px-6 py-3 text-lg bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                            title="Cập nhật vector đặc trưng cho sản phẩm này"
-                          >
-                            Cập nhật
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap">
+                      <div className="text-lg font-medium text-gray-900">
+                        {product.productName || 'Chưa có tên'}
+                      </div>
+                      {/* <div className="text-base text-gray-500">
+                        ID: {product.id}
+                      </div> */}
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap text-lg text-gray-500 text-right">
+                      {product.total_images}
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap text-lg text-green-600 text-right">
+                      {product.with_features}
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap text-lg text-orange-600 text-right">
+                      {product.without_features}
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap text-lg text-blue-600 text-right">
+                      {product.completion_percentage.toFixed(1)}%
+                    </td>
+                    <td className="px-8 py-6 whitespace-nowrap text-lg text-center">
+                      {product.without_features > 0 && (
+                        <button
+                          onClick={() => handleUpdateProduct(product)}
+                          disabled={loading}
+                          className="px-6 py-3 text-lg bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                          title="Cập nhật vector đặc trưng cho sản phẩm này"
+                        >
+                          Cập nhật
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -1217,7 +921,6 @@ const FeatureExtraction = () => {
       {/* Add Tooltips */}
       <Tooltip id="process-new-tooltip" place="top" />
       <Tooltip id="re-extract-tooltip" place="top" />
-      <Tooltip id="fix-dimensions-tooltip" place="top" />
     </div>
   );
 };

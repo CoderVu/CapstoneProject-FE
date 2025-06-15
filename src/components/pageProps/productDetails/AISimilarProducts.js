@@ -124,11 +124,11 @@ const AISimilarProducts = ({
             </svg>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Kết Quả Tìm Kiếm Ảnh AI</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Kết quả tìm kiếm ảnh AI</h2>
             <p className="text-gray-500 text-sm">Tìm thấy {processedProducts.length || filteredSimilarProducts.length || 0} sản phẩm tương tự về mặt hình ảnh</p>
           </div>
         </div>
-        <div className="flex items-center space-x-4 w-full md:w-auto">
+        {/* <div className="flex items-center space-x-4 w-full md:w-auto">
           <div className="flex items-center bg-gray-100 px-3 py-2 rounded-lg flex-1 md:flex-auto">
             <span className="text-sm text-gray-600 mr-2 whitespace-nowrap">Mức độ khớp:</span>
             <select
@@ -151,7 +151,7 @@ const AISimilarProducts = ({
             </svg>
             Đóng
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Thêm component AIMatchExplainer */}
@@ -233,9 +233,9 @@ const AISimilarProducts = ({
                   </motion.div>
 
                   {/* Similarity Badge */}
-                  <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
+                  {/* <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded-md shadow-sm">
                     {Math.round(product.similarity * 100)}% tương đồng
-                  </div>
+                  </div> */}
 
                   {/* Secondary Image Badge */}
                   {product.isMainImage === false && (
