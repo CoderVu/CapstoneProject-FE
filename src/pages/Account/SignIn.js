@@ -67,13 +67,13 @@ const SignIn = () => {
     const top = window.screenY + (window.innerHeight - height) / 2;
 
     window.open(
-        "https://www.capstone.io.vn/oauth2/authorization/google",
+        "https://www.capstone.io.vn/api/oauth2/authorization/google",
         "_blank",
       `width=${width},height=${height},top=${top},left=${left}`
     );
 
     const messageListener = async (event) => {
-      if (event.origin !== "https://www.capstone.io.vn") return;
+      if (event.origin !== "https://www.capstone.io.vn/api") return;
       const { token } = event.data;
 
       if (token) {
