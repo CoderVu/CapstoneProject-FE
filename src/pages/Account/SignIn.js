@@ -79,7 +79,7 @@ const SignIn = () => {
     );
 
     const messageListener = async (event) => {
-      if (event.origin !== "https://www.capstone.io.vn/api") return;
+      if (event.origin !== "https://www.capstone.io.vn") return;
       const { token } = event.data;
 
       if (token) {
