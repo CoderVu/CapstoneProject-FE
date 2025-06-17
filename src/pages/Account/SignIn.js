@@ -4,7 +4,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
 import { FcGoogle } from "react-icons/fc";
 import { oauth2LoginSuccess } from "../../redux/actions/authActions";
-import { fetchUserData } from "../../redux/service/authService";
 import types from "../../redux/types";
 
 const SignIn = () => {
@@ -66,6 +65,28 @@ const SignIn = () => {
     }
   };
 
+  const fetchUserData = async (token) => {
+    try {
+      const response = await fetch("https://www.capstone.io.vn/api/v1/auth/me", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      throw error;
+    }
+  };
+
   const handleGoogleLogin = () => {
     const width = 500;
     const height = 600;
@@ -76,10 +97,17 @@ const SignIn = () => {
       "https://www.capstone.io.vn/api/oauth2/authorization/google",
       "_blank",
       `width=${width},height=${height},top=${top},left=${left}`
-  );
-  const messageListener = async (event) => {
-    if (event.origin !== "https://www.capstone.io.vn") return;
-    const { token } = event.data;
+    );
+
+    const messageListener = async (event) => {
+      if (event.origin !== "https://www.capstone.io.vn") return;
+      const { token, error } = event.data;
+
+      if (error) {
+        console.error("OAuth2 error:", error);
+        navigate("/signin");
+        return;
+      }
 
       if (token) {
         try {
@@ -215,4 +243,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignIn; 
