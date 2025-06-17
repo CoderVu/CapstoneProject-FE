@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../../redux/actions/authActions";
 import { FcGoogle } from "react-icons/fc";
 import { oauth2LoginSuccess } from "../../redux/actions/authActions";
@@ -15,9 +15,14 @@ const SignIn = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const error = useSelector((state) => state.auth.error);
   const auth = useSelector(state => state.auth.auth);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  // Lấy thông tin từ state navigation
+  const from = location.state?.from || "/";
+  const message = location.state?.message || "";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -25,10 +30,11 @@ const SignIn = () => {
       if (isAdmin) {
         navigate("/admin/dashboard");
       } else {
-        navigate("/");
+        // Redirect về trang trước đó nếu có, hoặc về trang chủ
+        navigate(from);
       }
     }
-  }, [isAuthenticated, auth, navigate]);
+  }, [isAuthenticated, auth, navigate, from]);
 
   useEffect(() => {
     dispatch({ type: types.LOGIN_RESET });
@@ -86,7 +92,7 @@ const SignIn = () => {
             const isAdmin = role?.name === "ROLE_ADMIN";
 
             dispatch(oauth2LoginSuccess(user, token));
-            navigate(isAdmin ? "/admin/dashboard" : "/");
+            navigate(isAdmin ? "/admin/dashboard" : from);
           } else {
             console.error("Invalid user data:", data);
             navigate("/signin");
@@ -112,6 +118,15 @@ const SignIn = () => {
 
         {/* Content */}
         <div className="p-8">
+          {/* Hiển thị thông báo từ navigation state */}
+          {message && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-sm">
+              <p className="text-blue-700 text-sm text-center">
+                {message}
+              </p>
+            </div>
+          )}
+
           {successMsg ? (
             <div className="flex flex-col items-center">
               <p className="text-green-500 font-medium text-center mb-4">

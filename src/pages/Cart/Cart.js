@@ -14,6 +14,7 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { cartItems } = useSelector((state) => state.cart);
+  const { auth, isAuthenticated } = useSelector((state) => state.auth);
   const [totalAmt, setTotalAmt] = useState(0);
   const [selectedTotal, setSelectedTotal] = useState(0);
   const [shippingCharge, setShippingCharge] = useState(0);
@@ -25,6 +26,18 @@ const Cart = () => {
   const [promoCode, setPromoCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
+
+  // Kiểm tra authentication
+  useEffect(() => {
+    if (!isAuthenticated || !auth) {
+      navigate("/signin", {
+        state: { 
+          from: "/cart", 
+          message: "Vui lòng đăng nhập để xem giỏ hàng" 
+        },
+      });
+    }
+  }, [isAuthenticated, auth, navigate]);
 
   // Default discount images
   const discountImages = [

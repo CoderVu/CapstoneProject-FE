@@ -112,4 +112,24 @@ export const getDiscountCodesForUser = async () => {
         throw error;
     }
 };
+    
+// Change password
+export const changePassword = async (oldPassword, newPassword) => {
+    try {
+        const response = await axios({
+            method: 'PUT',
+            url: `/api/v1/user/change-password`,
+            params: {
+                oldPassword: oldPassword,
+                newPassword: newPassword
+            }
+        });
+        showSuccessToast(response.data.message || "Đổi mật khẩu thành công");
+        return response.data;
+    } catch (error) {
+        showErrorToast(error.response?.data?.message || "Đổi mật khẩu thất bại");
+        console.error("Error changing password:", error);
+        throw error;
+    }
+};
 

@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import {
   FaCamera, FaUser, FaMapMarkerAlt, FaSignOutAlt, FaLock,
   FaEdit, FaSave, FaShieldAlt, FaHistory, FaEnvelope,
-  FaPhone, FaTimes, FaCheckCircle
+  FaPhone, FaTimes, FaCheckCircle, FaEye, FaEyeSlash
 } from 'react-icons/fa';
 import { fetchUserInfo } from '../../redux/actions/authActions';
 import AddressManagement from './AddressManagement';
-import { updateUserInfo } from '../../redux/service/userService';
+import { updateUserInfo, changePassword } from '../../redux/service/userService';
 import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
@@ -27,6 +27,19 @@ const UserProfile = () => {
 
   });
   const [token, setToken] = useState(null);
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const profile = React.useMemo(() => auth || {}, [auth]);
 
@@ -129,6 +142,64 @@ const UserProfile = () => {
       console.error("Error updating profile:", error);
     }
   };
+
+  // Handle password input change
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Toggle password visibility
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  // Handle password change
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      alert('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('Mật khẩu mới và xác nhận mật khẩu không khớp');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      alert('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      await changePassword(passwordData.oldPassword, passwordData.newPassword);
+      
+      // Reset form
+      setPasswordData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowPasswords({
+        oldPassword: false,
+        newPassword: false,
+        confirmPassword: false
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -496,36 +567,118 @@ const UserProfile = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu hiện tại</label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Nhập mật khẩu hiện tại"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPasswords.oldPassword ? "text" : "password"}
+                          name="oldPassword"
+                          value={passwordData.oldPassword}
+                          onChange={handlePasswordChange}
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Nhập mật khẩu hiện tại"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('oldPassword')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.oldPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Nhập mật khẩu mới"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPasswords.newPassword ? "text" : "password"}
+                          name="newPassword"
+                          value={passwordData.newPassword}
+                          onChange={handlePasswordChange}
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Nhập mật khẩu mới"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('newPassword')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.newPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                      {passwordData.newPassword && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Mật khẩu phải có ít nhất 6 ký tự
+                        </p>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu mới</label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Nhập lại mật khẩu mới"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPasswords.confirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordChange}
+                          className={`w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 ${
+                            passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
+                              ? 'border-red-300 focus:ring-red-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="Nhập lại mật khẩu mới"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('confirmPassword')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.confirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                      {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                        <p className="text-xs text-red-500 mt-1">
+                          Mật khẩu không khớp
+                        </p>
+                      )}
                     </div>
 
                     <div className="pt-4">
-                      <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-300 flex items-center justify-center">
-                        <FaLock className="mr-2" />
-                        <span>Cập nhật mật khẩu</span>
+                      <button 
+                        onClick={handleChangePassword}
+                        disabled={changingPassword || !passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword || passwordData.newPassword !== passwordData.confirmPassword}
+                        className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors duration-300 flex items-center justify-center"
+                      >
+                        {changingPassword ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            <span>Đang đổi mật khẩu...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FaLock className="mr-2" />
+                            <span>Cập nhật mật khẩu</span>
+                          </>
+                        )}
                       </button>
+                    </div>
+
+                    {/* Password requirements */}
+                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Yêu cầu mật khẩu:</h4>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        <li className="flex items-center">
+                          <span className={`w-2 h-2 rounded-full mr-2 ${passwordData.newPassword && passwordData.newPassword.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                          Ít nhất 6 ký tự
+                        </li>
+                        <li className="flex items-center">
+                          <span className={`w-2 h-2 rounded-full mr-2 ${passwordData.newPassword && passwordData.newPassword !== passwordData.oldPassword ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                          Khác với mật khẩu hiện tại
+                        </li>
+                        <li className="flex items-center">
+                          <span className={`w-2 h-2 rounded-full mr-2 ${passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                          Xác nhận mật khẩu khớp
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>

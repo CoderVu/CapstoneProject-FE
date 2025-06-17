@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { fetchDiscountCodes, applyDiscountCodeToMe, getDiscountCodesForUser } from '../../redux/service/discountService';
 import { showSuccessToast, showErrorToast } from '../../components/Toast/ToastNotification';
 
@@ -14,11 +16,25 @@ const getRandomImage = () => discountImages[Math.floor(Math.random() * discountI
 const formatDate = (date) => new Date(date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
 const Offer = () => {
+  const navigate = useNavigate();
+  const { auth, isAuthenticated } = useSelector((state) => state.auth);
   const [availableCodes, setAvailableCodes] = useState([]);
   const [userCodes, setUserCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [activeTab, setActiveTab] = useState('available');
+
+  // Kiểm tra authentication
+  useEffect(() => {
+    if (!isAuthenticated || !auth) {
+      navigate("/signin", {
+        state: { 
+          from: "/offer", 
+          message: "Vui lòng đăng nhập để xem mã giảm giá" 
+        },
+      });
+    }
+  }, [isAuthenticated, auth, navigate]);
 
   useEffect(() => {
     const loadCodes = async () => {
@@ -33,7 +49,7 @@ const Offer = () => {
         );
         setUserCodes((user?.data || []).map((c) => ({ ...c, image: getRandomImage() })));
       } catch {
-        showErrorToast('Không thể tải mã giảm giá.');
+  
       } finally {
         setLoading(false);
       }
@@ -54,7 +70,7 @@ const Offer = () => {
       );
       setUserCodes((user?.data || []).map((c) => ({ ...c, image: getRandomImage() })));
     } catch {
-      showErrorToast('Không thể tải mã giảm giá.');
+ 
     } finally {
       setLoading(false);
     }

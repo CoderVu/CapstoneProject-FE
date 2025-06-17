@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaStar, FaStarHalfAlt, FaRegStar, FaShoppingCart, FaBolt } from "react-icons/fa";
 import { addToCartItems } from "../../../redux/actions/cartActions";
@@ -7,6 +7,7 @@ import { addToCartItems } from "../../../redux/actions/cartActions";
 const ProductInfo = ({ productInfo, onImageClick, getColorCode, getColorName, colors }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { auth, isAuthenticated } = useSelector((state) => state.auth);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(
     productInfo?.variants?.[0]?.color || ""
@@ -79,6 +80,17 @@ const ProductInfo = ({ productInfo, onImageClick, getColorCode, getColorName, co
   };
 
   const handleAddToCart = async () => {
+    // Kiểm tra đăng nhập trước
+    if (!isAuthenticated || !auth) {
+      navigate("/signin", {
+        state: { 
+          from: window.location.pathname, 
+          message: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng" 
+        },
+      });
+      return;
+    }
+
     if (!selectedColor || !selectedSize) {
       alert("Vui lòng chọn màu sắc và kích thước");
       return;
@@ -102,6 +114,17 @@ const ProductInfo = ({ productInfo, onImageClick, getColorCode, getColorName, co
   };
 
   const handleBuyNow = () => {
+    // Kiểm tra đăng nhập trước
+    if (!isAuthenticated || !auth) {
+      navigate("/signin", {
+        state: { 
+          from: window.location.pathname, 
+          message: "Vui lòng đăng nhập để mua sản phẩm" 
+        },
+      });
+      return;
+    }
+
     if (!selectedColor || !selectedSize) {
       alert('Vui lòng chọn kích cỡ và màu sắc trước khi mua ngay!');
       return;

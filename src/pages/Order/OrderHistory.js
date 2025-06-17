@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { fetchOrder, cancelOder } from "../../redux/service/orderService";
 import { FaShoppingBag, FaCalendarAlt, FaTruck, FaMapMarkerAlt, FaPhoneAlt, FaRegClock, FaFileInvoice, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PrintInvoice from "./PrintInvoice";
 import OrderRating from "./OrderRating";
+
 const OrderHistory = () => {
+  const navigate = useNavigate();
+  const { auth, isAuthenticated } = useSelector((state) => state.auth);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,6 +24,18 @@ const OrderHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Kiểm tra authentication
+  useEffect(() => {
+    if (!isAuthenticated || !auth) {
+      navigate("/signin", {
+        state: { 
+          from: "/order-history", 
+          message: "Vui lòng đăng nhập để xem lịch sử đơn hàng" 
+        },
+      });
+    }
+  }, [isAuthenticated, auth, navigate]);
 
   // Fetch the order history when component mounts
   useEffect(() => {

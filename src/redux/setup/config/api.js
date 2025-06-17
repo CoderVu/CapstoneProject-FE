@@ -1,8 +1,8 @@
 // API Configuration
 const API_CONFIG = {
   // BASE_URL: 'https://capstoneproject-be-iapt.onrender.com/api',
-  BASE_URL: 'https://www.capstone.io.vn/ai',
- //  BASE_URL: 'http://127.0.0.1:5000',
+   BASE_URL: 'https://www.capstone.io.vn/ai',
+  // BASE_URL: 'http://127.0.0.1:5000',
 
 
    AI: {
