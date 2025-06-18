@@ -100,11 +100,11 @@ const Offer = () => {
 
   const renderCodes = (codes, isAvailable) =>
     codes
-      .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+      .filter(code => code.status === "AVAILABLE" || code.status === "ASSIGNED") // Chỉ hiển thị mã AVAILABLE và ASSIGNED
       .length ? (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         {codes
-          .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+          .filter(code => code.status === "AVAILABLE" || code.status === "ASSIGNED") // Chỉ hiển thị mã AVAILABLE và ASSIGNED
           .map((code) => (
             <div
               key={code.id}
@@ -129,6 +129,19 @@ const Offer = () => {
                       <h3 className="text-lg font-bold text-gray-800 mb-1">{code.code}</h3>
                       <div className="text-3xl font-extrabold text-red-600 mb-2">{code.discountPercentage}%</div>
                       <p className="text-sm text-gray-600">Giảm giá cho đơn hàng của bạn</p>
+                      <div className="mt-2">
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          code.status === 'AVAILABLE' 
+                            ? 'bg-green-100 text-green-800' 
+                            : code.status === 'ASSIGNED'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {code.status === "AVAILABLE" ? "Khả dụng" : 
+                           code.status === "ASSIGNED" ? "Đã gán" : 
+                           code.status}
+                        </span>
+                      </div>
                     </div>
                     {isAvailable ? (
                       <button

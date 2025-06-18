@@ -347,10 +347,9 @@ const Cart = () => {
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Mã giảm giá của bạn:</h4>
                     <div className="space-y-3">
                       {discountCodes
-                        .filter(code => code.status !== "USED") // Ẩn mã đã sử dụng
+                        .filter(code => code.status === "AVAILABLE" || code.status === "ASSIGNED") // Chỉ hiển thị mã AVAILABLE và ASSIGNED
                         .map((code, index) => {
                           const expired = isExpired(code.expiryDate);
-                          const used = code.status === "USED";
                           return (
                             <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
                               <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
@@ -366,10 +365,6 @@ const Cart = () => {
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
                                   <h5 className="font-medium text-gray-800">{code.code}</h5>
-                                  <span className="text-xs px-2 py-0.5 rounded-full
-                    {code.status === 'UNVAILABLE' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
-                                    {code.status === "UNVAILABLE" ? "Không khả dụng" : "Khả dụng"}
-                                  </span>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
                                   {expired
