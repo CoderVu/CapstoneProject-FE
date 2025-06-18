@@ -273,6 +273,15 @@ const BuyNowPage = () => {
         });
     };
 
+    // Check if discount code is expired
+    const isExpired = (expiryDate) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const exp = new Date(expiryDate);
+      exp.setHours(0, 0, 0, 0);
+      return exp < today;
+    };
+
     // Calculate final amount with discount
     const getFinalAmount = () => {
       const discountAmount = calculateDiscountAmount();
@@ -770,54 +779,62 @@ const BuyNowPage = () => {
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Mã giảm giá của bạn:</h4>
                     <div className="space-y-3">
-                      {discountCodes.map((code, index) => (
-                        <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
-                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
-                            <img
-                              src={discountImages[index % discountImages.length]}
-                              alt="Discount"
-                              className="h-full w-full object-cover"
-                            />
-                            <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md">
-                              {code.discountPercentage}%
-                            </div>
-                          </div>
+                      {discountCodes
+                        .filter(code => code.status === "AVAILABLE" || code.status === "ASSIGNED") // Chỉ hiển thị mã AVAILABLE và ASSIGNED
+                        .map((code, index) => {
+                          const expired = isExpired(code.expiryDate);
+                          return (
+                            <div key={code.code} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm hover:shadow-md transition-shadow">
+                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md mr-3">
+                                <img
+                                  src={discountImages[index % discountImages.length]}
+                                  alt="Discount"
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-md">
+                                  {code.discountPercentage}%
+                                </div>
+                              </div>
 
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <h5 className="font-medium text-gray-800">{code.code}</h5>
-                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                                {code.status === "UNVAILABLE" ? "Không khả dụng" : "Khả dụng"}
-                              </span>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <h5 className="font-medium text-gray-800">{code.code}</h5>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {expired
+                                    ? "Hết hạn"
+                                    : `Có hiệu lực đến: ${new Date(code.expiryDate).toLocaleDateString("vi-VN", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    })}`}
+                                </p>
+                                <button
+                                  onClick={() => !expired && handleCopyCode(code.code)}
+                                  className={`mt-1 text-xs flex items-center ${expired
+                                      ? "text-gray-400 cursor-not-allowed"
+                                      : "text-blue-600 hover:text-blue-800"
+                                    }`}
+                                  disabled={expired}
+                                >
+                                  {copiedCode === code.code ? (
+                                    <>
+                                      <FaCheck className="mr-1" size={10} />
+                                      Đã sao chép
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaCopy className="mr-1" size={10} />
+                                      {expired ? "Hết hạn" : "Sao chép mã"}
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Có hiệu lực đến: {new Date(code.expiryDate).toLocaleDateString("vi-VN", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                              })}
-                            </p>
-                            <button
-                              onClick={() => handleCopyCode(code.code)}
-                              className="mt-1 text-xs flex items-center text-blue-600 hover:text-blue-800"
-                            >
-                              {copiedCode === code.code ? (
-                                <>
-                                  <FaCheck className="mr-1" size={10} />
-                                  Đã sao chép
-                                </>
-                              ) : (
-                                <>
-                                  <FaCopy className="mr-1" size={10} />
-                                  Sao chép mã
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                          );
+                        })}
                     </div>
                   </div>
                 )}

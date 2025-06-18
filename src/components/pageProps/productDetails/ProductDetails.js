@@ -423,10 +423,10 @@ const ProductDetails = () => {
       }, 200);
 
       const data = await findSimilarImages(imageUrl);
-      
+
       clearInterval(progressInterval);
       setAnalysisProgress(100);
-      
+
       // Wait a bit to show completion
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -737,29 +737,29 @@ const ProductDetails = () => {
                           const rect = e.target.getBoundingClientRect();
                           const x = e.clientX - rect.left;
                           const y = e.clientY - rect.top;
-                          
+
                           // Calculate position for magnifier
                           const magnifierSize = 150;
                           const magnifierX = x - magnifierSize / 2;
                           const magnifierY = y - magnifierSize / 2;
-                          
+
                           // Constrain magnifier within image bounds
                           const constrainedX = Math.max(0, Math.min(magnifierX, rect.width - magnifierSize));
                           const constrainedY = Math.max(0, Math.min(magnifierY, rect.height - magnifierSize));
-                          
+
                           // Set magnifier position
                           magnifier.style.left = `${constrainedX}px`;
                           magnifier.style.top = `${constrainedY}px`;
-                          
+
                           // Calculate background position for zoom effect (3x zoom)
                           const imgWidth = e.target.offsetWidth;
                           const imgHeight = e.target.offsetHeight;
                           const zoomLevel = 3;
-                          
+
                           // Calculate the position in the original image
                           const originalX = (x / imgWidth) * 100;
                           const originalY = (y / imgHeight) * 100;
-                          
+
                           // Set background image and position for 3x zoom
                           magnifier.style.backgroundImage = `url(${e.target.src})`;
                           magnifier.style.backgroundSize = `${imgWidth * zoomLevel}px ${imgHeight * zoomLevel}px`;
@@ -779,15 +779,15 @@ const ProductDetails = () => {
                         }
                       }}
                     />
-                    
+
                     {/* AI Analysis Overlay - Only for current image analysis */}
                     <div className={`ai-analysis-overlay ${isAnalyzing ? 'active' : ''}`}>
                       {/* Analysis Grid */}
                       <div className="analysis-grid"></div>
-                      
+
                       {/* Scanning Line */}
                       <div className="scanning-line"></div>
-                      
+
                       {/* Feature Detection Points */}
                       {isAnalyzing && (
                         <>
@@ -798,7 +798,7 @@ const ProductDetails = () => {
                           <div className="feature-point" style={{ top: '80%', left: '40%' }}></div>
                         </>
                       )}
-                      
+
                       {/* Object Detection Boxes */}
                       {isAnalyzing && (
                         <>
@@ -806,14 +806,14 @@ const ProductDetails = () => {
                           <div className="detection-box" style={{ top: '45%', left: '55%', width: '25%', height: '20%' }}></div>
                         </>
                       )}
-                      
+
                       {/* Processing Indicator */}
                       <div className={`processing-indicator ${isAnalyzing ? 'active' : ''}`}>
                         <div className="processing-spinner"></div>
                         <span>Phân tích hình ảnh... {Math.round(analysisProgress)}%</span>
                       </div>
                     </div>
-                    
+
                     {/* Magnifier */}
                     <div className="magnifier"></div>
                   </div>
@@ -838,7 +838,7 @@ const ProductDetails = () => {
                     </svg>
                     Hình ảnh khác
                   </h3>
-                  
+
                   {/* AI Button */}
                   <button
                     onClick={() => setShowAiPanel(!showAiPanel)}
@@ -855,15 +855,14 @@ const ProductDetails = () => {
                   {productDetail?.images &&
                     productDetail?.images.map((image, index) => {
                       const colorCode = image.color ? getColorCode(image.color) : "#FFFFFF";
-                      
+
                       return (
                         <div
                           key={index}
-                          className={`thumbnail-container cursor-pointer ${
-                            selectedImage === image.path 
-                              ? "ring-1 ring-blue-500 ring-offset-1 scale-105" 
+                          className={`thumbnail-container cursor-pointer ${selectedImage === image.path
+                              ? "ring-1 ring-blue-500 ring-offset-1 scale-105"
                               : "hover:ring-1 hover:ring-gray-300"
-                          }`}
+                            }`}
                           onClick={() => handleImageClick(image.path)}
                         >
                           <div className="aspect-square w-full bg-gray-50 border border-gray-200">
@@ -875,10 +874,10 @@ const ProductDetails = () => {
                               loading="lazy"
                             />
                           </div>
-                          
+
                           {/* Color indicator */}
                           {image.color && (
-                            <div 
+                            <div
                               className="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-white shadow-sm"
                               style={{ backgroundColor: colorCode }}
                               title={image.color}
@@ -893,8 +892,8 @@ const ProductDetails = () => {
 
             {/* Thông tin sản phẩm */}
             <div className="flex flex-col justify-start">
-              <ProductInfo 
-                productInfo={productDetail} 
+              <ProductInfo
+                productInfo={productDetail}
                 onImageClick={handleImageClick}
                 getColorCode={getColorCode}
                 getColorName={getColorName}
@@ -1166,16 +1165,7 @@ const ProductDetails = () => {
         )}
 
         {/* AISimilarProducts component to display AI-powered similar products */}
-        <AISimilarProducts
-          showSimilarProducts={showSimilarProducts}
-          setShowSimilarProducts={setShowSimilarProducts}
-          loadingSimilar={loadingSimilar}
-          filteredSimilarProducts={filteredSimilarProducts}
-          similarityThreshold={similarityThreshold}
-          setSimilarityThreshold={setSimilarityThreshold}
-          productResults={productResults}
-          errorMessage={errorMessage}
-        />
+
 
         {/* ProductTabs - with updated styling */}
         <div className="w-full bg-white p-4 rounded-lg shadow-lg mt-4">
@@ -1187,6 +1177,16 @@ const ProductDetails = () => {
           </h2>
           <ProductTabs productDescription={productDescription} productCareInstructions={productCareInstructions} />
         </div>
+        <AISimilarProducts
+          showSimilarProducts={showSimilarProducts}
+          setShowSimilarProducts={setShowSimilarProducts}
+          loadingSimilar={loadingSimilar}
+          filteredSimilarProducts={filteredSimilarProducts}
+          similarityThreshold={similarityThreshold}
+          setSimilarityThreshold={setSimilarityThreshold}
+          productResults={productResults}
+          errorMessage={errorMessage}
+        />
 
         <ProductReviewSection productId={productDetail?.id} imageUser={reviews.length > 0 ? reviews[0].avatar : null} />
       </div>

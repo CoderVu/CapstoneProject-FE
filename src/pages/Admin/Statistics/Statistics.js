@@ -49,6 +49,23 @@ const Statistics = () => {
     ? Object.entries(statistics.revenueByMonthYear).sort((a, b) => a[0].localeCompare(b[0]))
     : [];
 
+  // Calculate today's orders
+  const getTodayOrders = () => {
+    if (!statistics?.ordersByDate) return 0;
+    
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    return statistics.ordersByDate[today] || 0;
+  };
+
+  // Calculate current month revenue
+  const getCurrentMonthRevenue = () => {
+    if (!statistics?.revenueByMonthYear) return 0;
+    
+    const currentDate = new Date();
+    const currentMonthYear = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}`;
+    return statistics.revenueByMonthYear[currentMonthYear] || 0;
+  };
+
   const ordersByDateData = {
     labels: sortedOrdersByDate.map(([date]) => date),
     datasets: [
@@ -210,8 +227,7 @@ const Statistics = () => {
                   <div>
                     <h3 className="text-sm font-medium text-purple-600 mb-2">Đơn hàng hôm nay</h3>
                     <p className="text-3xl font-bold text-purple-700">
-                      {statistics?.ordersByDate ? 
-                        Object.values(statistics.ordersByDate).slice(-1)[0] || 0 : 0}
+                      {getTodayOrders()}
                     </p>
                     <p className="text-xs text-purple-500 mt-1">Hôm nay</p>
                   </div>
@@ -228,8 +244,7 @@ const Statistics = () => {
                   <div>
                     <h3 className="text-sm font-medium text-orange-600 mb-2">Doanh thu tháng</h3>
                     <p className="text-3xl font-bold text-orange-700">
-                      {statistics?.revenueByMonthYear ? 
-                        Object.values(statistics.revenueByMonthYear).slice(-1)[0]?.toLocaleString() || 0 : 0} VND
+                      {getCurrentMonthRevenue().toLocaleString()} VND
                     </p>
                     <p className="text-xs text-orange-500 mt-1">Tháng hiện tại</p>
                   </div>

@@ -3,13 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
   FaCamera, FaUser, FaMapMarkerAlt, FaSignOutAlt, FaLock,
-  FaEdit, FaSave, FaShieldAlt, FaHistory, FaEnvelope,
-  FaPhone, FaTimes, FaCheckCircle, FaEye, FaEyeSlash
+  FaEdit, FaSave, FaTimes, FaCheckCircle, FaEye, FaEyeSlash
 } from 'react-icons/fa';
 import { fetchUserInfo } from '../../redux/actions/authActions';
 import AddressManagement from './AddressManagement';
 import { updateUserInfo, changePassword } from '../../redux/service/userService';
-import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
   const dispatch = useDispatch();
@@ -22,9 +20,7 @@ const UserProfile = () => {
   const [profileData, setProfileData] = useState({
     fullName: '',
     phoneNumber: '',
-    notes: '',
     avatar: null,
-
   });
   const [token, setToken] = useState(null);
 
@@ -58,7 +54,6 @@ const UserProfile = () => {
       setProfileData({
         fullName: profile.fullName || '',
         phoneNumber: profile.phoneNumber || '',
-        notes: profile.notes || '',
         avatar: profile.avatar || null,
       });
 
@@ -67,7 +62,6 @@ const UserProfile = () => {
       }
     }
   }, [profile]);
-
 
   // Handle avatar change
   const handleAvatarChange = (e) => {
@@ -88,7 +82,6 @@ const UserProfile = () => {
     }
   };
 
-
   // Toggle edit mode for a field
   const toggleEditMode = (field) => {
     setEditMode(prev => ({
@@ -96,6 +89,7 @@ const UserProfile = () => {
       [field]: !prev[field],
     }));
   };
+
   // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -131,8 +125,6 @@ const UserProfile = () => {
 
         // Refresh user data
         dispatch(fetchUserInfo(token));
-
-
       }
       // Reset edit mode for all fields
       setEditMode({
@@ -300,13 +292,6 @@ const UserProfile = () => {
                 </button>
               )}
               <button
-                onClick={() => setActiveTab('security')}
-                className={`flex items-center space-x-3 w-full px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'security' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}`}
-              >
-                <FaShieldAlt className={activeTab === 'security' ? 'text-blue-500' : 'text-gray-500'} />
-                <span>Bảo mật</span>
-              </button>
-              <button
                 onClick={handleLogout}
                 className="flex items-center space-x-3 w-full px-4 py-3 text-left rounded-lg text-red-600 hover:bg-red-50 transition-colors"
               >
@@ -327,11 +312,11 @@ const UserProfile = () => {
               >
                 <h1 className="text-2xl font-bold text-gray-800 flex items-center">
                   Thông tin tài khoản
-                  {profile.id && (
+                  {/* {profile.id && (
                     <span className="ml-2 text-sm font-normal text-gray-500">
                       (ID: {profile.id.substring(0, 8)}...)
                     </span>
-                  )}
+                  )} */}
                 </h1>
                 <p className="text-gray-600 mt-1 mb-6">Quản lý thông tin cá nhân của bạn</p>
 
@@ -344,13 +329,6 @@ const UserProfile = () => {
                       <h3 className="text-sm font-medium text-blue-800">
                         Xác thực tài khoản
                       </h3>
-                      <div className="mt-2 text-sm text-blue-700">
-                        <p>
-                          {profile.emailVerified
-                            ? "Tài khoản của bạn đã được xác thực."
-                            : "Vui lòng xác thực email của bạn để đảm bảo an toàn cho tài khoản."}
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -406,27 +384,11 @@ const UserProfile = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                      {editMode.phone ? (
-                        <div className="flex items-center">
-                          <input
-                            type="tel"
-                            name="phoneNumber"
-                            value={profileData.phoneNumber}
-
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Nhập số điện thoại"
-                          />
-
-                        </div>
-                      ) : (
-                        <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
-                          <span className="text-gray-900">
-                            {profile.phoneNumber || 'Chưa cập nhật'}
-                          </span>
-
-
-                        </div>
-                      )}
+                      <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
+                        <span className="text-gray-900">
+                          {profile.phoneNumber || 'Chưa cập nhật'}
+                        </span>
+                      </div>
                     </div>
 
                     <div>
@@ -444,99 +406,15 @@ const UserProfile = () => {
                     </div>
                   </div>
 
-                  {/* Additional Information */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
-                      <textarea
-                        name="notes"
-                        value={profileData.notes}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none h-40"
-                        placeholder="Thêm ghi chú cá nhân..."
-                      ></textarea>
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="text-sm font-medium text-gray-700 mb-3">Liên kết tài khoản</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
-                          <div className="flex items-center">
-                            <div className="bg-blue-100 p-2 rounded-full">
-                              <FaEnvelope className="text-blue-600" />
-                            </div>
-                            <span className="ml-3 text-gray-800">Email</span>
-                          </div>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                            Đã liên kết
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
-                          <div className="flex items-center">
-                            <div className="bg-blue-100 p-2 rounded-full">
-                              <FaPhone className="text-blue-600" />
-                            </div>
-                            <span className="ml-3 text-gray-800">Số điện thoại</span>
-                          </div>
-                          <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
-                            Chưa liên kết
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <button
-                        onClick={handleSaveProfile}
-                        className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-300"
-                      >
-                        <FaSave />
-                        <span>Lưu thay đổi</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="mt-10">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Hoạt động gần đây</h3>
-                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                    <div className="divide-y divide-gray-200">
-                      <div className="flex items-start p-4">
-                        <div className="flex-shrink-0 pt-0.5">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <FaHistory className="text-blue-600" />
-                          </div>
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-gray-900">Đăng nhập thành công</h4>
-                            <p className="text-sm text-gray-500">{new Date().toLocaleDateString()}</p>
-                          </div>
-                          <p className="mt-1 text-sm text-gray-700">
-                            Đăng nhập vào tài khoản từ {navigator.userAgent.includes('Mobile') ? 'thiết bị di động' : 'máy tính'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start p-4">
-                        <div className="flex-shrink-0 pt-0.5">
-                          <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                            <FaEdit className="text-green-600" />
-                          </div>
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-gray-900">Cập nhật thông tin</h4>
-                            <p className="text-sm text-gray-500">Hôm qua</p>
-                          </div>
-                          <p className="mt-1 text-sm text-gray-700">
-                            Thông tin cá nhân của bạn đã được cập nhật
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Save Button */}
+                  <div className="flex justify-end items-end">
+                    <button
+                      onClick={handleSaveProfile}
+                      className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-300"
+                    >
+                      <FaSave />
+                      <span>Lưu thay đổi</span>
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -679,63 +557,6 @@ const UserProfile = () => {
                           Xác nhận mật khẩu khớp
                         </li>
                       </ul>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h1 className="text-2xl font-bold text-gray-800 mb-2">Bảo mật tài khoản</h1>
-                <p className="text-gray-600 mb-6">Quản lý các cài đặt bảo mật cho tài khoản của bạn</p>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Xác thực hai yếu tố</h3>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-700">Bảo vệ tài khoản của bạn bằng xác thực hai yếu tố</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Thêm một lớp bảo mật bổ sung cho tài khoản của bạn
-                      </p>
-                    </div>
-                    <div className="ml-4">
-                      <button className="px-4 py-2 border border-blue-500 text-blue-600 hover:bg-blue-50 font-medium rounded-md transition-colors">
-                        Thiết lập
-                      </button>
-                      {/* <Link to="/admin/dashboard" className="ml-2 text-sm text-blue-500 hover:underline">
-                        Quản lý
-                      </Link> */}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">Phiên đăng nhập</h3>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {navigator.userAgent.includes('Chrome') ? 'Chrome' :
-                            navigator.userAgent.includes('Firefox') ? 'Firefox' :
-                              navigator.userAgent.includes('Safari') ? 'Safari' : 'Web Browser'}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {navigator.platform} • {new Date().toLocaleDateString()} ({new Date().toLocaleTimeString()})
-                        </p>
-                      </div>
-                      <div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Hiện tại
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>

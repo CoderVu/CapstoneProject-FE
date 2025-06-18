@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaStar, FaRegStar, FaHeart, FaRegHeart } from "react-icons/fa";
 import Image from "../../designLayouts/Image";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import { motion } from "framer-motion";
 import { addFavorite, removeFavorite } from "../../../redux/service/userService";
@@ -40,8 +41,15 @@ const formatPrice = (price) => {
 
 const Product = (props) => {
   const navigate = useNavigate();
+  const { colors } = useSelector((state) => state.color);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(props.isFavorite || false);
+
+  // Helper function to get color code by color name
+  const getColorCode = (colorName) => {
+    const color = colors.find(c => c.color === colorName);
+    return color ? color.colorCode : "#FFFFFF";
+  };
 
   // Update favorite state when props change
   useEffect(() => {
@@ -201,15 +209,18 @@ const Product = (props) => {
         {/* Colors - Fixed height */}
         {uniqueColors.length > 0 && (
           <div className="flex items-center gap-1.5 h-6">
-            {uniqueColors.slice(0, 3).map((color, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <span
-                  className="inline-block w-4 h-4 border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                ></span>
-              </div>
-            ))}
+            {uniqueColors.slice(0, 3).map((colorName, index) => {
+              const colorCode = getColorCode(colorName);
+              return (
+                <div key={index} className="flex flex-col items-center">
+                  <span
+                    className="inline-block w-4 h-4 border border-gray-300 dark:border-gray-600 ring-1 ring-white dark:ring-gray-800 rounded-full"
+                    style={{ backgroundColor: colorCode }}
+                    title={colorName}
+                  ></span>
+                </div>
+              );
+            })}
             {uniqueColors.length > 3 && (
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400 ml-0.5">
                 +{uniqueColors.length - 3}
