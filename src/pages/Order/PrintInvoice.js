@@ -241,7 +241,7 @@ const PrintInvoice = ({ order, formatDate, formatPrice, getStatusInfo }) => {
           <div className="grid grid-cols-2 gap-8 mb-8">
             <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <h3 className="text-gray-700 font-semibold mb-3 border-b border-gray-200 pb-2">Thông tin khách hàng</h3>
-              <p className="text-gray-800 font-medium mb-1">{order.deliveryName || 'Khách hàng'}</p>
+              <p className="text-gray-800 font-medium mb-1">{order.deliveryName || 'Địa chỉ giao hàng'}</p>
               <p className="text-gray-800 mb-1">{order.deliveryAddress}</p>
               <p className="text-gray-800 mb-1">Điện thoại: {order.deliveryPhone}</p>
               <p className="text-gray-800 mb-1">Email: {order.email || 'N/A'}</p>
@@ -342,11 +342,11 @@ const PrintInvoice = ({ order, formatDate, formatPrice, getStatusInfo }) => {
             <div className="flex justify-between text-sm text-gray-500 mt-8">
               <div>
                 <p>Hotline: 1900 1234</p>
-                <p>Email: support@yourdomain.com</p>
+                <p>Email: vunguyen.170803@gmail.com</p>
               </div>
               <div className="text-right">
-                <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
-                <p>Website: www.yourdomain.com</p>
+                <p>Địa chỉ: 243 Trần Quý Khoách, Hòa Minh, Liên Chiểu, ĐN </p>
+                <p>Website: https://www.capstone.io.vn</p>
               </div>
             </div>
           </div>
