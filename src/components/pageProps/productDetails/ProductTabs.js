@@ -37,7 +37,8 @@ const ProductTabs = ({ productDescription, productCareInstructions }) => {
       content: "Sản phẩm này không cần hướng dẫn sử dụng.",
       table: [
         ["Cách bảo quản", "Nơi khô ráo, tránh ánh nắng trực tiếp"],
-        ["Cách sử dụng", "Dùng để đựng thức ăn hoặc đồ uống"],
+        ["Cách sử dụng", "Mặc trực tiếp hoặc phối cùng trang phục khác tùy theo mục đích sử dụng"],
+        
       ],
     },
   };
