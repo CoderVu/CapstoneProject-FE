@@ -149,6 +149,14 @@ const ProductTable = () => {
         sortable: true,
       },
       {
+        Header: "Bộ sưu tập",
+        accessor: "collectionName",
+        Cell: ({ value }) => (
+          value ? value : <span className="text-gray-400">-</span>
+        ),
+        sortable: true,
+      },
+      {
         Header: "Hành động",
         accessor: "id",
         Cell: ({ row }) => (

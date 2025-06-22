@@ -26,6 +26,22 @@ const FeatureExtraction = () => {
   const [selectedDimension, setSelectedDimension] = useState(2048);
   const [modalManuallyClosed, setModalManuallyClosed] = useState(false);
   const [pendingReExtract, setPendingReExtract] = useState(false);
+  
+  // Add state for image modal
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // Helper function to check if vector features exist
+  const hasVectorFeatures = (vectorFeatures) => {
+    if (!vectorFeatures) return false;
+    if (Array.isArray(vectorFeatures)) {
+      return vectorFeatures.length > 0;
+    }
+    if (typeof vectorFeatures === 'string') {
+      return vectorFeatures && vectorFeatures.trim().length > 0;
+    }
+    return false;
+  };
 
   // Fetch extraction stats
   const fetchStats = async () => {
@@ -34,7 +50,7 @@ const FeatureExtraction = () => {
       setStats(response.data);
       setError(null);
     } catch (err) {
-      setError('Không thể kết nối đến server');
+      
     }
   };
 
@@ -45,7 +61,7 @@ const FeatureExtraction = () => {
       setConfig(res.data);
       setSelectedDimension(res.data.vector_dimensions);
     } catch (e) {
-      setError('Không thể lấy cấu hình vector');
+      
     }
   };
 
@@ -67,7 +83,7 @@ const FeatureExtraction = () => {
       setStatus(response.data);
       setError(null);
     } catch (err) {
-      setError('Không thể kết nối đến server');
+      
     }
   };
 
@@ -144,7 +160,7 @@ const FeatureExtraction = () => {
         return product.images
           .filter(img => {
             const hasValidPath = img.path || img.url;
-            const needsUpdate = !img.vectorFeatures || !img.vectorFeatures.trim();
+            const needsUpdate = !hasVectorFeatures(img.vectorFeatures);
             return hasValidPath && needsUpdate;
           })
           .map(img => ({
@@ -198,104 +214,45 @@ const FeatureExtraction = () => {
     fetchVectorDimensions();
   };
 
-  // Update vector features for all images
-  const handleUpdateAll = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setUpdateStatus(null);
-    
+  // Update vector features for a single image
+  const handleUpdateSingleImage = async (image) => {
     try {
-      // Lấy danh sách sản phẩm nếu chưa có
-      if (!products?.products) {
-        await fetchProducts();
-      }
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
+      setUpdateStatus(null);
 
-      // Thu thập tất cả ảnh cần cập nhật từ tất cả sản phẩm
-      const allImagesToUpdate = products.products.flatMap(product => {
-        return product.images
-          .filter(img => {
-            const hasValidPath = img.path || img.url;
-            const needsUpdate = !img.vectorFeatures || !img.vectorFeatures.trim();
-            return hasValidPath && needsUpdate;
-          })
-          .map(img => ({
-            ...img,
-            productName: product.productName
-          }));
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          path: image.path || image.url,
+          id: image.id
+        }),
       });
 
-      if (allImagesToUpdate.length === 0) {
-        setSuccess('Không có ảnh nào cần cập nhật');
-        return;
-      }
+      const result = await response.json();
 
-      let successCount = 0;
-      let failedCount = 0;
-      const failedImages = [];
-
-      // Xử lý từng ảnh
-      for (const img of allImagesToUpdate) {
-        try {
-          const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              path: img.path || img.url,
-              id: img.id
-            }),
-          });
-
-          const result = await response.json();
-
-          if (response.ok) {
-            if (result.status === 'skipped') {
-              // Ảnh đã có vector features, bỏ qua
-            } else {
-              successCount++;
-            }
-          } else {
-            failedCount++;
-            failedImages.push({
-              id: img.id,
-              path: img.path || img.url,
-              error: result.error
-            });
-          }
-
-          // Cập nhật trạng thái sau mỗi ảnh
-          setUpdateStatus({
-            total_images: allImagesToUpdate.length,
-            success_count: successCount,
-            failed_count: failedCount,
-            failed_images: failedImages,
-            current_image: img.path || img.url
-          });
-
-        } catch (error) {
-          failedCount++;
-          failedImages.push({
-            id: img.id,
-            path: img.path || img.url,
-            error: error.message
-          });
+      if (response.ok) {
+        if (result.status === 'skipped') {
+          setSuccess('Ảnh đã có vector features, không cần cập nhật');
+        } else {
+          setSuccess('Cập nhật vector features thành công');
         }
+        
+        // Clear cache after successful update
+        await handleClearCache();
+        
+        // Refresh data
+        await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+      } else {
+        setError(result.error || 'Lỗi khi cập nhật vector features');
       }
-
-      // Cập nhật UI
-      if (successCount > 0) {
-        setSuccess(`Đã cập nhật thành công ${successCount} ảnh${failedCount > 0 ? `, ${failedCount} ảnh thất bại` : ''}`);
-      } else if (failedCount > 0) {
-        setError(`Cập nhật thất bại ${failedCount} ảnh`);
-      }
-
-      // Refresh data
-      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
 
     } catch (error) {
-      setError('Lỗi khi cập nhật tất cả ảnh: ' + error.message);
+      setError('Lỗi khi cập nhật ảnh: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -312,7 +269,7 @@ const FeatureExtraction = () => {
       // Lọc ra những ảnh cần cập nhật (chưa có vector features)
       const imagesToUpdate = product.images.filter(img => {
         const hasValidPath = img.path || img.url;
-        const needsUpdate = !img.vectorFeatures || !img.vectorFeatures.trim();
+        const needsUpdate = !hasVectorFeatures(img.vectorFeatures);
         return hasValidPath && needsUpdate;
       });
 
@@ -382,6 +339,9 @@ const FeatureExtraction = () => {
         setError(`Cập nhật thất bại ${failedCount} ảnh`);
       }
 
+      // Clear cache after processing
+      await handleClearCache();
+      
       // Refresh data
       await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
 
@@ -392,25 +352,26 @@ const FeatureExtraction = () => {
     }
   };
 
-  // Add new function to re-extract all images
-  const handleReExtractAll = async () => {
+  // Update vector features for all images
+  const handleUpdateAll = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    setUpdateStatus(null);
+    
     try {
-      setLoading(true);
-      setError(null);
-      setSuccess(null);
-      setUpdateStatus(null);
-      
       // Lấy danh sách sản phẩm nếu chưa có
       if (!products?.products) {
         await fetchProducts();
       }
 
-      // Thu thập tất cả ảnh từ tất cả sản phẩm, bỏ qua điều kiện vectorFeatures
+      // Thu thập tất cả ảnh cần cập nhật từ tất cả sản phẩm
       const allImagesToUpdate = products.products.flatMap(product => {
         return product.images
           .filter(img => {
             const hasValidPath = img.path || img.url;
-            return hasValidPath; // Chỉ kiểm tra có đường dẫn hợp lệ
+            const needsUpdate = !hasVectorFeatures(img.vectorFeatures);
+            return hasValidPath && needsUpdate;
           })
           .map(img => ({
             ...img,
@@ -419,7 +380,7 @@ const FeatureExtraction = () => {
       });
 
       if (allImagesToUpdate.length === 0) {
-        setSuccess('Không có ảnh nào để xử lý');
+        setSuccess('Không có ảnh nào cần cập nhật');
         return;
       }
 
@@ -437,15 +398,18 @@ const FeatureExtraction = () => {
             },
             body: JSON.stringify({
               path: img.path || img.url,
-              id: img.id,
-              forceUpdate: true
+              id: img.id
             }),
           });
 
           const result = await response.json();
 
           if (response.ok) {
-            successCount++;
+            if (result.status === 'skipped') {
+              // Ảnh đã có vector features, bỏ qua
+            } else {
+              successCount++;
+            }
           } else {
             failedCount++;
             failedImages.push({
@@ -476,18 +440,143 @@ const FeatureExtraction = () => {
 
       // Cập nhật UI
       if (successCount > 0) {
+        setSuccess(`Đã cập nhật thành công ${successCount} ảnh${failedCount > 0 ? `, ${failedCount} ảnh thất bại` : ''}`);
+      } else if (failedCount > 0) {
+        setError(`Cập nhật thất bại ${failedCount} ảnh`);
+      }
+
+      // Clear cache after processing
+      await handleClearCache();
+      
+      // Refresh data
+      await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
+
+    } catch (error) {
+      setError('Lỗi khi cập nhật tất cả ảnh: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add new function to re-extract all images
+  const handleReExtractAll = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
+      setUpdateStatus(null);
+      
+      console.log('=== BẮT ĐẦU TRÍCH XUẤT LẠI TOÀN BỘ ===');
+      
+      // Lấy danh sách sản phẩm nếu chưa có
+      if (!products?.products) {
+        console.log('Chưa có dữ liệu sản phẩm, đang fetch...');
+        await fetchProducts();
+      }
+
+      console.log(`Tổng số sản phẩm: ${products?.products?.length || 0}`);
+
+      // Thu thập tất cả ảnh từ tất cả sản phẩm, bỏ qua điều kiện vectorFeatures
+      const allImagesToUpdate = products.products.flatMap(product => {
+        return product.images
+          .filter(img => {
+            const hasValidPath = img.path || img.url;
+            return hasValidPath; // Chỉ kiểm tra có đường dẫn hợp lệ
+          })
+          .map(img => ({
+            ...img,
+            productName: product.productName
+          }));
+      });
+
+      console.log(`Tổng số ảnh cần xử lý: ${allImagesToUpdate.length}`);
+
+      if (allImagesToUpdate.length === 0) {
+        setSuccess('Không có ảnh nào để xử lý');
+        return;
+      }
+
+      let successCount = 0;
+      let failedCount = 0;
+      const failedImages = [];
+
+      // Xử lý từng ảnh
+      for (let i = 0; i < allImagesToUpdate.length; i++) {
+        const img = allImagesToUpdate[i];
+        try {
+          console.log(`Đang xử lý ảnh ${i + 1}/${allImagesToUpdate.length}: ${img.path || img.url}`);
+          
+          const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.UPDATE_SINGLE}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              path: img.path || img.url,
+              id: img.id,
+              forceUpdate: true
+            }),
+          });
+
+          const result = await response.json();
+          console.log(`Response cho ảnh ${img.id}:`, { status: response.status, result });
+
+          if (response.ok) {
+            successCount++;
+            console.log(`✅ Thành công: ${img.id}`);
+          } else {
+            failedCount++;
+            failedImages.push({
+              id: img.id,
+              path: img.path || img.url,
+              error: result.error || `HTTP ${response.status}`
+            });
+            console.log(`❌ Thất bại: ${img.id} - ${result.error}`);
+          }
+
+          // Cập nhật trạng thái sau mỗi ảnh
+          setUpdateStatus({
+            total_images: allImagesToUpdate.length,
+            success_count: successCount,
+            failed_count: failedCount,
+            failed_images: failedImages,
+            current_image: img.path || img.url
+          });
+
+        } catch (error) {
+          failedCount++;
+          failedImages.push({
+            id: img.id,
+            path: img.path || img.url,
+            error: error.message
+          });
+          console.log(`❌ Lỗi network: ${img.id} - ${error.message}`);
+        }
+      }
+
+      console.log(`=== KẾT QUẢ: ${successCount} thành công, ${failedCount} thất bại ===`);
+
+      // Cập nhật UI
+      if (successCount > 0) {
         setSuccess(`Đã trích xuất lại thành công ${successCount} ảnh${failedCount > 0 ? `, ${failedCount} ảnh thất bại` : ''}`);
       } else if (failedCount > 0) {
         setError(`Trích xuất lại thất bại ${failedCount} ảnh`);
       }
 
+      // Clear cache after processing
+      console.log('Đang xóa cache...');
+      await handleClearCache();
+      
       // Refresh data
+      console.log('Đang refresh dữ liệu...');
       await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
 
     } catch (error) {
+      console.error('Lỗi trong handleReExtractAll:', error);
       setError('Lỗi khi trích xuất lại toàn bộ ảnh: ' + error.message);
     } finally {
       setLoading(false);
+      console.log('=== KẾT THÚC TRÍCH XUẤT LẠI TOÀN BỘ ===');
     }
   };
 
@@ -507,6 +596,9 @@ const FeatureExtraction = () => {
           setError(`Xử lý thất bại ${failed} ảnh. Chi tiết: ${failed_images.map(f => `${f.id}: ${f.error}`).join(', ')}`);
         }
       }
+      
+      // Clear cache after processing
+      await handleClearCache();
       
       // Refresh data
       await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
@@ -547,6 +639,9 @@ const FeatureExtraction = () => {
           current_image: 'Hoàn thành sửa chữa'
         });
       }
+      
+      // Clear cache after processing
+      await handleClearCache();
       
       // Refresh data
       await Promise.all([fetchStats(), fetchProducts(), fetchVectorDimensions()]);
@@ -612,6 +707,56 @@ const FeatureExtraction = () => {
     setLoading(false);
   };
 
+  // Thêm hàm xóa cache
+  const handleClearCache = async () => {
+    try {
+      const response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.EXTRACTION.CLEAR_CACHE}`, { cache_type: 'all' });
+      if (response.data.status === 'success') {
+        console.log('Đã xóa cache thành công');
+        return true;
+      } else {
+        console.warn('Xóa cache không thành công:', response.data.error);
+        return false;
+      }
+    } catch (err) {
+      console.error('Lỗi khi xóa cache:', err.response?.data?.error || err.message);
+      return false;
+    }
+  };
+
+  // Thêm hàm xóa cache với UI feedback
+  const handleClearCacheWithUI = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const success = await handleClearCache();
+      if (success) {
+        setSuccess('Đã xóa cache thành công!');
+        // Reload lại dữ liệu
+        await Promise.all([fetchStats(), fetchStatus(), fetchProducts(), fetchVectorDimensions()]);
+      } else {
+        setError('Lỗi khi xóa cache');
+      }
+    } catch (err) {
+      setError('Lỗi khi xóa cache: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add function to show all images of a product
+  const handleShowAllImages = (product) => {
+    setSelectedProduct(product);
+    setShowImageModal(true);
+  };
+
+  // Add function to close image modal
+  const handleCloseImageModal = () => {
+    setShowImageModal(false);
+    setSelectedProduct(null);
+  };
+
   return (
     <div className="p-8 max-w-8xl mx-auto">
 
@@ -670,6 +815,19 @@ const FeatureExtraction = () => {
           </div>
         </div>
       )}
+
+      {/* Nút xóa cache */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleClearCacheWithUI}
+          disabled={loading}
+          className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center space-x-2"
+          title="Xóa toàn bộ cache hệ thống"
+        >
+          <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>Xóa cache</span>
+        </button>
+      </div>
 
       {/* Main Stats Card */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
@@ -740,21 +898,18 @@ const FeatureExtraction = () => {
                           <p className="text-sm text-gray-500">Cập nhật lại vector đặc trưng cho tất cả ảnh</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between space-x-2">
                         <button
-                          onClick={() => {
-                            setShowConfigModal(true);
-                            setPendingReExtract(true);
-                            setModalManuallyClosed(false);
-                          }}
+                          onClick={handleReExtractAll}
                           disabled={loading}
                           className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-                          data-tooltip-id="re-extract-tooltip"
-                          data-tooltip-content="Trích xuất lại vector đặc trưng cho tất cả ảnh trong hệ thống"
+                          data-tooltip-id="re-extract-direct-tooltip"
+                          data-tooltip-content="Trích xuất lại vector đặc trưng cho tất cả ảnh (2048 chiều)"
                         >
                           <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                          <span>Bắt đầu</span>
+                          <span>Trích xuất lại</span>
                         </button>
+                       
                       </div>
                     </div>
                   </div>
@@ -1104,16 +1259,56 @@ const FeatureExtraction = () => {
                         )}
                       </td>
                       <td className="px-8 py-6 whitespace-nowrap text-lg text-center">
-                        {product.without_features > 0 && (
+                        <div className="flex flex-col space-y-2">
+                          {product.without_features > 0 && (
+                            <button
+                              onClick={() => handleUpdateProduct(product)}
+                              disabled={loading}
+                              className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              title="Cập nhật vector đặc trưng cho sản phẩm này"
+                            >
+                              Cập nhật sản phẩm
+                            </button>
+                          )}
+                          
+                          {/* Add button to show all images */}
                           <button
-                            onClick={() => handleUpdateProduct(product)}
+                            onClick={() => handleShowAllImages(product)}
                             disabled={loading}
-                            className="px-6 py-3 text-lg bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                            title="Cập nhật vector đặc trưng cho sản phẩm này"
+                            className="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                            title="Xem tất cả ảnh của sản phẩm này"
                           >
-                            Cập nhật
+                            Xem tất cả ảnh ({product.images.length})
                           </button>
-                        )}
+                          
+                          {/* Add individual image update buttons for first 3 images */}
+                          <div className="flex flex-wrap gap-1">
+                            {product.images.slice(0, 3).map((img, index) => (
+                              <button
+                                key={index}
+                                onClick={() => handleUpdateSingleImage(img)}
+                                disabled={loading}
+                                className={`px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 ${
+                                  hasVectorFeatures(img.vectorFeatures)
+                                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                                title={
+                                  hasVectorFeatures(img.vectorFeatures)
+                                    ? 'Ảnh đã có vector features'
+                                    : 'Cập nhật vector đặc trưng cho ảnh này'
+                                }
+                              >
+                                Ảnh {index + 1}
+                              </button>
+                            ))}
+                            {product.images.length > 3 && (
+                              <span className="px-2 py-1 text-xs text-gray-500">
+                                +{product.images.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1217,7 +1412,88 @@ const FeatureExtraction = () => {
       {/* Add Tooltips */}
       <Tooltip id="process-new-tooltip" place="top" />
       <Tooltip id="re-extract-tooltip" place="top" />
+      <Tooltip id="re-extract-direct-tooltip" place="top" />
+      <Tooltip id="re-extract-config-tooltip" place="top" />
       <Tooltip id="fix-dimensions-tooltip" place="top" />
+
+      {/* Image Modal */}
+      {showImageModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Tất cả ảnh của sản phẩm: {selectedProduct.productName || 'Chưa có tên'}
+              </h2>
+              <button
+                onClick={handleCloseImageModal}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {selectedProduct.images.map((img, index) => (
+                <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="mb-3">
+                    <img
+                      src={img.url || img.path}
+                      alt={`${selectedProduct.productName || 'Product'} ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-600">
+                      <strong>ID:</strong> {img.id}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <strong>Trạng thái:</strong> 
+                      <span className={`ml-1 px-2 py-1 rounded text-xs ${
+                        hasVectorFeatures(img.vectorFeatures)
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {hasVectorFeatures(img.vectorFeatures) ? 'Đã có vector' : 'Chưa có vector'}
+                      </span>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleUpdateSingleImage(img)}
+                      disabled={loading}
+                      className={`w-full px-3 py-2 text-sm rounded transition-colors disabled:opacity-50 ${
+                        hasVectorFeatures(img.vectorFeatures)
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                      title={
+                        hasVectorFeatures(img.vectorFeatures)
+                          ? 'Ảnh đã có vector features'
+                          : 'Cập nhật vector đặc trưng cho ảnh này'
+                      }
+                    >
+                      {loading ? 'Đang xử lý...' : (hasVectorFeatures(img.vectorFeatures) ? 'Đã có vector' : 'Cập nhật vector')}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleCloseImageModal}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

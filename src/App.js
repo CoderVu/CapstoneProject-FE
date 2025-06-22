@@ -45,6 +45,7 @@ import Customers from "./pages/Admin/Customers/Customers";
 import FeatureExtraction from "./pages/Admin/FeatureExtraction/FeatureExtraction";
 import ForgotPassword from "./pages/Account/ForgotPassword";
 import VerifyForgotPassword from "./pages/Account/VerifyForgotPassword";
+import CollectionTable from "./pages/Admin/Collection/Collection";
 
 
 const Layout = () => {
@@ -101,6 +102,7 @@ const router = createBrowserRouter(
           <Route path="orders" element={<OrderList />} />
           <Route path="promotions" element={<DiscountCode />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="collections" element={<CollectionTable />} />
           <Route path="shipping" element={<div className="text-2xl font-bold">Quản Lý Vận Chuyển</div>} />
           <Route path="settings" element={<div className="text-2xl font-bold">Cài Đặt Hệ Thống</div>} />
           <Route path="feature-extraction" element={<FeatureExtraction />} />
@@ -123,14 +125,20 @@ function AppContent() {
     const fetchMockOrder = async () => {
       try {
         const data = await fetchOrderMock();
-        showCustomToast({
-          userName: data.userName,
-          productName: data.productName,
-          orderCode: data.orderCode,
-          timeAgo: data.orderDate,
-          productImage: data.imageUrl,
-          productId : data.productId
-        });
+        
+        // Kiểm tra data có tồn tại và có đầy đủ thông tin cần thiết không
+        if (data && data.userName && data.productName && data.orderCode) {
+          showCustomToast({
+            userName: data.userName,
+            productName: data.productName,
+            orderCode: data.orderCode,
+            timeAgo: data.orderDate,
+            productImage: data.imageUrl,
+            productId: data.productId
+          });
+        } else {
+          console.log("Mock order data is incomplete or missing, skipping toast notification");
+        }
       } catch (error) {
         console.error("Failed to fetch mock order data:", error);
       }

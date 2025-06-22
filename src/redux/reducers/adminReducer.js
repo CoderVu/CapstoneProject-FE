@@ -12,6 +12,7 @@ const adminReducer = (state = initialState, action) => {
     case types.FETCH_USERS_REQUEST:
     case types.FETCH_USER_REQUEST:
     case types.DELETE_USER_REQUEST:
+    case types.REGISTER_STAFF_REQUEST:
       return {
         ...state,
         loading: true,
@@ -42,9 +43,17 @@ const adminReducer = (state = initialState, action) => {
         error: null
       };
 
+    case types.REGISTER_STAFF_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: null
+      };
+
     case types.FETCH_USERS_ERROR:
     case types.FETCH_USER_ERROR:
     case types.DELETE_USER_ERROR:
+    case types.REGISTER_STAFF_ERROR:
       return {
         ...state,
         loading: false,

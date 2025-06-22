@@ -92,9 +92,16 @@ const CustomerList = ({ users, onViewUser, onDeleteUser }) => {
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                   user.role?.name === 'ROLE_ADMIN' 
                     ? 'bg-purple-100 text-purple-800'
+                    : user.role?.name === 'ROLE_STAFF'
+                    ? 'bg-orange-100 text-orange-800'
                     : 'bg-green-100 text-green-800'
                 }`}>
-                  {user.role?.name === 'ROLE_ADMIN' ? 'Admin' : 'User'}
+                  {user.role?.name === 'ROLE_ADMIN' 
+                    ? 'Admin' 
+                    : user.role?.name === 'ROLE_STAFF'
+                    ? 'Nhân viên'
+                    : 'Khách hàng'
+                  }
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

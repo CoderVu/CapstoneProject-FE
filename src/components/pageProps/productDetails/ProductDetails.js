@@ -347,6 +347,10 @@ const ProductDetails = () => {
         // Handle product detail
         if (detailResult.status === 'fulfilled') {
           setProductDetail(detailResult.value);
+          // Automatically post viewed product when product detail is loaded
+          if (detailResult.value && detailResult.value.id) {
+            postViewedProduct(detailResult.value.id);
+          }
         } else {
           setError(detailResult.reason?.message || "Lỗi tải dữ liệu sản phẩm");
         }
@@ -728,7 +732,6 @@ const ProductDetails = () => {
                     <img
                       src={selectedImage || productDetail?.mainImage?.path}
                       alt={productDetail?.productName}
-                      onClick={() => postViewedProduct(productDetail.id)}
                       className="w-full h-auto"
                       loading="lazy"
                       onMouseMove={(e) => {
@@ -848,7 +851,7 @@ const ProductDetails = () => {
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" />
                       <path d="M10.3 15.29a1 1 0 001.4 1.42l4-4a1 1 0 000-1.42l-4-4a1 1 0 00-1.4 1.42L13.58 12l-3.3 3.29z" />
                     </svg>
-                    AI Tìm kiếm
+                    AI
                   </button>
                 </div>
                 <div className="grid grid-cols-8 gap-1">
@@ -860,8 +863,8 @@ const ProductDetails = () => {
                         <div
                           key={index}
                           className={`thumbnail-container cursor-pointer ${selectedImage === image.path
-                              ? "ring-1 ring-blue-500 ring-offset-1 scale-105"
-                              : "hover:ring-1 hover:ring-gray-300"
+                            ? "ring-1 ring-blue-500 ring-offset-1 scale-105"
+                            : "hover:ring-1 hover:ring-gray-300"
                             }`}
                           onClick={() => handleImageClick(image.path)}
                         >
@@ -870,7 +873,6 @@ const ProductDetails = () => {
                               src={image.path}
                               alt={`Product image ${index + 1}`}
                               className="w-full h-full object-cover"
-                              onClick={() => postViewedProduct(productDetail.id)}
                               loading="lazy"
                             />
                           </div>
@@ -943,7 +945,7 @@ const ProductDetails = () => {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <h4 className="font-medium">Tìm Kiếm Thị Giác AI</h4>
+                    <h4 className="font-medium">Tìm kiếm sản phẩm này</h4>
                     <p className="text-xs text-gray-300">Tìm sản phẩm tương tự</p>
                   </div>
                 </button>
@@ -963,7 +965,7 @@ const ProductDetails = () => {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <h4 className="font-medium">Tải Lên & Tìm Kiếm</h4>
+                    <h4 className="font-medium">Tải lên & tìm kiếm</h4>
                     <p className="text-xs text-gray-300">Tìm kiếm bằng hình ảnh của bạn</p>
                   </div>
                 </button>

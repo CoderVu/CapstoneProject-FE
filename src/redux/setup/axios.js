@@ -2,8 +2,8 @@ import axios from "axios";
 
 const instance = axios.create({
     // baseURL: 'https://capstoneproject-be-iapt.onrender.com',
-     // baseURL: 'http://localhost:8080',
-    baseURL: 'https://www.capstone.io.vn/api',
+    //  baseURL: 'http://localhost:8080',
+    baseURL: 'https://www.capstone.io.vn',
     withCredentials: true,
 });
 

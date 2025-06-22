@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="shirtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#74b9ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0984e3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pantsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fd79a8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e84393;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Shirt -->
+  <path d="M6 3h12l-2 4h-8l-2-4z" fill="url(#shirtGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  <path d="M8 7v8h8V7" fill="url(#shirtGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  
+  <!-- Shirt Sleeves -->
+  <path d="M6 5l-1 2v3h2V7" fill="url(#shirtGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  <path d="M18 5l1 2v3h-2V7" fill="url(#shirtGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  
+  <!-- Pants -->
+  <path d="M9 15h6l-1 6h-4l-1-6z" fill="url(#pantsGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  <path d="M8 15l-1 2v3h2v-2" fill="url(#pantsGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  <path d="M16 15l1 2v3h-2v-2" fill="url(#pantsGrad)" stroke="#2d3436" stroke-width="0.5"/>
+  
+  <!-- Belt -->
+  <rect x="8" y="14" width="8" height="1" fill="#fdcb6e" stroke="#2d3436" stroke-width="0.3"/>
+</svg> 

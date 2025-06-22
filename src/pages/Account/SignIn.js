@@ -27,7 +27,9 @@ const SignIn = () => {
   useEffect(() => {
     if (isAuthenticated) {
       const isAdmin = auth?.role?.name === "ROLE_ADMIN";
-      if (isAdmin) {
+      const isStaff = auth?.role?.name === "ROLE_STAFF";
+      
+      if (isAdmin || isStaff) {
         navigate("/admin/dashboard");
       } else {
         // Redirect về trang trước đó nếu có, hoặc về trang chủ
@@ -73,13 +75,14 @@ const SignIn = () => {
     const top = window.screenY + (window.innerHeight - height) / 2;
 
     window.open(
-        "https://www.capstone.io.vn/api/oauth2/authorization/google",
+        // "https://www.capstone.io.vn/api/oauth2/authorization/google",
+      "http://localhost:8080/oauth2/authorization/google",
         "_blank",
       `width=${width},height=${height},top=${top},left=${left}`
     );
 
     const messageListener = async (event) => {
-      if (event.origin !== "https://www.capstone.io.vn") return;
+      if (event.origin !== "http://localhost:8080") return;
       const { token } = event.data;
 
       if (token) {
@@ -89,10 +92,12 @@ const SignIn = () => {
           if (data && data.data) {
             const { id, email, fullName, phoneNumber, address, avatar, role } = data.data;
             const user = { id, email, fullName, phoneNumber, address, avatar, role };
+            console.log("role", role);
             const isAdmin = role?.name === "ROLE_ADMIN";
+            const isStaff = role?.name === "ROLE_STAFF";
 
             dispatch(oauth2LoginSuccess(user, token));
-            navigate(isAdmin ? "/admin/dashboard" : from);
+            navigate((isAdmin || isStaff) ? "/admin/dashboard" : from);
           } else {
             console.error("Invalid user data:", data);
             navigate("/signin");
@@ -112,7 +117,8 @@ const SignIn = () => {
     <div className="w-full min-h-screen bg-[#f5f5f5] flex items-center justify-center py-10">
       <div className="w-[400px] bg-white rounded-sm shadow-sm">
         {/* Header */}
-        <div className="bg-[#ee4d2d] p-4">
+        <div
+         className="bg-[#ee4d2d] p-4">
           <h2 className="text-white text-xl font-medium text-center">Đăng Nhập</h2>
         </div>
 

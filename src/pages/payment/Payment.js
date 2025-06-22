@@ -25,6 +25,9 @@ const PaymentGateway = () => {
     paymentMethod: "",
   });
 
+  // Phone number validation state
+  const [phoneError, setPhoneError] = useState("");
+
   // Calculate total amount
   const totalAmount = cartState.finalAmount || 0;
 
@@ -92,6 +95,14 @@ const PaymentGateway = () => {
   const handleCreateOrder = async () => {
     if (!formData.deliveryAddress || !formData.deliveryPhone) {
       setError("Vui lòng nhập đầy đủ thông tin giao hàng");
+      return;
+    }
+
+    // Validate phone number before proceeding
+    const phoneValidationError = validatePhoneNumber(formData.deliveryPhone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      setError("Vui lòng kiểm tra lại thông tin số điện thoại");
       return;
     }
   
@@ -164,6 +175,71 @@ const PaymentGateway = () => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Phone number validation function
+  const validatePhoneNumber = (phone) => {
+    // Remove all non-digit characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Vietnamese phone number patterns
+    const phonePatterns = [
+      /^0[3|5|7|8|9][0-9]{8}$/, // 03x, 05x, 07x, 08x, 09x + 8 digits
+      /^0[2][0-9]{8}$/, // 02x + 8 digits (Hanoi, HCMC)
+      /^0[1][0-9]{9}$/, // 01x + 9 digits (some provinces)
+    ];
+
+    if (!cleanPhone) {
+      return "Số điện thoại không được để trống";
+    }
+
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      return "Số điện thoại phải có 10-11 chữ số";
+    }
+
+    if (!phonePatterns.some(pattern => pattern.test(cleanPhone))) {
+      return "Số điện thoại không đúng định dạng";
+    }
+
+    return ""; // No error
+  };
+
+  // Handle phone number change with validation
+  const handlePhoneChange = (e) => {
+    const phone = e.target.value;
+    
+    // Remove all non-digit characters for processing
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Format phone number as user types
+    let formattedPhone = cleanPhone;
+    if (cleanPhone.length > 0) {
+      if (cleanPhone.length <= 3) {
+        formattedPhone = cleanPhone;
+      } else if (cleanPhone.length <= 6) {
+        formattedPhone = `${cleanPhone.slice(0, 3)} ${cleanPhone.slice(3)}`;
+      } else if (cleanPhone.length <= 9) {
+        formattedPhone = `${cleanPhone.slice(0, 3)} ${cleanPhone.slice(3, 6)} ${cleanPhone.slice(6)}`;
+      } else {
+        formattedPhone = `${cleanPhone.slice(0, 3)} ${cleanPhone.slice(3, 6)} ${cleanPhone.slice(6, 9)} ${cleanPhone.slice(9)}`;
+      }
+    }
+    
+    setFormData({
+      ...formData,
+      deliveryPhone: formattedPhone,
+    });
+    
+    // Clear error when user starts typing
+    if (phoneError) {
+      setPhoneError("");
+    }
+  };
+
+  // Validate phone on blur
+  const handlePhoneBlur = () => {
+    const error = validatePhoneNumber(formData.deliveryPhone);
+    setPhoneError(error);
   };
 
   return (
@@ -399,16 +475,25 @@ const PaymentGateway = () => {
                     type="tel"
                     name="deliveryPhone"
                     value={formData.deliveryPhone}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        deliveryPhone: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập số điện thoại"
+                    onChange={handlePhoneChange}
+                    onBlur={handlePhoneBlur}
+                    className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      phoneError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Ví dụ: 012 345 6789"
                     required
                   />
+                  {phoneError && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {phoneError}
+                    </p>
+                  )}
+                  <p className="text-gray-500 text-xs mt-1">
+                    Định dạng: 0xx xxx xxxx (10-11 chữ số, bắt đầu bằng 0)
+                  </p>
                 </div>
               </div>
 

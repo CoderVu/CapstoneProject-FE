@@ -10,7 +10,7 @@ import "slick-carousel/slick/slick-theme.css";
 const NewArrivals = ({ collectionId = "078bde4d-daff-4d85-83f0-90461d036e22" }) => {
   const dispatch = useDispatch();
   const { products, loading, error, initialized } = useSelector((state) => state.home.newArrivals);
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "slider"
+  const [viewMode, setViewMode] = useState("slider"); // "grid" or "slider"
   const navigate = useNavigate();
 
   useEffect(() => {

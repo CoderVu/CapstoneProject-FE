@@ -6,7 +6,7 @@ import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { emptyCart } from "../../assets/images/index";
 import ItemCard from "./ItemCard";
 import { getCartItems, removeCartItem } from "../../redux/actions/cartActions";
-import ProductRelated from "../../components/pageProps/productDetails/ProductRelated";
+// import ProductRelated from "../../components/pageProps/productDetails/ProductRelated";
 import { FaTruck, FaTrash, FaShoppingBasket, FaCreditCard, FaRegCheckSquare, FaRegSquare, FaInfoCircle, FaGift, FaCopy, FaCheck } from "react-icons/fa";
 import { getDiscountCodesForUser } from "../../redux/service/userService";
 
@@ -31,9 +31,9 @@ const Cart = () => {
   useEffect(() => {
     if (!isAuthenticated || !auth) {
       navigate("/signin", {
-        state: { 
-          from: "/cart", 
-          message: "Vui lòng đăng nhập để xem giỏ hàng" 
+        state: {
+          from: "/cart",
+          message: "Vui lòng đăng nhập để xem giỏ hàng"
         },
       });
     }
@@ -380,8 +380,8 @@ const Cart = () => {
                                 <button
                                   onClick={() => !expired && handleCopyCode(code.code)}
                                   className={`mt-1 text-xs flex items-center ${expired
-                                      ? "text-gray-400 cursor-not-allowed"
-                                      : "text-blue-600 hover:text-blue-800"
+                                    ? "text-gray-400 cursor-not-allowed"
+                                    : "text-blue-600 hover:text-blue-800"
                                     }`}
                                   disabled={expired}
                                 >
@@ -575,16 +575,6 @@ const Cart = () => {
                   <p className="text-xs text-gray-500 text-center mt-3">
                     Bạn sẽ kiểm tra lại các món hàng và thanh toán khi chuyển đến trang thanh toán
                   </p>
-                </div>
-              </div>
-
-              {/* Recently Viewed */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-6">
-                {/* <div className="p-5 border-b border-gray-100">
-                  <h3 className="font-medium text-gray-800">Đã xem gần đây</h3>
-                </div> */}
-                <div className="p-5">
-                  <ProductRelated limit={3} compact={true} />
                 </div>
               </div>
             </div>

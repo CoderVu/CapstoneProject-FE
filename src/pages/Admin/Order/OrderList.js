@@ -9,6 +9,8 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle,
+  Eye,
+  Edit,
 } from "lucide-react";
 import Pagination from "./Pagination";
 
@@ -400,18 +402,20 @@ const OrderList = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2">
                         <button
                           onClick={() => toggleOrderDetails(order.orderCode)}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                          title="Xem chi tiết"
                         >
-                          Xem chi tiết
+                          <Eye className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => openStatusDialog(order)}
-                          className="text-green-600 hover:text-green-800 font-medium"
+                          className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                          title="Cập nhật trạng thái"
                         >
-                          Cập nhật trạng thái
+                          <Edit className="h-4 w-4" />
                         </button>
                       </div>
                     </td>

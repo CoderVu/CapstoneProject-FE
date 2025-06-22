@@ -94,7 +94,7 @@ const fetchProductByCollection = async (name, page, size) => {
     try {
         const response = await axios({
             method: 'GET',
-            url: `/api/v1/public/products/collection/${name}?page=${page}&size=${size}`,
+            url: `/api/v1/public/products/collection/name/${name}?page=${page}&size=${size}`,
         });
 
         const { data } = response.data;
@@ -213,6 +213,7 @@ const postViewedProduct = async (productId) => {
             method: 'POST',
             url: `/api/v1/public/products/${productId}/view`,
         });
+        console.log("Posted viewed product:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error posting viewed product:", error);

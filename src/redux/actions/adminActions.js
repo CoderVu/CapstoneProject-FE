@@ -1,5 +1,5 @@
 import types from "../types";
-import { fetchAllUsers, getUserById, deleteUser } from "../service/adminService";
+import { fetchAllUsers, getUserById, deleteUser, registerStaffService } from "../service/adminService";
 
 // Action to fetch all users
 export const fetchAllUsersAction = () => async (dispatch) => {
@@ -51,5 +51,26 @@ export const deleteUserAction = (id) => async (dispatch) => {
             type: types.DELETE_USER_ERROR,
             payload: error.message
         });
+    }
+};
+
+// Action to register staff
+export const registerStaffAction = (staffData) => async (dispatch) => {
+    dispatch({ type: types.REGISTER_STAFF_REQUEST });
+    try {
+        const response = await registerStaffService(staffData);
+        dispatch({
+            type: types.REGISTER_STAFF_SUCCESS,
+            payload: response.data
+        });
+        // Refresh the user list after registration
+        dispatch(fetchAllUsersAction());
+        return response;
+    } catch (error) {
+        dispatch({
+            type: types.REGISTER_STAFF_ERROR,
+            payload: error.message
+        });
+        throw error;
     }
 }; 
