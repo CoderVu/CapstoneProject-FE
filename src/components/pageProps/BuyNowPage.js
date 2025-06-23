@@ -94,16 +94,18 @@ const BuyNowPage = () => {
           const token = localStorage.getItem("token");
           const response = await fetchAddress(token);
           const addressList = response?.data?.addressList || [];
+          console.log("Fetched addresses:", addressList);
           setAddresses(addressList);
 
           // Auto-select first address if available
           if (addressList.length > 0) {
             const firstAddress = addressList[0];
             const fullAddress = `${firstAddress.houseNumber}, ${firstAddress.street}, ${firstAddress.district}, ${firstAddress.city}`;
+            console.log("Auto-selecting first address:", fullAddress);
             setSelectedAddress(fullAddress);
             setFormData(prev => ({
               ...prev,
-              deliveryAddress: fullAddress
+              deliveryAddress: firstAddress // Store as object
             }));
           }
         } catch (err) {
@@ -128,14 +130,25 @@ const BuyNowPage = () => {
 
     // Handle address change from Address Selector
     const handleAddressChange = (address) => {
-        // Format the address as a single string
-        const fullAddress = `${address.houseNumber}, ${address.street}, ${address.district}, ${address.city}`;
-
-        setSelectedAddress(fullAddress);
-        setFormData({
-          ...formData,
-          deliveryAddress: fullAddress,
-        });
+        console.log("Address change received:", address);
+        
+        // Check if address is a string (from dropdown) or object (from AddressSelector)
+        if (typeof address === 'string') {
+          // Handle string from dropdown selection
+          setSelectedAddress(address);
+          setFormData({
+            ...formData,
+            deliveryAddress: address, // Keep as string for display
+          });
+        } else {
+          // Handle object from AddressSelector
+          const fullAddress = `${address.houseNumber}, ${address.street}, ${address.district}, ${address.city}`;
+          setSelectedAddress(fullAddress);
+          setFormData({
+            ...formData,
+            deliveryAddress: address, // Store as object for API
+          });
+        }
       };
 
     // Reset address creation form
@@ -169,7 +182,7 @@ const BuyNowPage = () => {
           size: product.size,
           color: product.color,
           quantity: product.quantity,
-          deliveryAddress: formData.deliveryAddress,
+          address: formData.deliveryAddress, // Already an object
           deliveryPhone: formData.deliveryPhone,
           paymentMethod: formData.paymentMethod,
           amount: finalAmount, // Use discounted amount

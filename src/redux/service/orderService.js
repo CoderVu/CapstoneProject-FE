@@ -47,12 +47,12 @@ const createOrderNow = async (orderRequest) => {
             data: orderRequest,
         });
         const { data } = response.data;
-        showSuccessToast(response.data.message);
+    
         console.log("dasdta", data)
         return data;
     } catch (error) {
         console.error("Error creating order now:", error);
-        showErrorToast(error.response.data.message || "Failed to create order now");
+     
         throw error;
     }
 }
