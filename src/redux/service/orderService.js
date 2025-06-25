@@ -1,5 +1,5 @@
 import axios from "../setup/axios";
-import { showSuccessToast, showErrorToast } from "../../components/Toast/ToastNotification";
+import { showSuccessToast, showErrorToast, showWarningToast } from "../../components/Toast/ToastNotification";
 const fetchOrderMock = async () => {
     try {
         const response = await axios({
@@ -110,7 +110,12 @@ const updateOrderStatus = async (orderId, status) => {
         });
         console.log("param", orderId, status)
         const { data } = response.data;
-        showSuccessToast(response.data.message || "Order status updated successfully");
+        if (response.data.message === "Cập nhật trạng thái đơn hàng thành công") {
+            showSuccessToast(response.data.message);
+        }
+        else {
+            showWarningToast(response.data.message);
+        }
         return data;
     } catch (error) {
         console.error("Error updating order status:", error);
