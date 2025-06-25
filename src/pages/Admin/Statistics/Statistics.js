@@ -5,6 +5,10 @@ import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement, BarElement);
 
+const VIETNAM_PROVINCES = [
+  "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước", "Bình Thuận", "Cà Mau", "Cần Thơ", "Cao Bằng", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Kiên Giang", "Kon Tum", "Lai Châu", "Lâm Đồng", "Lạng Sơn", "Lào Cai", "Long An", "Nam Định", "Nghệ An", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Quảng Bình", "Quảng Nam", "Quảng Ngãi", "Quảng Ninh", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Tiền Giang", "TP Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
+];
+
 const Statistics = () => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -136,28 +140,37 @@ const Statistics = () => {
     ],
   };
 
+  const getProvinceOrCity = (address) => {
+    // Lấy phần cuối sau dấu phẩy
+    const parts = address.split(",");
+    let last = parts[parts.length - 1].trim();
+    // Loại bỏ chữ "Tỉnh"/"Thành phố" nếu có
+    last = last.replace(/^Tỉnh\s+|^Thành phố\s+/i, "").trim();
+    // Chuẩn hóa tên (viết hoa đầu từ, loại bỏ khoảng trắng thừa)
+    last = last.replace(/\s+/g, " ");
+    // Đặc biệt: một số địa chỉ có thể ghi "TP Hồ Chí Minh" hoặc "Hồ Chí Minh"
+    if (last === "Hồ Chí Minh" || last === "TP. Hồ Chí Minh" || last === "Tp Hồ Chí Minh" || last === "Tp. Hồ Chí Minh") {
+      last = "TP Hồ Chí Minh";
+    }
+    return last;
+  };
+
+  const regionCounts = {};
+  if (statistics?.ordersByRegion) {
+    Object.entries(statistics.ordersByRegion).forEach(([address, count]) => {
+      const province = getProvinceOrCity(address);
+      if (VIETNAM_PROVINCES.includes(province)) {
+        regionCounts[province] = (regionCounts[province] || 0) + count;
+      }
+    });
+  }
+
   const ordersByRegionData = {
-    labels: statistics?.ordersByRegion 
-      ? Object.keys(statistics.ordersByRegion).map(address => {
-          // Extract province from address
-          const provinceMatch = address.match(/Tỉnh ([^,]+)|Thành phố ([^,]+)/);
-          if (provinceMatch) {
-            return provinceMatch[1] || provinceMatch[2]; // Return either "Tỉnh" or "Thành phố" match
-          }
-          return "Không xác định";
-        })
-      : [],
+    labels: Object.keys(regionCounts),
     datasets: [
       {
         label: "Số đơn hàng",
-        data: statistics?.ordersByRegion 
-          ? Object.entries(statistics.ordersByRegion).reduce((acc, [address, count]) => {
-              const provinceMatch = address.match(/Tỉnh ([^,]+)|Thành phố ([^,]+)/);
-              const province = provinceMatch ? (provinceMatch[1] || provinceMatch[2]) : "Không xác định";
-              acc[province] = (acc[province] || 0) + count;
-              return acc;
-            }, {})
-          : [],
+        data: Object.values(regionCounts),
         backgroundColor: "rgba(255, 159, 64, 0.6)",
         borderColor: "rgba(255, 159, 64, 1)",
         borderWidth: 1,

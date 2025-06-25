@@ -4,7 +4,7 @@ import API_CONFIG from "./config/api";
 const findSimilarImages = async (imageData) => {
   try {
     let response;
-    
+
     // Check if imageData is FormData (file upload) or URL
     if (imageData instanceof FormData) {
       response = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.AI.FIND_SIMILAR}`, imageData, {

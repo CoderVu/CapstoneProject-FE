@@ -1,11 +1,11 @@
 // API Configuration
 const API_CONFIG = {
   // BASE_URL: 'https://capstoneproject-be-iapt.onrender.com/api',
-   BASE_URL: 'https://www.capstone.io.vn/ai',
- //  BASE_URL: 'http://127.0.0.1:5000',
+  BASE_URL: 'https://www.capstone.io.vn/ai',
+  // BASE_URL: 'http://127.0.0.1:5000',
 
 
-   AI: {
+  AI: {
     EXTRACTION: {
       STATS: '/api/extraction/stats',
       STATUS: '/api/extraction/status',
@@ -20,7 +20,7 @@ const API_CONFIG = {
       VECTOR_DIMENSIONS: '/api/extraction/vector_dimensions',
       FIX_DIMENSIONS: '/api/extraction/fix_dimensions'
     },
-    
+
     FIND_SIMILAR: '/api/find_similar'
   }
 };

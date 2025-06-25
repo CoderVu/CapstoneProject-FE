@@ -164,7 +164,7 @@ const SpecialOffers = () => {
                 badge={product.newProduct ? "New" : "Sale"}
                 rating={product.rate?.rating}
                 totalRate={product.rate?.totalRate}
-                totalSold="100"
+                totalSold={product.sold || "100"}
               />
             </div>
           ))}

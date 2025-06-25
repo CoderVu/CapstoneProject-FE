@@ -25,7 +25,7 @@ const ProductBanner = ({ products = [], loading }) => {
                 badge={product.newProduct ? "New" : ""}
                 rating={product.rate?.rating}
                 totalRate={product.rate?.totalRate}
-                totalSold="100"
+                totalSold={product.sold || "0"}
               />
             ))}
           </div>

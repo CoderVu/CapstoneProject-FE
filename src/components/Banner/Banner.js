@@ -4,7 +4,6 @@ import Slider from "react-slick";
 import {
   bannerImgOne,
   bannerImgTwo,
-  bannerImgThree,
   bannerImgFour,
   bannerImgFive
 } from "../../assets/images";
@@ -75,7 +74,7 @@ const Banner = () => {
   return (
     <div className="w-full bg-white overflow-hidden relative">
       <Slider {...settings} className="w-full relative">
-        {[bannerImgOne, bannerImgTwo, bannerImgThree, bannerImgFour, bannerImgFive].map((img, index) => (
+        {[bannerImgOne, bannerImgTwo, bannerImgFour, bannerImgFive].map((img, index) => (
           <div key={index} className="relative w-full">
             <Link to="/offer" className="w-full block">
               <div className="w-full relative flex justify-center items-center">
