@@ -25,14 +25,21 @@ jobs:
       - name: Generate Docker tag
         id: docker_tag
         run: |
-          # Use commit SHA for unique tag
-          echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "short_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+          # Use current timestamp + commit SHA for truly unique tag
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          echo "tag=${TIMESTAMP}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "short_tag=${TIMESTAMP}-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
       - name: Build and push Frontend Docker image
         run: |
-          # Build with unique tag and latest tag
-          docker build --no-cache -t vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }} -t vunguyen2901/capstone-frontend:latest .
+          # Clear Docker build cache first
+          docker builder prune -f
+          
+          # Build with unique tag and latest tag (force rebuild)
+          docker build --no-cache --pull \
+            --build-arg CACHEBUST=$(date +%s) \
+            -t vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }} \
+            -t vunguyen2901/capstone-frontend:latest .
           
           # Push both tags
           docker push vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}
@@ -53,70 +60,56 @@ jobs:
             docker network inspect dockervu >/dev/null 2>&1 || docker network create dockervu
             echo "Docker network 'dockervu' checked/created successfully"
             
-            # Login to DockerHub with better error handling
+            # Login to DockerHub
             echo "Logging in to DockerHub..."
             if echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u vunguyen2901 --password-stdin; then
               echo "DockerHub login successful"
             else
               echo "ERROR: DockerHub login failed"
-              echo "Please check your DOCKERHUB_TOKEN secret has proper scopes (Read & Write)"
               exit 1
             fi
             
-            # Stop và remove container frontend cũ nếu đang chạy
+            # Stop và remove container frontend cũ
             echo "Stopping old container if exists..."
-            if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
-              docker stop capstone-frontend
-              echo "Old container stopped"
-            fi
-            if [ "$(docker ps -a -q -f name=capstone-frontend)" ]; then
-              docker rm capstone-frontend
-              echo "Old container removed"
-            fi
+            docker stop capstone-frontend 2>/dev/null || echo "No container to stop"
+            docker rm capstone-frontend 2>/dev/null || echo "No container to remove"
 
-            # Xóa image cũ nếu có
-            echo "Removing old image if exists..."
-            docker rmi vunguyen2901/capstone-frontend:latest || echo "No old image to remove"
+            # Xóa ALL images cũ để force pull mới
+            echo "Removing ALL old images..."
+            docker rmi $(docker images vunguyen2901/capstone-frontend -q) 2>/dev/null || echo "No old images to remove"
             
-            # Pull image mới từ DockerHub với tag cụ thể
-            echo "Pulling new image from DockerHub..."
+            # Clear Docker cache
+            docker system prune -f
+            
+            # Pull image mới với tag cụ thể
+            echo "Pulling new image: vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}"
             if docker pull vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}; then
-              echo "Image pulled successfully: vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}"
+              echo "✅ Image pulled successfully"
             else
-              echo "ERROR: Failed to pull image from DockerHub"
-              echo "Please check:"
-              echo "1. DOCKERHUB_TOKEN has proper scopes (Read & Write)"
-              echo "2. Image was pushed successfully in previous step"
-              echo "3. Repository name is correct: vunguyen2901/capstone-frontend"
+              echo "❌ Failed to pull image"
               exit 1
             fi
             
-            # Kiểm tra image đã pull thành công
-            if docker images | grep -q "vunguyen2901/capstone-frontend"; then
-              echo "Image verified successfully"
-            else
-              echo "ERROR: Image not found after pull"
-              exit 1
-            fi
+            # Verify image
+            docker images | grep vunguyen2901/capstone-frontend
             
-            # Chạy container frontend mới trong network 'dockervu'
+            # Run container mới
             echo "Starting new container..."
             docker run -d --name capstone-frontend \
               --network dockervu \
               -p 3000:80 \
+              --restart unless-stopped \
               vunguyen2901/capstone-frontend:${{ steps.docker_tag.outputs.short_tag }}
             
-            # Kiểm tra container đã chạy thành công
+            # Verify container
             if [ "$(docker ps -q -f name=capstone-frontend)" ]; then
-              echo "Container started successfully"
-              echo "Container status:"
+              echo "✅ Container started successfully"
+              echo "🚀 Deployed version: ${{ steps.docker_tag.outputs.short_tag }}"
               docker ps -f name=capstone-frontend
-              echo "Deployed version: ${{ steps.docker_tag.outputs.short_tag }}"
             else
-              echo "ERROR: Container failed to start"
-              echo "Container logs:"
+              echo "❌ Container failed to start"
               docker logs capstone-frontend
               exit 1
             fi
             
-            echo "Frontend Docker container deployed successfully!" 
+            echo "🎉 Frontend deployed successfully!"
