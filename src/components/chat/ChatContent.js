@@ -472,7 +472,7 @@ const ChatContent = () => {
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setShowChat(false)}
-                                    className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                    className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
                                     aria-label="Close"
                                 >
                                     <FaTimes />
