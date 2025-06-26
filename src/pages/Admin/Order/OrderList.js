@@ -464,8 +464,8 @@ const OrderList = () => {
                               <p className="text-gray-700 text-sm"><span className="font-medium">Phương thức thanh toán:</span> {filteredOrders.find(order => order.orderCode === expandedOrderId).paymentMethod}</p>
                               <p className="text-gray-700 text-sm mt-1">
                                 <span className="font-medium">Trạng thái thanh toán:</span>{' '}
-                                <span className={filteredOrders.find(order => order.orderCode === expandedOrderId).status === 'PENDING' ? "text-yellow-600" : "text-green-600"}>
-                                  {filteredOrders.find(order => order.orderCode === expandedOrderId).status === 'PENDING' ? "Chưa thanh toán" : "Đã thanh toán"}
+                                <span className={['PENDING', 'CANCELLED'].includes(filteredOrders.find(order => order.orderCode === expandedOrderId).status) ? "text-yellow-600" : "text-green-600"}>
+                                  {['PENDING', 'CANCELLED'].includes(filteredOrders.find(order => order.orderCode === expandedOrderId).status) ? "Chưa thanh toán" : "Đã thanh toán"}
                                 </span>
                               </p>
                               <p className="text-gray-700 text-sm mt-1">
